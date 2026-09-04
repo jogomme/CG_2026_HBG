@@ -1,0 +1,10 @@
+Hello World 2026 Computer Graphics
+The Quick Brown Fox jumps over 13 lazy dogs
+OpenAI creates useful tools for Students 42
+File input output needs careful space handling
+Numbers 123 and 456 appear inside this sentence
+Special-characters/should*stay connected when counted
+Multiple   spaces     should become one space
+Coding in C++ is Fun and Practical 7
+Apple Banana Cherry are Capitalized words
+Final line has MixEdCase letters and number9here
