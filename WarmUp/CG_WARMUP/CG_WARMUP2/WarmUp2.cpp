@@ -69,7 +69,6 @@ int main()
 
 	while (Curline < 10 && getline(readFile, line)) {
 
-		// 원본 공백을 그대로 저장
 		orignal[Curline] = line;
 
 		bool word = false;
