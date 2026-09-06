@@ -5,4 +5,6 @@
   </Configurations>
   <Project Path="CG_WARMUP/CG_WARMUP.vcxproj" Id="78c39c2c-b7e9-401a-b8a9-bdd32797c48a" />
   <Project Path="CG_WARMUP2/CG_WARMUP2.vcxproj" Id="08c1535f-6452-4327-ad61-f0a241ed4547" />
+  <Project Path="CG_WARMUP4/CG_WARMUP4.vcxproj" Id="4451adc3-b38d-42be-822f-0e4f6bda6a52" />
+  <Project Path="WARMUP3/WARMUP3.vcxproj" Id="a19617ba-9798-4f85-87eb-a50919bfba8e" />
 </Solution>
