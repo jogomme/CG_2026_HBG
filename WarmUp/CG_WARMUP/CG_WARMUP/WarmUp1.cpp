@@ -236,9 +236,7 @@ void addMax(int matrix[4][4], int fCount[4], bool* isF)
 			}
 
 			for (int j = 0; j < 4; ++j) {
-				for (int k = 0; k < 4; ++k) {
-					matrix[j][k] += fCount[k];
-				}
+				matrix[j][i] += fCount[i];
 			}
 
 		}

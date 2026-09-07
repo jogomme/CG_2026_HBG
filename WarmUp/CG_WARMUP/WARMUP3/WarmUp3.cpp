@@ -165,15 +165,6 @@ void Commands(MyPoint& list, char Command)
         {
             list.use[0] = false;
 
-            for (int i = 0; i < 9; ++i)
-            {
-                list.p[i] = list.p[i + 1];
-                list.use[i] = list.use[i + 1];
-            }
-
-            list.use[9] = false;
-
-            --list.top;
 
             if (list.top == 0)
             {
@@ -221,6 +212,12 @@ void Commands(MyPoint& list, char Command)
         {
             list.p[i] = list.p[i - 1];
             list.use[i] = list.use[i - 1];
+        }
+
+        list.top++;
+
+        if (list.top > 10) {
+            list.top = 10;
         }
 
         list.p[0] = temp;

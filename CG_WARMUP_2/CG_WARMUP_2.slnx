@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="CG_WARMUP_2/CG_WARMUP_2.vcxproj" />
+</Solution>

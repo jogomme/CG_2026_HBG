@@ -217,6 +217,12 @@ void commands(char command, string orignal[], int cnt[], int lineCount)
 			int wordCount = 0;
 			string word{};
 
+			for (int j = 0; j < temp[i].length() / 2; ++j) {
+				char tempChar = temp[i][j];
+				temp[i][j] = temp[i][temp[i].length() - 1 - j];
+				temp[i][temp[i].length() - 1 - j] = tempChar;
+			}
+
 			for (int j = 0; j < temp[i].length(); ++j) {
 				if (temp[i][j] != ' ') {
 					word += temp[i][j];
