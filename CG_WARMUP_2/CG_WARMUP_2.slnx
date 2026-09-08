@@ -3,6 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
-  <Project Path="CG_WARMUP_2/CG_WARMUP_2.vcxproj" />
+  <Project Path="CG_WARMUP_2/CG_WARMUP_2.vcxproj" Id="814c4ae0-b609-41e9-9603-a2d0d26e422e" />
 
 </Solution>
