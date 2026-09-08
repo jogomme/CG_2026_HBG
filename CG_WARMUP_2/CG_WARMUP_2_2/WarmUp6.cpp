@@ -37,6 +37,10 @@ void SaveVT(std::string line);
 void SaveF(std::string line);
 
 bool CheckIndex(int vertexIndex, int textureIndex);
+bool CheckFace(int v1, int v2, int v3);
+bool CheckVertex(); 
+
+
 
 //-------------------------------------------------------------------------------------------------
 int main()
@@ -93,74 +97,10 @@ int main()
 
     file.close();
 
-    //-------------------------------------------------------------------------------------------------
-    // Vertex 출력
-    //-------------------------------------------------------------------------------------------------
-
-    std::cout << "\n===== Vertex =====\n";
-
-    for (int i = 0; i < vertexCount; ++i)
+    if (CheckVertex())
     {
-        std::cout << i + 1 << " : ("
-            << vertex[i].x << ", "
-            << vertex[i].y << ", "
-            << vertex[i].z << ")\n";
+        std::cout << "중복된 정점이 있습니다.\n";
     }
-
-    //-------------------------------------------------------------------------------------------------
-    // VT 출력
-    //-------------------------------------------------------------------------------------------------
-
-    std::cout << "\n===== VT =====\n";
-
-    for (int i = 0; i < vtCount; ++i)
-    {
-        std::cout << i + 1 << " : ("
-            << vt[i].x << ", "
-            << vt[i].y << ")\n";
-    }
-
-    //-------------------------------------------------------------------------------------------------
-    // Face 출력
-    //-------------------------------------------------------------------------------------------------
-
-    std::cout << "\n===== Face =====\n";
-
-    for (int i = 0; i < faceCount; ++i)
-    {
-        std::cout << "\nFace " << i + 1 << " ("
-            << face[i].vertexIndex[0] << ", "
-            << face[i].vertexIndex[1] << ", "
-            << face[i].vertexIndex[2] << ")\n";
-
-        std::cout << "vertex\n";
-
-        for (int j = 0; j < 3; ++j)
-        {
-            int index = face[i].vertexIndex[j] - 1;
-
-            std::cout << "("
-                << vertex[index].x << ", "
-                << vertex[index].y << ", "
-                << vertex[index].z << ")\n";
-        }
-
-        if (face[i].isTexture)
-        {
-            std::cout << "texture\n";
-
-            for (int j = 0; j < 3; ++j)
-            {
-                int index = face[i].textureIndex[j] - 1;
-
-                std::cout << "("
-                    << vt[index].x << ", "
-                    << vt[index].y << ")\n";
-            }
-        }
-    }
-
-    return 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -272,6 +212,13 @@ void SaveF(std::string line)
         return;
     }
 
+    // 삼각형 정점 중복 확인
+    if (!CheckFace(v1, v2, v3))
+    {
+        std::cout << "삼각형의 정점이 중복되었습니다.\n";
+        return;
+    }
+
     face[faceCount].vertexIndex[0] = v1;
     face[faceCount].textureIndex[0] = t1;
 
@@ -300,4 +247,36 @@ bool CheckIndex(int vertexIndex, int textureIndex)
     }
 
     return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+bool CheckFace(int v1, int v2, int v3)
+//-------------------------------------------------------------------------------------------------
+{
+    if (v1 == v2 || v1 == v3 || v2 == v3)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+//-------------------------------------------------------------------------------------------------
+bool CheckVertex()
+//-------------------------------------------------------------------------------------------------
+{
+    for (int i = 0; i < vertexCount; ++i)
+    {
+        for (int j = i + 1; j < vertexCount; ++j)
+        {
+            if (vertex[i].x == vertex[j].x &&
+                vertex[i].y == vertex[j].y &&
+                vertex[i].z == vertex[j].z)
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
