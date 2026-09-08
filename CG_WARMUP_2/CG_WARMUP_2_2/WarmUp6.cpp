@@ -74,6 +74,59 @@ int main()
     }
 
     file.close();
+
+    std::cout << "\n===== Vertex =====\n";
+
+    for (int i = 0; i < vertexCount; ++i)
+    {
+        std::cout << i + 1 << " : ("
+            << vertex[i].x << ", "
+            << vertex[i].y << ", "
+            << vertex[i].z << ")\n";
+    }
+
+    std::cout << "\n===== VT =====\n";
+
+    for (int i = 0; i < vtCount; ++i)
+    {
+        std::cout << i + 1 << " : ("
+            << vt[i].x << ", "
+            << vt[i].y << ")\n";
+    }
+
+    std::cout << "\n===== Face =====\n";
+
+    for (int i = 0; i < faceCount; ++i)
+    {
+        std::cout << "\nFace " << i + 1 << " ("
+            << face[i].vertexIndex[0] << ", "
+            << face[i].vertexIndex[1] << ", "
+            << face[i].vertexIndex[2] << ")\n";
+
+        std::cout << "vertex\n";
+
+        for (int j = 0; j < 3; ++j)
+        {
+            int index = face[i].vertexIndex[j] - 1;
+
+            std::cout << "("
+                << vertex[index].x << ", "
+                << vertex[index].y << ", "
+                << vertex[index].z << ")\n";
+        }
+
+        std::cout << "texture\n";
+
+        for (int j = 0; j < 3; ++j)
+        {
+            int index = face[i].textureIndex[j] - 1;
+
+            std::cout << "("
+                << vt[index].x << ", "
+                << vt[index].y << ")\n";
+        }
+    }
+
 }
 
 //-------------------------------------------------------------------------------------------------
