@@ -1,14 +1,26 @@
-#include<iostream>
+﻿#include<iostream>
 #include<Windows.h>
+#include<algorithm>
+
+struct Rect
+{
+	int x1;
+	int y1;
+	int x2;
+	int y2;
+};
 
 void DrawBoard(char board[][40], int height, int wide);
 
-void initBoard(char board[][40]);
+void initBoard(char board[][40], Rect* r1, Rect* r2);
 
-void MadeBoard(char board[][40], int x1, int x2, int y1, int y2, int wide, int height);
+void MadeBoard(char board[][40], Rect* r1, Rect* r2, int wide, int height);
 
-void Commands(char command, char board[][40], int* wide, int* height);
+void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, Rect* r2);
 
+void ReBuildRect(Rect* r);
+
+void ClearBoard(char board[][40]);
 
 //------------------------------------------------------------------------------------------------
 int main()
@@ -19,14 +31,15 @@ int main()
 
 	char board[40][40]{};
 
-
+	Rect r1{};
+	Rect r2{};
 
 	char Command;
 
-	initBoard(board);
+	initBoard(board, &r1, &r2);
 
 	while (true) {
-		
+
 		std::cout << "input cord value : ";
 		std::cin >> Command;
 
@@ -34,13 +47,15 @@ int main()
 			return 0;
 		}
 
-		Commands(Command, board, &wide, &height);
+		Commands(Command, board, &wide, &height, &r1, &r2);
 		DrawBoard(board, height, wide);
-	
+
 	}
 }
 
-void Commands(char command, char board[][40], int* wide, int* height)
+//------------------------------------------------------------------------------------------------
+void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, Rect* r2)
+//------------------------------------------------------------------------------------------------
 {
 	if (command == 's') {
 		(*(wide))--;
@@ -95,6 +110,7 @@ void Commands(char command, char board[][40], int* wide, int* height)
 		if (*(wide) > 40) {
 			*(wide) = 40;
 		}
+
 		(*(height))--;
 		if (*(height) < 10) {
 			*(height) = 10;
@@ -105,47 +121,75 @@ void Commands(char command, char board[][40], int* wide, int* height)
 		if (*(wide) < 10) {
 			*(wide) = 10;
 		}
+
 		(*(height))++;
 		if (*(height) > 40) {
 			*(height) = 40;
 		}
 	}
 	else if (command == 'r' || command == 'R') {
-		initBoard(board);
+		initBoard(board, r1, r2);
 	}
 	else if (command == 'h') {
 
 		int x1, x2, y1, y2;
+
 		while (true) {
 			std::cout << "input cord value 1 : ";
 			std::cin >> x1 >> y1 >> x2 >> y2;
 
-			if (x1 >= 0 && x2 >= 0 && x1 != x2 && x1 <= *(wide) && x2 <= *(wide)) {
-				if (y1 >= 0 && y2 >= 0 && y1 != x2 && y1 <= *(height) && x2 <= *(height)) {
+			if (x1 >= 0 && x2 >= 0 &&
+				x1 != x2 &&
+				x1 < *(wide) && x2 < *(wide)) {
+
+				if (y1 >= 0 && y2 >= 0 &&
+					y1 != y2 &&
+					y1 < *(height) && y2 < *(height)) {
+
+					r1->x1 = x1;
+					r1->y1 = y1;
+					r1->x2 = x2;
+					r1->y2 = y2;
+
 					break;
 				}
-
 			}
+
 			std::cout << "값을 다시 입력하세요 " << '\n';
 		}
 
-		MadeBoard(board, x1, x2, y1, y2, *(wide), *(height));
+		MadeBoard(board, r1, r2, *(wide), *(height));
 	}
 
 	else if (command == 'H') {
+
 		int x1, x2, y1, y2;
+
 		while (true) {
 			std::cout << "input cord value 2 : ";
 			std::cin >> x1 >> y1 >> x2 >> y2;
 
-			if (x1 >= 0 && x2 >= 0 && x1 != x2 && x1 <= *(wide) && x2 <= *(wide)) {
-				if (y1 >= 0 && y2 >= 0 && y1 != x2 && y1 <= *(height) && x2 <= *(height)) {
+			if (x1 >= 0 && x2 >= 0 &&
+				x1 != x2 &&
+				x1 < *(wide) && x2 < *(wide)) {
+
+				if (y1 >= 0 && y2 >= 0 &&
+					y1 != y2 &&
+					y1 < *(height) && y2 < *(height)) {
+
+					r2->x1 = x1;
+					r2->y1 = y1;
+					r2->x2 = x2;
+					r2->y2 = y2;
+
 					break;
 				}
 			}
+
 			std::cout << "값을 다시 입력하세요 " << '\n';
 		}
-		MadeBoard(board, x1, x2, y1, y2, *(wide), *(height));
+
+		MadeBoard(board, r1, r2, *(wide), *(height));
 	}
 	else if (command == 'b') {
 
@@ -155,67 +199,70 @@ void Commands(char command, char board[][40], int* wide, int* height)
 	}
 }
 
-void MadeBoard(char board[][40], int x1, int x2, int y1, int y2, int wide, int height)
+//------------------------------------------------------------------------------------------------
+void MadeBoard(char board[][40], Rect* r1, Rect* r2, int wide, int height)
+//------------------------------------------------------------------------------------------------
 {
-	static int cnt{};
+	ReBuildRect(r1);
+	ReBuildRect(r2);
 
-	// x1 > x2 라면 자리 바꿈
-	if (x1 > x2) {
-		int tmp = x1;
-		x1 = x2;
-		x2 = tmp;
-	}
-	if (y1 > y2) {
-		int tmp = y1;
-		y1 = y2;
-		y2 = tmp;
-	}
-
-	if (cnt == 0) {
-		initBoard(board);
-	}
-
-	++cnt;
+	ClearBoard(board);
 
 	for (int i = 0; i < height; ++i) {
 		for (int j = 0; j < wide; ++j) {
 
-			if (i >= y1 && i <= y2 && j >= x1 && j <= x2) {
-				if (board[i][j] == '*' && cnt == 1) {
+			if (i >= r1->y1 && i <= r1->y2 && j >= r1->x1 && j <= r1->x2) {
+
+				if (board[i][j] == '*') {
 					board[i][j] = '0';
 				}
-				else if (board[i][j] == '*' && cnt == 2) {
+			}
+			if (i >= r2->y1 && i <= r2->y2 && j >= r2->x1 && j <= r2->x2) {
+			
+				if (board[i][j] == '*') {
 					board[i][j] = '1';
 				}
 				else if (board[i][j] != '*') {
 					board[i][j] = '#';
 				}
 			}
-
 		}
 	}
-
-	if (cnt == 2) {
-		cnt = 0;
-	}
-
 }
 
-void initBoard(char board[][40])
+//------------------------------------------------------------------------------------------------
+void initBoard(char board[][40], Rect* r1, Rect* r2)
+//------------------------------------------------------------------------------------------------
 {
 	for (int i = 0; i < 40; ++i) {
 		for (int j = 0; j < 40; ++j) {
 			board[i][j] = '*';
 		}
 	}
+	
+	r1->x1 = -1;
+	r1->y1 = -1;
+	r1->x2 = -1;
+	r1->y2 = -1;
+
+	r2->x1 = -1;
+	r2->y1 = -1;
+	r2->x2 = -1;
+	r2->y2 = -1;
+
 }
 
+//------------------------------------------------------------------------------------------------
 void DrawBoard(char board[][40], int height, int wide)
+//------------------------------------------------------------------------------------------------
 {
 	std::cout << '\n';
+
 	for (int y = 0; y < height; ++y) {
 		for (int x = 0; x < wide; ++x) {
+
 			if (board[y][x] == '#') {
+
 				HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
 
 				SetConsoleTextAttribute(hConsole, 12);
@@ -226,6 +273,30 @@ void DrawBoard(char board[][40], int height, int wide)
 				std::cout << board[y][x] << " ";
 			}
 		}
+
 		std::cout << '\n';
+	}
+}
+
+//------------------------------------------------------------------------------------------------
+void ReBuildRect(Rect* r)
+//------------------------------------------------------------------------------------------------
+{
+	if (r->x1 > r->x2) {
+		std::swap(r->x1, r->x2);
+	}
+	if (r->y1 > r->y2) {
+		std::swap(r->y1, r->y2);
+	}
+}
+
+//------------------------------------------------------------------------------------------------
+void ClearBoard(char board[][40])
+//------------------------------------------------------------------------------------------------
+{
+	for (int i = 0; i < 40; ++i) {
+		for (int j = 0; j < 40; ++j) {
+			board[i][j] = '*';
+		}
 	}
 }
