@@ -110,13 +110,24 @@ void SaveVertex(std::string line)
     std::stringstream ss(line);
 
     char type;
+    float x, y, z;
+    float ex;
 
-    ss >> type
-        >> vertex[vertexCount].x
-        >> vertex[vertexCount].y
-        >> vertex[vertexCount].z;
+    ss >> type;
 
-    ++vertexCount;
+    if (!(ss >> x >> y >> z)) {
+        std::cout << "형식 오류 발생 : Vertex" << '\n';
+        return;
+    }
+
+    if (ss >> ex) {
+        std::cout << "너무 많은 vertex 정보" << '\n';
+        return;
+    }
+
+    vertex[vertexCount].x = x;
+    vertex[vertexCount].y = y;
+    vertex[vertexCount++].z = z;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -127,11 +138,22 @@ void SaveVT(std::string line)
 
     std::string type;
 
-    ss >> type
-        >> vt[vtCount].x
-        >> vt[vtCount].y;
+    ss >> type;
 
-    ++vtCount;
+    float x, y, ex;
+
+    if (!(ss >> x >> y)) {
+        std::cout << "잘못된 형식의 데이터 : VT" << '\n';
+        return;
+    }
+
+    if (ss >> ex) {
+        std::cout << "너무 많은 VT 정보" << '\n';
+        return;
+    }
+
+    vt[vtCount].x = x;
+    vt[vtCount++].y = y;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -177,7 +199,11 @@ void SaveF(std::string line)
     }
 
     std::stringstream firstStream(first);
-    firstStream >> v1 >> t1;
+    if (!(firstStream >> v1 >> t1)) {
+        std::cout << "형식 오류 : Face" << '\n';
+        return;
+    }
+    
 
     // 두 번째 꼭짓점
     for (int i = 0; i < second.length(); ++i)
@@ -189,7 +215,10 @@ void SaveF(std::string line)
     }
 
     std::stringstream secondStream(second);
-    secondStream >> v2 >> t2;
+    if (!(secondStream >> v2 >> t2)) {
+        std::cout << "형식 오류 : Face" << '\n';
+        return;
+    }
 
     // 세 번째 꼭짓점
     for (int i = 0; i < third.length(); ++i)
@@ -201,7 +230,10 @@ void SaveF(std::string line)
     }
 
     std::stringstream thirdStream(third);
-    thirdStream >> v3 >> t3;
+    if (!(thirdStream >> v3 >> t3)) {
+        std::cout << "형식 오류 : Face" << '\n';
+        return;
+    }
 
     // 인덱스 범위 확인
     if (!CheckIndex(v1, t1) ||
