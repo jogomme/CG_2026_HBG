@@ -192,7 +192,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -204,7 +204,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -234,7 +234,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -246,7 +246,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -276,7 +276,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -288,7 +288,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -318,7 +318,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -330,7 +330,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -360,7 +360,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -372,7 +372,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -402,7 +402,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -414,7 +414,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -444,7 +444,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -456,7 +456,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -486,7 +486,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -498,7 +498,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect입니다." << '\n';
 				return;
 			}
 
@@ -520,7 +520,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		std::cin >> n;
 
 		while (n != '1' && n != '2') {
-			std::cout << "없는 Rect입니다 다시 입력해주세요." << '\n';
+			std::cout << "없는 Rect입니다." << '\n';
 			std::cout << "면적을 확인할 Rect를 알려주세요 : ";
 			std::cin >> n;
 		}
@@ -528,7 +528,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		if (n == '1') {
 
 			if (!r1->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect 입니다." << '\n';
 				return;
 			}
 
@@ -553,7 +553,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		else {
 
 			if (!r2->isLive) {
-				std::cout << "생성되지 않은 Rect입니다." << '\n';
+				std::cout << "없는 Rect 입니다." << '\n';
 				return;
 			}
 
@@ -598,7 +598,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 		int newHeight = *height - 1;
 
 		if (newWide < 10 || newHeight < 10) {
-			std::cout << "보드 크기를 더 이상 줄일 수 없습니다." << '\n';
+			std::cout << "한계이다." << '\n';
 			return;
 		}
 
@@ -629,7 +629,7 @@ void Commands(char command, char board[][40], int* wide, int* height, Rect* r1, 
 			*height = newHeight;
 		}
 		else {
-			std::cout << "도형이 보드 밖으로 나가므로 축소할 수 없습니다." << '\n';
+			std::cout << "도형보다 작게 할 수 없다" << '\n';
 		}
 	}
 

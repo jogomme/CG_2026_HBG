@@ -273,6 +273,18 @@ bool SelectPosition(
     std::cin >> row >> col;
 
 
+    // 숫자가 아닌 값이 입력된 경우
+    if (std::cin.fail())
+    {
+        std::cin.clear();
+        std::cin.ignore(1000, '\n');
+
+        std::cout << "숫자로 입력해주세요.\n";
+
+        return false;
+    }
+
+
     // 사용자가 입력한 숫자는 1부터 시작한다.
     // 배열은 0부터 시작하므로 -1
     row--;
@@ -351,7 +363,7 @@ void CheckCards(
 
     std::cout << "Enter를 누르면 판정합니다.";
 
-    std::cin.ignore();
+    std::cin.ignore(1000, '\n');
     std::cin.get();
 
 
@@ -495,7 +507,7 @@ void Hint()
     PrintBoard();
 
 
-    std::cin.ignore();
+    std::cin.ignore(1000, '\n');
     std::cin.get();
 
 
@@ -536,8 +548,27 @@ void StartGame()
         std::cout << '\n';
 
 
+        // -------------------------
+        // 가로 크기
+        // -------------------------
+
         std::cout << "가로 크기 (3~6) : ";
+
         std::cin >> width;
+
+
+        // 숫자가 아닌 값을 입력한 경우
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore(1000, '\n');
+
+            std::cout << "숫자를 입력해주세요.\n";
+
+            system("pause");
+
+            continue;
+        }
 
 
         if (width < 3 || width > 6)
@@ -550,8 +581,27 @@ void StartGame()
         }
 
 
+        // -------------------------
+        // 세로 크기
+        // -------------------------
+
         std::cout << "세로 크기 (3~6) : ";
+
         std::cin >> height;
+
+
+        // 숫자가 아닌 값을 입력한 경우
+        if (std::cin.fail())
+        {
+            std::cin.clear();
+            std::cin.ignore(1000, '\n');
+
+            std::cout << "숫자를 입력해주세요.\n";
+
+            system("pause");
+
+            continue;
+        }
 
 
         if (height < 3 || height > 6)
