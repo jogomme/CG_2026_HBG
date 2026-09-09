@@ -458,19 +458,30 @@ void CheckCards(
 
 bool CheckClear()
 {
+    int ncp{};
+
     for (int y = 0; y < height; ++y)
     {
         for (int x = 0; x < width; ++x)
         {
             if (board[y][x].complete == false)
             {
-                return false;
+                ncp++;
             }
         }
     }
 
+    if (ncp == 0) {
+        return true;
+    }
 
-    return true;
+    if ((width * height) % 2 == 1 && ncp == 1) {
+        return true;
+    }
+   
+
+
+    return false;
 }
 
 
