@@ -1,0 +1,4 @@
+opengl32.lib;glew32.lib;glfw3dll.lib <- 이거를 추가하거나
+
+
+$(CoreLibraryDependencies);%(AdditionalDependencies)opengl32.lib;glew32.lib;glfw3dll.lib <- 이거를 전체로 추가하면 됌
