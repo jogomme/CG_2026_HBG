@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="../homework2/homework2.vcxproj" />
   <Project Path="homework1.vcxproj" />
 </Solution>
