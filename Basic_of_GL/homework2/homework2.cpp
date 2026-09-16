@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+﻿#include <GL/glew.h>
 #include <GL/glfw3.h>
 
 #include <iostream>
@@ -8,6 +8,7 @@
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_real_distribution<float> colorDist(0, 1.0f);
+std::uniform_real_distribution<float> sizeDist(0, 0.9);
 
 // 이렇게 하면 두 점이 주어짐으로 사각형을 그릴 수 있음
 struct POINT
@@ -106,6 +107,15 @@ int main()
         return -1;
     }
 
+    std::cout << "===== 명령어 목록 =====\n";
+    std::cout << "c : 색깔바꾸기\n";
+    std::cout << "+, - : 크기 바꾸기\n";
+    std::cout << "1,2,3,4 : 사각형 추가하기\n";
+    std::cout << "좌클릭 : 선택하기\n";
+    std::cout << "r : 리셋하기\n";
+    std::cout << "q : 프로그램 종료\n";
+    std::cout << "=======================\n";
+
 
     // OpenGL 버전 설정
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -193,28 +203,52 @@ int main()
 void InputProcess(GLFWwindow* window)
 {
     // ESC를 누르면 종료
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
 
+
     // 1사분면
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-        AddRect(1);
+    if (KeyPressed(window, GLFW_KEY_1)) {
+        AddRect(0);
     }
 
     // 2사분면
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-        AddRect(2);
+    if (KeyPressed(window, GLFW_KEY_2)) {
+        AddRect(1);
     }
 
     // 3사분면
-    if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
-        AddRect(3);
+    if (KeyPressed(window, GLFW_KEY_3)) {
+        AddRect(2);
     }
 
     // 4사분면
-    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS) {
-        AddRect(4);
+    if (KeyPressed(window, GLFW_KEY_4)) {
+        AddRect(3);
+    }
+    
+    // + -
+    if (KeyPressed(window, GLFW_KEY_KP_ADD) || KeyPressed(window, GLFW_KEY_EQUAL)) {
+        ChangeSize(GLFW_KEY_KP_ADD);
+    }
+    else if (KeyPressed(window, GLFW_KEY_MINUS)) {
+        ChangeSize(GLFW_KEY_MINUS);
+    }
+
+    // 색깔 바꾸기
+    if (KeyPressed(window, GLFW_KEY_C)) {
+        ChangeColor();
+    }
+
+    // 리셋
+    if (KeyPressed(window, GLFW_KEY_R)) {
+        Reset();
+    }
+
+    // 마우스 선택
+    if (MousePressed(window, GLFW_MOUSE_BUTTON_LEFT)) {
+        SelectRect(window);
     }
 
 }
@@ -241,12 +275,47 @@ void DrawScene()
     // 여기부터 직접 작성
     // --------------------------------------------------------
 
-    // 1. 사각형의 색상을 설정
+    // 1영역
+    glColor3f(areaColor[0].r, areaColor[0].g, areaColor[0].b);
+    glRectf(-1.0f, 1.0f, 0.0f, 0.0f);
 
+    // 2영역
+    glColor3f(areaColor[1].r, areaColor[1].g, areaColor[1].b);
+    glRectf(0.0f, 1.0f, 1.0f, 0.0f);
 
-    // 2. 사각형을 그리기
-    // glRectf(x1, y1, x2, y2);
+    // 3영역
+    glColor3f(areaColor[2].r, areaColor[2].g, areaColor[2].b);
+    glRectf(-1.0f, 0.0f, 0.0f, -1.0f);
 
+    // 4영역
+    glColor3f(areaColor[3].r, areaColor[3].g, areaColor[3].b);
+    glRectf(0.0f, 0.0f, 1.0f, -1.0f);
+
+    // 각 분면 안에 작은 사각형 그리는 것
+    for (int area = 0; area < 4; ++area) {
+        for (int i = 0; i < rectangleCount[area]; ++i) {
+            glColor3f(rects[area][i].color.r, rects[area][i].color.g, rects[area][i].color.b);
+            POINT p{ rects[area][i].point };
+            glRectf(p.x1, p.y1, p.x2, p.y2);
+
+            // 선택 표시
+            if (rects[area][i].selected)
+            {
+                glColor3f(1, 0, 0);
+
+                glLineWidth(5.0f);
+
+                glBegin(GL_LINE_LOOP);
+
+                glVertex2f(p.x1, p.y1);
+                glVertex2f(p.x2, p.y1);
+                glVertex2f(p.x2, p.y2);
+                glVertex2f(p.x1, p.y2);
+
+                glEnd();
+            }
+        }
+    }
 
     // --------------------------------------------------------
 }
@@ -255,6 +324,11 @@ void DrawScene()
 POSISTION SetPosToGL(float x, float y)
 {
     POSISTION p{};
+
+    p.x = (x / wide) * 2 - 1;
+
+    p.y = 1 - (y / height) * 2;
+
     return p;
 }
 
@@ -275,42 +349,200 @@ void SetAreaColor()
     }
 }
 
+POSISTION AreaPos(int area)
+{
+    float centerX{};
+    float centerY{};
+
+    if (area == 0)
+    {
+        centerX = 400;
+        centerY = 300;
+    }
+    else if (area == 1)
+    {
+        centerX = 1200;
+        centerY = 300;
+    }
+    else if (area == 2)
+    {
+        centerX = 400;
+        centerY = 900;
+    }
+    else if (area == 3)
+    {
+        centerX = 1200;
+        centerY = 900;
+    }
+
+    POSISTION p{ centerX,centerY };
+
+    p = SetPosToGL(p.x, p.y);
+
+    return p;
+}
+
 void AddRect(int area)
 {
+    if (rectangleCount[area] >= 5)
+    {
+        return;
+    }
+
+
+
+    RECTANGLE& rect = rects[area][rectangleCount[area]];
+
+    POSISTION p{ AreaPos(area) };
+    
+    float sizeX = sizeDist(gen);
+    float sizeY = sizeDist(gen);
+
+    rect.point.x1 = p.x - sizeX / 2;
+    rect.point.y1 = p.y + sizeY / 2;
+    rect.point.x2 = p.x + sizeX / 2;
+    rect.point.y2 = p.y - sizeY / 2;
+
+    rect.color = randColor();
+
+    rect.selected = false;
+
+    ++rectangleCount[area];
 
 }
 
 void SelectRect(GLFWwindow* window)
 {
+    double mouseX{};
+    double mouseY{};
 
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+
+    POSISTION mouse{ SetPosToGL(mouseX, mouseY) };
+
+    for (int area = 0; area < 4; ++area)
+    {
+        for (int i = 0; i < rectangleCount[area]; ++i)
+        {
+            rects[area][i].selected = false;
+        }
+    }
+
+    selectArea = -1;
+    selectedRect = -1;
+
+    for (int area = 0; area < 4; ++area)
+    {
+        for (int i = rectangleCount[area] - 1; i >= 0; --i)
+        {
+            RECTANGLE& rect = rects[area][i];
+
+            if (mouse.x >= rect.point.x1 &&
+                mouse.x <= rect.point.x2 &&
+                mouse.y <= rect.point.y1 &&
+                mouse.y >= rect.point.y2)
+            {
+                selectArea = area;
+                selectedRect = i;
+
+                rect.selected = true;
+
+                return;
+            }
+        }
+    }
 }
 
 
 void ChangeSize(float size)
 {
+    for (int area = 0; area < 4; ++area) {
+        for (int i = 0; i < rectangleCount[area]; ++i) {
+            if (rects[area][i].selected) {
+                if (size == GLFW_KEY_KP_ADD || size == GLFW_KEY_EQUAL) {
+                    rects[area][i].point.x1 -= 0.01f;
+                    rects[area][i].point.y1 += 0.01f;
+                    rects[area][i].point.x2 += 0.01f;
+                    rects[area][i].point.y2 -= 0.01f;
 
+                    return;
+                }
+                else if (size == GLFW_KEY_MINUS) {
+                    rects[area][i].point.x1 += 0.01f;
+                    rects[area][i].point.y1 -= 0.01f;
+                    rects[area][i].point.x2 -= 0.01f;
+                    rects[area][i].point.y2 += 0.01f;
+
+                    return;
+                }
+            }
+        }
+    }
 }
 
 
 void ChangeColor()
 {
-
+    for (int area = 0; area < 4; ++area) {
+        for (int i = 0; i < rectangleCount[area]; ++i) {
+            if (rects[area][i].selected) {
+                rects[area][i].color = randColor();
+                return;
+            }
+        }
+    }
 }
 
 
 void Reset()
 {
+    SetAreaColor();
+    for (int area = 0; area < 4; ++area) {
+        for (int i = 0; i < rectangleCount[area]; ++i) {
+            if (rects[area][i].selected) {
+                rects[area][i].selected = false;
+            }
+            rects[area][i].point.x1 = -1;
+            rects[area][i].point.y1 = -1;
+            rects[area][i].point.x2 = -1;
+            rects[area][i].point.y2 = -1;
+        }
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        rectangleCount[i] = 0;
+    }
+
+    selectArea = -1;
+    selectedRect = -1;
 
 }
 
 
 bool KeyPressed(GLFWwindow* window, int key)
 {
-    return true;
+    static bool previousKey[GLFW_KEY_LAST + 1]{};
+
+    bool currentKey = glfwGetKey(window, key) == GLFW_PRESS;
+
+    bool result = currentKey && !previousKey[key];
+
+    previousKey[key] = currentKey;
+
+    return result;
 }
 
 
 bool MousePressed(GLFWwindow* window, int button)
 {
-    return true;
+    static bool MouseDown[4]{ false };
+
+    bool current = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+    bool result = current && !MouseDown[button];
+
+    MouseDown[button] = current;
+
+    return result;
+
 }
