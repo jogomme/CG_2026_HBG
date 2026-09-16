@@ -254,7 +254,8 @@ void DrawScene()
 
 POSISTION SetPosToGL(float x, float y)
 {
-    
+    POSISTION p{};
+    return p;
 }
 
 COLOR randColor()
@@ -270,7 +271,7 @@ COLOR randColor()
 void SetAreaColor()
 {
     for (int i = 0; i < 4; ++i) {
-        rects[i]->color = randColor();
+        areaColor[i] = randColor();
     }
 }
 
@@ -305,11 +306,11 @@ void Reset()
 
 bool KeyPressed(GLFWwindow* window, int key)
 {
-
+    return true;
 }
 
 
 bool MousePressed(GLFWwindow* window, int button)
 {
-
+    return true;
 }
