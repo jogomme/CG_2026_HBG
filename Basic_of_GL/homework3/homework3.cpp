@@ -393,21 +393,21 @@ void AddRect()
 void SelectRect(GLFWwindow* window)
 {
     // 마우스 위치 가져오기
-
+    POSITION p = GetMousePosition(window);
 
     // 기존 선택 해제
-
+    selectedRect = -1;
 
     // 가장 나중에 만들어진 사각형부터 검사
-
-
-    // 마우스가 사각형 안에 있는지 확인
-
-
-    // 선택된 사각형 저장
-
-
-    // selected = true
+    for (int i = rectangleCount; i > 0; --i) {
+        if (rects[i].point.x1 < p.x && p.x < rects[i].point.x2 &&
+            rects[i].point.y1 < p.y && p.y < rects[i].point.y2
+            ) {
+            selectedRect = i;
+            rects[i].selected = true;
+            return;
+        }
+    }
 }
 
 
@@ -622,13 +622,13 @@ void MouseButtonCallback(
         if (action == GLFW_PRESS)
         {
             // 사각형 선택
-
+            SelectRect(window);
 
             // 드래그 시작
-
+            isDragging = true;
 
             // 마우스 시작 위치 저장
-
+           
 
             // 선택된 사각형의 시작 위치 저장
         }
