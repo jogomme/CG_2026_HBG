@@ -396,12 +396,17 @@ void SelectRect(GLFWwindow* window)
     POSITION p = GetMousePosition(window);
 
     // 기존 선택 해제
-    selectedRect = -1;
+    if (selectedRect != -1) {
+        rects[selectedRect].selected = false;
+        selectedRect = -1;
+    }
+
+
 
     // 가장 나중에 만들어진 사각형부터 검사
-    for (int i = rectangleCount; i > 0; --i) {
+    for (int i = rectangleCount - 1; i >= 0; --i) {
         if (rects[i].point.x1 < p.x && p.x < rects[i].point.x2 &&
-            rects[i].point.y1 < p.y && p.y < rects[i].point.y2
+            rects[i].point.y1 >= p.y && p.y >= rects[i].point.y2
             ) {
             selectedRect = i;
             rects[i].selected = true;
@@ -418,24 +423,40 @@ void SelectRect(GLFWwindow* window)
 void MoveRect(GLFWwindow* window)
 {
     // 선택된 사각형이 있는지 확인
-
+    if (selectedRect == -1) {
+        return;
+    }
 
     // 현재 마우스 위치 가져오기
-
+    POSITION mp = GetMousePosition(window);
 
     // 현재 위치와 이전 위치의 차이 계산
-
+    double dx = mp.x - mouseStart.x;
+    double dy = mp.y - mouseStart.y;
 
     // 선택된 사각형 이동
+    RECTANGLE& r = rects[selectedRect];
 
+    r.point.x1 = rectStart.x1 + dx;
+    r.point.y1 = rectStart.y1 + dy;
 
-    // 현재 마우스 위치를 다음 위치로 저장
-
+    r.point.x2 = rectStart.x2 + dx;
+    r.point.y2 = rectStart.y2 + dy;
 
     // 다른 사각형과 겹쳤는지 확인
+    for (int i = 0; i < rectangleCount; ++i)
+    {
+        if (i == selectedRect)
+        {
+            continue;
+        }
 
-
-    // 겹쳤다면 MergeRect()
+        if (IsOverlap(r, rects[i]))
+        {
+            MergeRect(selectedRect, i);
+            return;
+        }
+    }
 }
 
 
@@ -446,9 +467,13 @@ void MoveRect(GLFWwindow* window)
 bool IsOverlap(RECTANGLE& rect1, RECTANGLE& rect2)
 {
     // 두 사각형이 겹치는지 확인
+    if (rect1.point.x2 <= rect2.point.x1 || rect2.point.x2 <= rect1.point.x1 ||
+        rect1.point.y2 >= rect2.point.y1 || rect2.point.y2 >= rect1.point.y1
+        ) {
+        return false;
+    }
 
-
-    return false;
+    return true;
 }
 
 
@@ -458,34 +483,81 @@ bool IsOverlap(RECTANGLE& rect1, RECTANGLE& rect2)
 
 void MergeRect(int rect1, int rect2)
 {
-    // x 최소값
+    RECTANGLE &r1 = rects[rect1];
+    RECTANGLE &r2 = rects[rect2];
 
+    POINT p{};
+
+    RECTANGLE mr{};
+
+    mr.selected = true;
+
+    int keep;
+    int remove;
+
+    if (rect1 < rect2)
+    {
+        keep = rect1;
+        remove = rect2;
+    }
+    else
+    {
+        keep = rect2;
+        remove = rect1;
+    }
+
+    // x 최소값
+    if (r1.point.x1 < r2.point.x1) {
+        p.x1 = r1.point.x1;
+    }
+    else {
+        p.x1 = r2.point.x1;
+    }
 
     // y 최소값
-
+    if (r1.point.y1 > r2.point.y1) {
+        p.y1 = r1.point.y1;
+    }
+    else {
+        p.y1 = r2.point.y1;
+    }
 
     // x 최대값
-
+    if (r1.point.x2 < r2.point.x2) {
+        p.x2 = r2.point.x2;
+    }
+    else {
+        p.x2 = r1.point.x2;
+    }
 
     // y 최대값
-
+    if (r1.point.y2 > r2.point.y2) {
+        p.y2 = r2.point.y2;
+    }
+    else {
+        p.y2 = r1.point.y2;
+    }
 
     // 큰 사각형으로 변경
-
+    mr.point = p;
 
     // 랜덤 색상
+    mr.color = randColor();
+    
+    rects[keep] = mr;
 
 
     // 하나의 사각형 삭제
-
-
-    // 배열 정리
-
+    for (int i = remove; i < rectangleCount - 1; ++i)
+    {
+        rects[i] = rects[i + 1];
+    }
 
     // rectangleCount 감소
-
+    rectangleCount--;
 
     // 선택 정보 수정
+    selectedRect = keep;
 }
 
 
@@ -541,7 +613,7 @@ POSITION GetMousePosition(GLFWwindow* window)
 
     // 윈도우 좌표
     // → OpenGL 좌표 변환
-
+    position = SetPosToGL(mouseX, mouseY);
 
     return position;
 }
@@ -623,14 +695,16 @@ void MouseButtonCallback(
         {
             // 사각형 선택
             SelectRect(window);
+            if (selectedRect != -1) {
+                // 드래그 시작
+                isDragging = true;
 
-            // 드래그 시작
-            isDragging = true;
+                // 마우스 시작 위치 저장
+                mouseStart = GetMousePosition(window);
 
-            // 마우스 시작 위치 저장
-           
-
-            // 선택된 사각형의 시작 위치 저장
+                // 선택된 사각형의 시작 위치 저장
+                rectStart = rects[selectedRect].point;
+            }
         }
 
 
@@ -638,6 +712,7 @@ void MouseButtonCallback(
         else if (action == GLFW_RELEASE)
         {
             // 드래그 종료
+            isDragging = false;
         }
     }
 
