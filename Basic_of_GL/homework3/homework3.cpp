@@ -314,7 +314,20 @@ void DrawScene()
         // 선택 표시
         if (rects[i].selected)
         {
-            // 직접 작성
+            glColor3f(1, 0, 0);
+
+            glLineWidth(5.0f);
+
+            glBegin(GL_LINE_LOOP);
+
+            POINT p = rects[i].point;
+
+            glVertex2f(p.x1, p.y1);
+            glVertex2f(p.x2, p.y1);
+            glVertex2f(p.x2, p.y2);
+            glVertex2f(p.x1, p.y2);
+
+            glEnd();
         }
     }
 }
@@ -348,9 +361,10 @@ void AddRect()
     }
 
     RECTANGLE& rect = rects[rectangleCount];
+    rect.selected = false;
 
     // 랜덤 위치
-    
+
     float x1 = wideDist(gen);
     float y1 = heightDist(gen);
 
@@ -487,8 +501,8 @@ bool IsOverlap(RECTANGLE& rect1, RECTANGLE& rect2)
 
 void MergeRect(int rect1, int rect2)
 {
-    RECTANGLE &r1 = rects[rect1];
-    RECTANGLE &r2 = rects[rect2];
+    RECTANGLE& r1 = rects[rect1];
+    RECTANGLE& r2 = rects[rect2];
 
     POINT p{};
 
@@ -547,7 +561,7 @@ void MergeRect(int rect1, int rect2)
 
     // 랜덤 색상
     mr.color = randColor();
-    
+
     rects[keep] = mr;
 
 
@@ -574,26 +588,78 @@ void SplitRect(int index)
 {
     // 현재 개수가 20개인지 확인
 
+    if (rectangleCount >= 20)
+    {
+        return;
+    }
+
 
     // 기존 사각형 정보 저장
+
+    POINT oldPoint = rects[index].point;
 
 
     // 기존 사각형 삭제
 
+    for (int i = index; i < rectangleCount - 1; ++i)
+    {
+        rects[i] = rects[i + 1];
+    }
+
+    rectangleCount--;
+
 
     // 사각형 2개 생성
+
+    RECTANGLE& rect1 = rects[rectangleCount];
+    RECTANGLE& rect2 = rects[rectangleCount + 1];
 
 
     // 랜덤 크기
 
+    float width1 = sizeDist(gen);
+    float height1 = sizeDist(gen);
+
+    float width2 = sizeDist(gen);
+    float height2 = sizeDist(gen);
+
+
+    // 첫 번째 사각형
+    rect1.point.x1 = oldPoint.x1;
+    rect1.point.y1 = oldPoint.y1;
+
+    rect1.point.x2 = oldPoint.x1 + width1;
+    rect1.point.y2 = oldPoint.y1 - height1;
+
+
+    // 두 번째 사각형
+    rect2.point.x1 = oldPoint.x2 - width2;
+    rect2.point.y1 = oldPoint.y2 + height2;
+
+    rect2.point.x2 = oldPoint.x2;
+    rect2.point.y2 = oldPoint.y2;
+
 
     // 랜덤 색상
+
+    rect1.color = randColor();
+    rect2.color = randColor();
+
+
+    // 새로 생성된 사각형은 선택되지 않음
+    rect1.selected = false;
+    rect2.selected = false;
 
 
     // 개수 증가
 
+    rectangleCount += 2;
+
 
     // 선택 정보 수정
+
+    selectedRect = -1;
+    isDragging = false;
 }
 
 
@@ -632,14 +698,28 @@ void Reset()
 {
     // 전체 사각형 삭제
 
+    for (int i = 0; i < rectangleCount; ++i)
+    {
+        rects[i] = RECTANGLE{};
+    }
+
 
     // 개수 초기화
+
+    rectangleCount = 0;
 
 
     // 선택 초기화
 
+    selectedRect = -1;
+
 
     // 드래그 초기화
+
+    isDragging = false;
+
+    mouseStart = POSITION{};
+    rectStart = POINT{};
 }
 
 
@@ -666,6 +746,7 @@ void KeyCallback(
     if (key == GLFW_KEY_Q)
     {
         // 프로그램 종료
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 
 
@@ -674,6 +755,14 @@ void KeyCallback(
     {
         // 사각형 생성
         AddRect();
+    }
+
+
+    // R
+    if (key == GLFW_KEY_R)
+    {
+        // 리셋
+        Reset();
     }
 }
 
@@ -731,9 +820,14 @@ void MouseButtonCallback(
         if (action == GLFW_PRESS)
         {
             // 사각형 선택
+            SelectRect(window);
 
 
             // 선택된 사각형 분리
+            if (selectedRect != -1)
+            {
+                SplitRect(selectedRect);
+            }
         }
     }
 }
