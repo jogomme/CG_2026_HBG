@@ -15,8 +15,8 @@ std::mt19937 gen(rd());
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
 std::uniform_real_distribution<float> sizeDist(0.1f, 0.5f);
 std::uniform_real_distribution<float> positionDist(-0.8f, 0.8f);
-std::uniform_real_distribution<float> wideDist(1600 * 0.1, 1600 * 0.9);
-std::uniform_real_distribution<float> heightDist(1200 * 0.1, 1200 * 0.9);
+std::uniform_real_distribution<float> wideDist(1600 * 0.2, 1600 * 0.8);
+std::uniform_real_distribution<float> heightDist(1200 * 0.2, 1200 * 0.8);
 
 // ------------------------------------------------------------
 // 구조체
@@ -454,9 +454,13 @@ void MoveRect(GLFWwindow* window)
         if (IsOverlap(r, rects[i]))
         {
             MergeRect(selectedRect, i);
+
+            mouseStart = mp;
+            rectStart = rects[selectedRect].point;
             return;
         }
     }
+
 }
 
 
@@ -558,6 +562,7 @@ void MergeRect(int rect1, int rect2)
 
     // 선택 정보 수정
     selectedRect = keep;
+
 }
 
 
