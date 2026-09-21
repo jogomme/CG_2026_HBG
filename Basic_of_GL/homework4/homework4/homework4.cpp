@@ -1025,31 +1025,13 @@ void KeyCallback(
 
     if (key == GLFW_KEY_4)
     {
-        // 크기 변화 시작 / 정지
-        if (isSizeChange)
-        {
-            isSizeChange = false;
-        }
-        else
-        {
-            StopAnimation();
-            isSizeChange = true;
-        }
+        isSizeChange = !isSizeChange;
     }
 
 
     if (key == GLFW_KEY_5)
     {
-        // 색상 변화 시작 / 정지
-        if (isColorChange)
-        {
-            isColorChange = false;
-        }
-        else
-        {
-            StopAnimation();
-            isColorChange = true;
-        }
+        isColorChange = !isColorChange;
     }
 
 
