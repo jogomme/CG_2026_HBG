@@ -978,58 +978,78 @@ void KeyCallback(
     }
 
 
-    // --------------------------------------------------------
-    // 1
-    // --------------------------------------------------------
-
     if (key == GLFW_KEY_1)
     {
         // 위치 변화 1 시작 / 정지
-        isMove1 = !isMove1;
+        if (isMove1)
+        {
+            isMove1 = false;
+        }
+        else
+        {
+            StopAnimation();
+            isMove1 = true;
+        }
     }
 
-
-    // --------------------------------------------------------
-    // 2
-    // --------------------------------------------------------
 
     if (key == GLFW_KEY_2)
     {
         // 위치 변화 2 시작 / 정지
-        isMove2 = !isMove2;
+        if (isMove2)
+        {
+            isMove2 = false;
+        }
+        else
+        {
+            StopAnimation();
+            isMove2 = true;
+        }
     }
 
-
-    // --------------------------------------------------------
-    // 3
-    // --------------------------------------------------------
 
     if (key == GLFW_KEY_3)
     {
         // 위치 변화 3 시작 / 정지
-        isMove3 = !isMove3;
+        if (isMove3)
+        {
+            isMove3 = false;
+        }
+        else
+        {
+            StopAnimation();
+            isMove3 = true;
+        }
     }
 
-
-    // --------------------------------------------------------
-    // 4
-    // --------------------------------------------------------
 
     if (key == GLFW_KEY_4)
     {
         // 크기 변화 시작 / 정지
-        isSizeChange = !isSizeChange;
+        if (isSizeChange)
+        {
+            isSizeChange = false;
+        }
+        else
+        {
+            StopAnimation();
+            isSizeChange = true;
+        }
     }
 
-
-    // --------------------------------------------------------
-    // 5
-    // --------------------------------------------------------
 
     if (key == GLFW_KEY_5)
     {
         // 색상 변화 시작 / 정지
-        isColorChange = !isColorChange;
+        if (isColorChange)
+        {
+            isColorChange = false;
+        }
+        else
+        {
+            StopAnimation();
+            isColorChange = true;
+        }
     }
 
 
