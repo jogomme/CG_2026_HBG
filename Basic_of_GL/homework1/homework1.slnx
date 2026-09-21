@@ -5,5 +5,6 @@
   </Configurations>
   <Project Path="../homework2/homework2.vcxproj" Id="06b8f00c-61cb-4179-a6bf-e083db19df64" />
   <Project Path="../homework3/homework3.vcxproj" Id="bf947488-cbec-43f8-a3a4-d340392b98b6" />
+  <Project Path="../homework4/homework4/homework4.vcxproj" Id="9d5bac39-f6c7-44e3-85db-4bc36b96b5d6" />
   <Project Path="homework1.vcxproj" Id="af3911a7-09ff-4b06-b8f5-c643fbfade13" />
 </Solution>
