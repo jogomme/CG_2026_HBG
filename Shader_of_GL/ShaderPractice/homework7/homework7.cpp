@@ -110,6 +110,14 @@ int main()
 
     glCompileShader(fragmentShader);
 
+
+    GLuint shaderProgram = glCreateProgram();
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+
+    glLinkProgram(shaderProgram);
+
     // --------------------------------------------------
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
