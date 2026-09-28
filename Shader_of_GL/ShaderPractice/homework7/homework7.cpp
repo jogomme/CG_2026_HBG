@@ -134,6 +134,12 @@ int main()
     // 화면 크기 설정
     glViewport(0, 0, wide, height);
 
+    // 마우스 콜 백 함수
+    glfwSetMouseButtonCallback(
+        window,
+        MouseButtonCallback
+    );
+
     // --------------------------------------------------
     // 여기부터 실습 7 구현
     // --------------------------------------------------
@@ -282,10 +288,6 @@ int main()
         // 화면 지우기
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glfwSetMouseButtonCallback(
-            window,
-            MouseButtonCallback
-        );
 
         glBindVertexArray(VAO);
 
