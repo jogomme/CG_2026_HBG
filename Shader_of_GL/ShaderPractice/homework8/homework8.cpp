@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+﻿#include <GL/glew.h>
 #include <GL/glfw3.h>
 
 #include <iostream>
@@ -13,6 +13,8 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+std::uniform_real_distribution<float> sizeDist(0.05f, 0.25);
+std::uniform_real_distribution<float> posDist(-1.0f, 1.0f);
 
 
 //------------------------------------------------------------------------------------------
@@ -43,8 +45,7 @@ struct TRIANGLE
     // 삼각형 크기
     float size;
 
-    // 선택 여부
-    bool selected{ false };
+    bool isUp{ false };
 };
 
 
@@ -78,6 +79,13 @@ void KeyCallback(
 
 POINT SetPosToGL(float x, float y);
 
+POINT GetMousePosition(GLFWwindow* window);
+
+void DrawQuadrant();
+
+int Quadrant(POINT mouse);
+
+void ChangeSize(POINT mouse);
 
 
 //------------------------------------------------------------------------------------------
@@ -97,6 +105,10 @@ int triangleCount = 4;
 // OpenGL
 GLuint VAO;
 GLuint VBO;
+
+// 십자선 전용
+GLuint quadrantVAO;
+GLuint quadrantVBO;
 
 
 //------------------------------------------------------------------------------------------
@@ -186,7 +198,7 @@ int main()
 
 
     //--------------------------------------------------------------------------------------
-    // VAO / VBO
+    // 삼각형 VAO / VBO
     //--------------------------------------------------------------------------------------
 
     glGenVertexArrays(
@@ -249,6 +261,81 @@ int main()
     );
 
     glEnableVertexAttribArray(1);
+
+
+    //--------------------------------------------------------------------------------------
+    // 십자선 VAO / VBO
+    //--------------------------------------------------------------------------------------
+
+    glGenVertexArrays(
+        1,
+        &quadrantVAO
+    );
+
+    glBindVertexArray(quadrantVAO);
+
+
+    glGenBuffers(
+        1,
+        &quadrantVBO
+    );
+
+    glBindBuffer(
+        GL_ARRAY_BUFFER,
+        quadrantVBO
+    );
+
+
+    // 십자선 데이터
+    // x, y, z, r, g, b
+    float quadrantVertexData[] =
+    {
+        // 가로선
+        -1.0f,  0.0f, 0.0f,   0.0f, 0.0f, 0.0f,
+         1.0f,  0.0f, 0.0f,   0.0f, 0.0f, 0.0f,
+
+         // 세로선
+          0.0f, -1.0f, 0.0f,   0.0f, 0.0f, 0.0f,
+          0.0f,  1.0f, 0.0f,   0.0f, 0.0f, 0.0f
+    };
+
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(quadrantVertexData),
+        quadrantVertexData,
+        GL_STATIC_DRAW
+    );
+
+
+    // 위치
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)0
+    );
+
+    glEnableVertexAttribArray(0);
+
+
+    // 색상
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
+    );
+
+    glEnableVertexAttribArray(1);
+
+
+    // 다시 삼각형 VAO 선택
+    glBindVertexArray(VAO);
 
 
     //--------------------------------------------------------------------------------------
@@ -367,10 +454,10 @@ int main()
     // 삼각형 생성
     //--------------------------------------------------------------------------------------
 
-    // 1사분면
+  // 1사분면
     AddTriangle(
         triangles[0],
-        -0.5f,
+        0.5f,
         0.5f,
         0.18f
     );
@@ -379,7 +466,7 @@ int main()
     // 2사분면
     AddTriangle(
         triangles[1],
-        0.5f,
+        -0.5f,
         0.5f,
         0.18f
     );
@@ -413,7 +500,18 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
 
+        // 십자선 그리기
+        DrawQuadrant();
+
+
+        // 삼각형 VAO 선택
         glBindVertexArray(VAO);
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+        {
+            POINT mouse = GetMousePosition(window);
+            ChangeSize(mouse);
+        }
 
 
         // 삼각형 4개 그리기
@@ -567,7 +665,31 @@ void MouseButtonCallback(
     int mods
 )
 {
-    // 나중에 삼각형 선택 구현
+    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        POINT mouse = GetMousePosition(window);
+
+        int qua = Quadrant(mouse);
+
+        if (qua == -1) {
+            return;
+        }
+
+        float size = sizeDist(gen);
+
+        if (qua == 0) {
+            AddTriangle(triangles[0], mouse.x, mouse.y, size);
+        }
+        else if (qua == 1) {
+            AddTriangle(triangles[1], mouse.x, mouse.y, size);
+        }
+        else if (qua == 2) {
+            AddTriangle(triangles[2], mouse.x, mouse.y, size);
+        }
+        else if (qua == 3) {
+            AddTriangle(triangles[3], mouse.x, mouse.y, size);
+        }
+
+    }
 }
 
 
@@ -583,8 +705,42 @@ void KeyCallback(
     int mods
 )
 {
-    // 나중에 키 입력 구현
+    if (action != GLFW_PRESS) {
+        return;
+    }
+
+    if (key == GLFW_KEY_Q)
+    {
+        glfwSetWindowShouldClose(
+            window,
+            GLFW_TRUE
+        );
+    }
+    else if (key == GLFW_KEY_C) {
+        for (int i = 0; i < 4; ++i) {
+
+            float x = posDist(gen);
+            float y = posDist(gen);
+
+            POINT p{ x,y };
+
+            while (Quadrant(p) != i) {
+                x = posDist(gen);
+                y = posDist(gen);
+
+                p.x = x ;
+                p.y = y;
+            }
+
+            AddTriangle(triangles[i], x, y, sizeDist(gen));
+        }
+    }
 }
+
+
+//------------------------------------------------------------------------------------------
+// 마우스 좌표 -> OpenGL 좌표
+//------------------------------------------------------------------------------------------
 
 POINT SetPosToGL(float x, float y)
 {
@@ -597,4 +753,133 @@ POINT SetPosToGL(float x, float y)
     p.y = 1 - (y / height) * 2;
 
     return p;
+}
+
+
+//------------------------------------------------------------------------------------------
+// 마우스 위치 가져오기
+//------------------------------------------------------------------------------------------
+
+POINT GetMousePosition(GLFWwindow* window)
+{
+    POINT position{};
+
+    double mouseX{};
+    double mouseY{};
+
+    glfwGetCursorPos(
+        window,
+        &mouseX,
+        &mouseY
+    );
+
+    position = SetPosToGL(
+        mouseX,
+        mouseY
+    );
+
+    return position;
+}
+
+
+//------------------------------------------------------------------------------------------
+// 사분면 십자선 그리기
+//------------------------------------------------------------------------------------------
+
+void DrawQuadrant()
+{
+    glBindVertexArray(quadrantVAO);
+
+    glLineWidth(2.0f);
+
+    glDrawArrays(
+        GL_LINES,
+        0,
+        4
+    );
+}
+
+// 몇 사분면인지 return
+int Quadrant(POINT mouse)
+{
+    float x = mouse.x;
+    float y = mouse.y;
+
+    if (x > 0 && y > 0) {
+        return 0;
+    }
+    else if (x < 0 && y > 0) {
+        return 1;
+    }
+    else if (x < 0 && y < 0) {
+        return 2;
+    }
+    else if (x > 0 && y < 0) {
+        return 3;
+    }
+
+    return -1;
+}
+
+void ChangeSize(POINT mouse)
+{
+    int qua = Quadrant(mouse);
+
+    if (qua == -1) {
+        return;
+    }
+
+    float speed = 0.001f;
+    
+    TRIANGLE& triangle = triangles[qua];
+
+    float oldSize = triangle.size;
+
+    float size = triangle.size;
+
+    if (triangle.isUp) {
+        if (triangle.size >= 0.25f) {
+            triangle.isUp = !triangle.isUp;
+        }
+        else {
+            triangle.size += speed;
+        }
+    }
+    else {
+        if (triangle.size <= 0.05f) {
+            triangle.isUp = !triangle.isUp;
+        }
+        else {
+            triangle.size -= speed;
+        }
+    }
+    
+
+
+
+    float scale = triangle.size / oldSize;
+
+    // 삼각형 중심
+    float centerX =
+        (triangle.point[0].x +
+            triangle.point[1].x +
+            triangle.point[2].x) / 3.0f;
+
+    float centerY =
+        (triangle.point[0].y +
+            triangle.point[1].y +
+            triangle.point[2].y) / 3.0f;
+
+    // 중심을 기준으로 크기 변경
+    for (int i = 0; i < 3; ++i)
+    {
+        triangle.point[i].x =
+            centerX +
+            (triangle.point[i].x - centerX) * scale;
+
+        triangle.point[i].y =
+            centerY +
+            (triangle.point[i].y - centerY) * scale;
+    }
+
 }
