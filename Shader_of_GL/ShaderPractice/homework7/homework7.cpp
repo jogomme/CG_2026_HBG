@@ -82,7 +82,6 @@ SHAPE_TYPE types[50]{};
 int ShapeCount{ 0 };
 
 int selectedRect{ -1 };
-bool isDragging{ false };
 
 GLuint VAO;
 GLuint VBO;
@@ -293,82 +292,116 @@ int main()
 
         glBindVertexArray(VAO);
 
+        // 도형 그리기
         for (int i = 0; i < ShapeCount; ++i)
         {
             int type = types[i].type;
 
-            //----------------------------------------------------------------------------------
-            // 점
-            //----------------------------------------------------------------------------------
-            if (type == 0)
-            {
-                // 윤곽선 색
-                MakeVertexData(i, true);
+            // 이동 - WASD
+            if (types[i].selected) {
 
-                glPointSize(12.0f);
-                glDrawArrays(GL_POINTS, 0, 1);
+                float speed = 0.001f;
 
-                // 본체 색
-                MakeVertexData(i, false);
+                if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+                    for (int j = 0; j < shape_index[type]; ++j) {
+                        types[i].point[j].y += speed;
+                    }
+                }
 
-                glPointSize(7.0f);
-                glDrawArrays(GL_POINTS, 0, 1);
+                if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+                    for (int j = 0; j < shape_index[type]; ++j) {
+                        types[i].point[j].x -= speed;
+                    }
+                }
+
+                if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+                    for (int j = 0; j < shape_index[type]; ++j) {
+                        types[i].point[j].y -= speed;
+                    }
+                }
+
+                if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+                    for (int j = 0; j < shape_index[type]; ++j) {
+                        types[i].point[j].x += speed;
+                    }
+                }
             }
 
-            //----------------------------------------------------------------------------------
-            // 선
-            //----------------------------------------------------------------------------------
-            else if (type == 1)
+            // 도형 본체 그리기
             {
-                // 윤곽선 색
-                MakeVertexData(i, true);
+                //----------------------------------------------------------------------------------
+                // 점
+                //----------------------------------------------------------------------------------
+                if (type == 0)
+                {
+                    // 윤곽선 색
+                    MakeVertexData(i, true);
 
-                glLineWidth(7.0f);
-                glDrawArrays(GL_LINES, 0, 2);
+                    glPointSize(12.0f);
+                    glDrawArrays(GL_POINTS, 0, 1);
 
-                // 본체 색
-                MakeVertexData(i, false);
+                    // 본체 색
+                    MakeVertexData(i, false);
 
-                glLineWidth(3.0f);
-                glDrawArrays(GL_LINES, 0, 2);
-            }
+                    glPointSize(7.0f);
+                    glDrawArrays(GL_POINTS, 0, 1);
+                }
 
-            //----------------------------------------------------------------------------------
-            // 삼각형
-            //----------------------------------------------------------------------------------
-            else if (type == 2)
-            {
-                // 본체
-                MakeVertexData(i, false);
+                //----------------------------------------------------------------------------------
+                // 선
+                //----------------------------------------------------------------------------------
+                else if (type == 1)
+                {
+                    // 윤곽선 색
+                    MakeVertexData(i, true);
 
-                glDrawArrays(GL_TRIANGLES, 0, 3);
+                    glLineWidth(7.0f);
+                    glDrawArrays(GL_LINES, 0, 2);
 
-                // 윤곽선
-                MakeVertexData(i, true);
+                    // 본체 색
+                    MakeVertexData(i, false);
 
-                glLineWidth(3.0f);
-                glDrawArrays(GL_LINE_LOOP, 0, 3);
-            }
+                    glLineWidth(3.0f);
+                    glDrawArrays(GL_LINES, 0, 2);
+                }
 
-            //----------------------------------------------------------------------------------
-            // 사각형
-            //----------------------------------------------------------------------------------
-            else if (type == 3)
-            {
-                // 본체
-                MakeVertexData(i, false);
+                //----------------------------------------------------------------------------------
+                // 삼각형
+                //----------------------------------------------------------------------------------
+                else if (type == 2)
+                {
+                    // 본체
+                    MakeVertexData(i, false);
 
-                glDrawArrays(GL_TRIANGLES, 0, 6);
+                    glDrawArrays(GL_TRIANGLES, 0, 3);
 
-                // 윤곽선
-                MakeVertexData(i, true);
+                    // 윤곽선
+                    MakeVertexData(i, true);
 
-                // 바깥 테두리
-                glLineWidth(3.0f);
-                glDrawArrays(GL_LINE_LOOP, 0, 4);
+                    glLineWidth(3.0f);
+                    glDrawArrays(GL_LINE_LOOP, 0, 3);
+                }
 
-                // 대각선
-                glDrawArrays(GL_LINES, 4, 2);
+                //----------------------------------------------------------------------------------
+                // 사각형
+                //----------------------------------------------------------------------------------
+                else if (type == 3)
+                {
+                    // 본체
+                    MakeVertexData(i, false);
+
+                    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+                    // 윤곽선
+                    MakeVertexData(i, true);
+
+                    // 바깥 테두리
+                    glLineWidth(3.0f);
+                    glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+                    // 대각선
+                    glDrawArrays(GL_LINES, 4, 2);
+                }
             }
         }
 
