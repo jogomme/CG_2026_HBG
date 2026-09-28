@@ -1,5 +1,5 @@
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include <GL/glfw3.h>
 #include <iostream>
 #include <random>
 #include <algorithm>
@@ -1141,7 +1141,7 @@ void ShrinkRect(RECTANGLE& rect)
 void ChangeColor(RECTANGLE& rect)
 {
     const float colorSpeed =
-        0.0015f;
+        0.00015f;
 
 
     rect.color.r +=
