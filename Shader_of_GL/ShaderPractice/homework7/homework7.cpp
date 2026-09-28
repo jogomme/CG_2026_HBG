@@ -297,33 +297,104 @@ int main()
         {
             int type = types[i].type;
 
-            // 이동 - WASD
+            float speed = 0.001f;
+
+            // 이동 - WASD, IJLK
             if (types[i].selected) {
 
-                float speed = 0.001f;
-
+                
+                //W
                 if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
                     for (int j = 0; j < shape_index[type]; ++j) {
                         types[i].point[j].y += speed;
                     }
                 }
-
+                //A
                 if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
                     for (int j = 0; j < shape_index[type]; ++j) {
                         types[i].point[j].x -= speed;
                     }
                 }
-
+                //S
                 if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
                     for (int j = 0; j < shape_index[type]; ++j) {
                         types[i].point[j].y -= speed;
                     }
                 }
-
+                //D
                 if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
                     for (int j = 0; j < shape_index[type]; ++j) {
                         types[i].point[j].x += speed;
                     }
+                }
+                // I
+                if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+                {
+                    for (int j = 0; j < shape_index[type]; ++j)
+                    {
+                        types[i].point[j].y += speed;
+                        types[i].point[j].x -= speed;
+                    }
+                }
+                // J
+                if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+                {
+                    for (int j = 0; j < shape_index[type]; ++j)
+                    {
+                        types[i].point[j].x += speed;
+                        types[i].point[j].y += speed;
+                    }
+                }
+                //K
+                if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+                {
+                    for (int j = 0; j < shape_index[type]; ++j)
+                    {
+                        types[i].point[j].y -= speed;
+                        types[i].point[j].x -= speed;
+                    }
+                }
+                //L
+                if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+                {
+                    for (int j = 0; j < shape_index[type]; ++j)
+                    {
+                        types[i].point[j].x += speed;
+                        types[i].point[j].y -= speed;
+                    }
+                }
+            }
+
+
+            if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+            {
+                for (int j = 0; j < shape_index[type]; ++j)
+                {
+                    types[i].point[j].y += speed;
+                }
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+            {
+                for (int j = 0; j < shape_index[type]; ++j)
+                {
+                    types[i].point[j].x -= speed;
+                }
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+            {
+                for (int j = 0; j < shape_index[type]; ++j)
+                {
+                    types[i].point[j].y -= speed;
+                }
+            }
+
+            if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+            {
+                for (int j = 0; j < shape_index[type]; ++j)
+                {
+                    types[i].point[j].x += speed;
                 }
             }
 
