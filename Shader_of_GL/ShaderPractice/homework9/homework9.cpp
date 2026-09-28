@@ -16,6 +16,7 @@ std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
 std::uniform_real_distribution<float> sizeDist(0.05f, 0.25f);
 std::uniform_real_distribution<float> posDist(-1.0f, 1.0f);
 std::uniform_real_distribution<float> speedDist(0.0005f, 0.0015f);
+std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * 3.14159265f);
 
 
 //------------------------------------------------------------------------------------------
@@ -63,6 +64,9 @@ struct TRIANGLE
 //------------------------------------------------------------------------------------------
 // 함수 선언
 //------------------------------------------------------------------------------------------
+
+void RotateTriangle(TRIANGLE& triangle);
+
 void AddTriangle(TRIANGLE& triangle, float x, float y, float size);
 void MakeVertexData(int index);
 
@@ -88,7 +92,7 @@ void MoveSpiral(TRIANGLE& triangle);
 // 전역 변수
 //------------------------------------------------------------------------------------------
 
-int wide = 1600;
+int wide = 1200;
 int height = 1200;
 
 
@@ -498,7 +502,7 @@ void AddTriangle(
 
 
     // 스파이럴 각도
-    triangle.angle = 0.0f;
+    triangle.angle = angleDist(gen);
 
 
     //--------------------------------------------------------------------------------------
@@ -518,6 +522,8 @@ void AddTriangle(
     // 오른쪽 아래
     triangle.point[2].x = x + size;
     triangle.point[2].y = y - size;
+
+    RotateTriangle(triangle);
 }
 
 
@@ -773,25 +779,25 @@ int FindNearTriangle(POINT mouse)
     // 삼각형 0의 중심
     float centerX0 =
         (triangles[0].point[0].x +
-         triangles[0].point[1].x +
-         triangles[0].point[2].x) / 3.0f;
+            triangles[0].point[1].x +
+            triangles[0].point[2].x) / 3.0f;
 
     float centerY0 =
         (triangles[0].point[0].y +
-         triangles[0].point[1].y +
-         triangles[0].point[2].y) / 3.0f;
+            triangles[0].point[1].y +
+            triangles[0].point[2].y) / 3.0f;
 
 
     // 삼각형 1의 중심
     float centerX1 =
         (triangles[1].point[0].x +
-         triangles[1].point[1].x +
-         triangles[1].point[2].x) / 3.0f;
+            triangles[1].point[1].x +
+            triangles[1].point[2].x) / 3.0f;
 
     float centerY1 =
         (triangles[1].point[0].y +
-         triangles[1].point[1].y +
-         triangles[1].point[2].y) / 3.0f;
+            triangles[1].point[1].y +
+            triangles[1].point[2].y) / 3.0f;
 
 
     // 삼각형 0까지 거리
@@ -888,13 +894,13 @@ void ChangeSize(POINT mouse)
     // 삼각형 중심
     float centerX =
         (triangle.point[0].x +
-         triangle.point[1].x +
-         triangle.point[2].x) / 3.0f;
+            triangle.point[1].x +
+            triangle.point[2].x) / 3.0f;
 
     float centerY =
         (triangle.point[0].y +
-         triangle.point[1].y +
-         triangle.point[2].y) / 3.0f;
+            triangle.point[1].y +
+            triangle.point[2].y) / 3.0f;
 
 
     // 중심을 기준으로 크기 변경
@@ -973,4 +979,30 @@ void MoveVerticalZigzag(TRIANGLE& triangle)
 void MoveSpiral(TRIANGLE& triangle)
 {
     // 나중에 구현
+}
+
+
+//------------------------------------------------------------------------------------------
+// 삼각형 회전
+//------------------------------------------------------------------------------------------
+
+void RotateTriangle(TRIANGLE& triangle)
+{
+    float centerX = (triangle.point[0].x + triangle.point[1].x + triangle.point[2].x) / 3.0f;
+    float centerY = (triangle.point[0].y + triangle.point[1].y + triangle.point[2].y) / 3.0f;
+
+    float cosAngle = cos(triangle.angle);
+    float sinAngle = sin(triangle.angle);
+
+    for (int i = 0; i < 3; ++i)
+    {
+        float x = triangle.point[i].x - centerX;
+        float y = triangle.point[i].y - centerY;
+
+        float rotatedX = x * cosAngle - y * sinAngle;
+        float rotatedY = x * sinAngle + y * cosAngle;
+
+        triangle.point[i].x = centerX + rotatedX;
+        triangle.point[i].y = centerY + rotatedY;
+    }
 }
