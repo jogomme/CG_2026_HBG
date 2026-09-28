@@ -10,6 +10,7 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+std::uniform_real_distribution<float> positionDist(-1.0f, 1.0f);
 
 
 //------------------------------------------------------------------------------------------
@@ -45,6 +46,8 @@ struct SHAPE_TYPE
 //------------------------------------------------------------------------------------------
 
 void MakeVertexData(int index);
+
+void AddShape(int type);
 
 //------------------------------------------------------------------------------------------
 // 전역 변수 
@@ -281,4 +284,55 @@ void MakeVertexData(int index)
         vertexData,
         GL_DYNAMIC_DRAW
     );
+}
+
+void AddShape(int type)
+{
+    if (ShapeCount >= 50) {
+        std::cout << "갯수 초과 " << '\n';
+        return;
+    }
+
+    SHAPE_TYPE& shape = types[ShapeCount];
+
+    shape.type = type;
+
+    shape.color.r = colorDist(gen);
+    shape.color.g = colorDist(gen);
+    shape.color.b = colorDist(gen);
+
+    // 도형별 정점 저장
+    if (type == 0)
+    {
+        // 점
+        shape.point[0].x = positionDist(gen);
+        shape.point[0].y = positionDist(gen);
+    }
+    else if (type == 1)
+    {
+        // 선
+        for (int i = 0; i < 2; ++i) {
+            shape.point[i].x = positionDist(gen);
+            shape.point[i].y = positionDist(gen);
+        }
+    }
+    else if (type == 2)
+    {
+        // 삼각형
+        for (int i = 0; i < 3; ++i) {
+            shape.point[i].x = positionDist(gen);
+            shape.point[i].y = positionDist(gen);
+        }
+    }
+    else if (type == 3)
+    {
+        // 사각형
+        for (int i = 0; i < 4; ++i) {
+            shape.point[i].x = positionDist(gen);
+            shape.point[i].y = positionDist(gen);
+        }
+    }
+
+    ShapeCount++;
+
 }
