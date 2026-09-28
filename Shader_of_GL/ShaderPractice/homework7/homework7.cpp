@@ -7,10 +7,8 @@
 //------------------------------------------------------------------------------------------
 struct POINT
 {
-    float x1;
-    float y1;
-    float x2;
-    float y2;
+    float x;
+    float y;
 };
 
 struct COLOR
@@ -20,19 +18,63 @@ struct COLOR
     float b;
 };
 
-struct RECTANGLE
+struct TRIANGLE
 {
-    POINT point;
+    POINT point[3];
     COLOR color;
 
     bool selected{ false };
 };
 
+struct RECTANGLE
+{
+    POINT point[4];
+    COLOR color;
+
+    bool selected{ false };
+};
+
+struct LINE
+{
+    POINT point[2];
+    COLOR color;
+
+    bool selected{ false };
+};
+
+struct POINTS
+{
+    POINT point[1];
+    COLOR color;
+
+    bool selected{ false };
+};
+
+struct SHAPE_TYPE
+{
+    POINTS points;
+    LINE line;
+    TRIANGLE triangle;
+    RECTANGLE rect;
+};
+
+//------------------------------------------------------------------------------------------
+// 함수 선언
+//------------------------------------------------------------------------------------------
+
+void MakeVertexData(int index);
+
 //------------------------------------------------------------------------------------------
 // 전역 변수 
 //------------------------------------------------------------------------------------------
 
-RECTANGLE rects[50]{};
+// 0 : 점, 1 : 선, 2 : 삼각형, 3 : 사각형
+const int shape_index[] =
+{
+    1, 2, 3, 4
+};
+
+SHAPE_TYPE types[50]{};
 int rectangleCount{ 0 };
 
 int selectedRect{ -1 };
@@ -183,4 +225,13 @@ int main()
     glfwTerminate();
 
     return 0;
+}
+
+//------------------------------------------------------------------------------------------
+// 함수 구현
+//------------------------------------------------------------------------------------------
+
+void MakeVertexData(int index)
+{
+    // TODO
 }
