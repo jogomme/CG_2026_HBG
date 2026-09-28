@@ -65,6 +65,14 @@ void MouseButtonCallback(
     int mods
 );
 
+void KeyCallback(
+    GLFWwindow* window,
+    int key,
+    int scancode,
+    int action,
+    int mods
+);
+
 //------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------
@@ -135,10 +143,15 @@ int main()
     // 화면 크기 설정
     glViewport(0, 0, wide, height);
 
-    // 마우스 콜 백 함수
+    // 마우스, 키 콜 백 함수
     glfwSetMouseButtonCallback(
         window,
         MouseButtonCallback
+    );
+
+    glfwSetKeyCallback(
+        window,
+        KeyCallback
     );
 
     // --------------------------------------------------
@@ -944,4 +957,44 @@ bool isin(POINT mouse, SHAPE_TYPE& shape)
     }
 
     return false;
+}
+
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (action != GLFW_PRESS)
+    {
+        return;
+    }
+
+    // Q를 누르면 프로그램 종료
+    if (key == GLFW_KEY_Q)
+    {
+        glfwSetWindowShouldClose(
+            window,
+            GLFW_TRUE
+        );
+    }
+    else if (key == GLFW_KEY_P)
+    {
+        AddShape(0);
+    }
+    else if (key == GLFW_KEY_E)
+    {
+        AddShape(1);
+    }
+    else if (key == GLFW_KEY_T)
+    {
+        // T
+        AddShape(2);
+    }
+    else if (key == GLFW_KEY_R)
+    {
+        // R
+        AddShape(3);
+    }
+    else if (key == GLFW_KEY_C)
+    {
+        // C
+        ShapeCount = 0;
+    }
 }
