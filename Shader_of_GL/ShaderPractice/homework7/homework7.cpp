@@ -18,44 +18,15 @@ struct COLOR
     float b;
 };
 
-struct TRIANGLE
-{
-    POINT point[3];
-    COLOR color;
-
-    bool selected{ false };
-};
-
-struct RECTANGLE
-{
-    POINT point[4];
-    COLOR color;
-
-    bool selected{ false };
-};
-
-struct LINE
-{
-    POINT point[2];
-    COLOR color;
-
-    bool selected{ false };
-};
-
-struct POINTS
-{
-    POINT point[1];
-    COLOR color;
-
-    bool selected{ false };
-};
-
 struct SHAPE_TYPE
 {
-    POINTS points;
-    LINE line;
-    TRIANGLE triangle;
-    RECTANGLE rect;
+    int type;
+
+    POINT point[4];
+
+    COLOR color;
+
+    bool selected{ false };
 };
 
 //------------------------------------------------------------------------------------------
@@ -75,7 +46,7 @@ const int shape_index[] =
 };
 
 SHAPE_TYPE types[50]{};
-int rectangleCount{ 0 };
+int ShapeCount{ 0 };
 
 int selectedRect{ -1 };
 bool isDragging{ false };
@@ -233,5 +204,25 @@ int main()
 
 void MakeVertexData(int index)
 {
-    // TODO
+    int type = types[index].type;
+    int count = shape_index[type];
+
+    POINT vertexs[4]{};
+
+    for (int i = 0; i < count - 1; ++i) {
+        vertexs[i] = types[index].point[i];
+    }
+
+    if (type == 0) {
+
+    }
+    else if (type == 1) {
+
+    }
+    else if (type == 2) {
+
+    }
+    else if (type == 3) {
+
+    }
 }
