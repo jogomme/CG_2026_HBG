@@ -1,8 +1,8 @@
 #include <GL/glew.h>
 #include <GL/glfw3.h>
 #include <iostream>
-#include<random>
-#include<cmath>
+#include <random>
+#include <cmath>
 
 //------------------------------------------------------------------------------------------
 // 랜덤 엔진
@@ -43,16 +43,18 @@ struct SHAPE_TYPE
     bool selected{ false };
 };
 
+
 //------------------------------------------------------------------------------------------
 // 함수 선언
 //------------------------------------------------------------------------------------------
 
-void MakeVertexData(int index);
+void MakeVertexData(int index, bool isOutline);
 
 void AddShape(int type);
 
+
 //------------------------------------------------------------------------------------------
-// 전역 변수 
+// 전역 변수
 //------------------------------------------------------------------------------------------
 
 // 0 : 점, 1 : 선, 2 : 삼각형, 3 : 사각형
@@ -135,11 +137,27 @@ int main()
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(vertexs),
+        vertexs,
+        GL_STATIC_DRAW
+    );
+
+    // 위치
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)0
+    );
+
     glEnableVertexAttribArray(0);
 
+    // 색상
     glVertexAttribPointer(
         1,
         3,
@@ -151,6 +169,9 @@ int main()
 
     glEnableVertexAttribArray(1);
 
+    //------------------------------------------------------------------------------------------
+    // Vertex Shader
+    //------------------------------------------------------------------------------------------
     const char* vertexShaderSource = R"(
     #version 330 core
 
@@ -164,37 +185,55 @@ int main()
         gl_Position = vec4(aPos, 1.0);
         ourColor = aColor;
     }
-    
     )";
 
+    //------------------------------------------------------------------------------------------
+    // Fragment Shader
+    //------------------------------------------------------------------------------------------
     const char* fragmentShaderSource = R"(
     #version 330 core
-    
+
     in vec3 ourColor;
-    
+
     out vec4 FragColor;
-    
+
     void main()
     {
         FragColor = vec4(ourColor, 1.0);
     }
     )";
 
+    //------------------------------------------------------------------------------------------
+    // Vertex Shader 생성
+    //------------------------------------------------------------------------------------------
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glShaderSource(
+        vertexShader,
+        1,
+        &vertexShaderSource,
+        nullptr
+    );
 
     glCompileShader(vertexShader);
 
-
-
+    //------------------------------------------------------------------------------------------
+    // Fragment Shader 생성
+    //------------------------------------------------------------------------------------------
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glShaderSource(
+        fragmentShader,
+        1,
+        &fragmentShaderSource,
+        nullptr
+    );
 
     glCompileShader(fragmentShader);
 
-
+    //------------------------------------------------------------------------------------------
+    // Shader Program 생성
+    //------------------------------------------------------------------------------------------
     GLuint shaderProgram = glCreateProgram();
 
     glAttachShader(shaderProgram, vertexShader);
@@ -205,57 +244,111 @@ int main()
     glUseProgram(shaderProgram);
 
     // --------------------------------------------------
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+    glClearColor(
+        1.0f,
+        1.0f,
+        1.0f,
+        1.0f
+    );
+
+    // 테스트용 도형 생성
     AddShape(0);
     AddShape(1);
     AddShape(2);
     AddShape(3);
 
+    // 테스트
+    // types[0].selected = true;
+
+    //------------------------------------------------------------------------------------------
     // 메인 루프
+    //------------------------------------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
     {
         // 화면 지우기
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // --------------------------------------------------
-        // 여기에서 네가 그리기 구현
-        // --------------------------------------------------
-
         glBindVertexArray(VAO);
 
         for (int i = 0; i < ShapeCount; ++i)
         {
-            MakeVertexData(i);
-
             int type = types[i].type;
-            int count = shape_index[type];
 
+            //----------------------------------------------------------------------------------
+            // 점
+            //----------------------------------------------------------------------------------
             if (type == 0)
             {
-                glPointSize(10.0f);
-                // 윤곽선 색으로 그리기
+                // 윤곽선 색
+                MakeVertexData(i, true);
+
+                glPointSize(12.0f);
                 glDrawArrays(GL_POINTS, 0, 1);
 
-                glPointSize(6.0f);
-                // 원래 색으로 다시 그리기
+                // 본체 색
+                MakeVertexData(i, false);
+
+                glPointSize(7.0f);
                 glDrawArrays(GL_POINTS, 0, 1);
             }
+
+            //----------------------------------------------------------------------------------
+            // 선
+            //----------------------------------------------------------------------------------
             else if (type == 1)
             {
-                glDrawArrays(GL_LINES, 0, count);
+                // 윤곽선 색
+                MakeVertexData(i, true);
+
+                glLineWidth(7.0f);
+                glDrawArrays(GL_LINES, 0, 2);
+
+                // 본체 색
+                MakeVertexData(i, false);
+
+                glLineWidth(3.0f);
+                glDrawArrays(GL_LINES, 0, 2);
             }
+
+            //----------------------------------------------------------------------------------
+            // 삼각형
+            //----------------------------------------------------------------------------------
             else if (type == 2)
             {
-                glDrawArrays(GL_TRIANGLES, 0, count);
+                // 본체
+                MakeVertexData(i, false);
+
+                glDrawArrays(GL_TRIANGLES, 0, 3);
+
+                // 윤곽선
+                MakeVertexData(i, true);
+
+                glLineWidth(3.0f);
+                glDrawArrays(GL_LINE_LOOP, 0, 3);
             }
+
+            //----------------------------------------------------------------------------------
+            // 사각형
+            //----------------------------------------------------------------------------------
             else if (type == 3)
             {
+                // 본체
+                MakeVertexData(i, false);
+
                 glDrawArrays(GL_TRIANGLES, 0, 6);
+
+                // 윤곽선
+                MakeVertexData(i, true);
+
+                // 바깥 테두리
+                glLineWidth(3.0f);
+                glDrawArrays(GL_LINE_LOOP, 0, 4);
+
+                // 대각선
+                glDrawArrays(GL_LINES, 4, 2);
             }
         }
-
-        // --------------------------------------------------
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -268,51 +361,144 @@ int main()
     return 0;
 }
 
+
 //------------------------------------------------------------------------------------------
 // 함수 구현
 //------------------------------------------------------------------------------------------
 
-void MakeVertexData(int index)
+void MakeVertexData(int index, bool isOutline)
 {
     int type = types[index].type;
     int count = shape_index[type];
 
+    // 최대 6개의 정점
+    // 정점 하나당 위치 3 + 색상 3
     float vertexData[36]{};
 
+    //--------------------------------------------------------------------------------------
+    // 사각형
+    //--------------------------------------------------------------------------------------
     if (type == 3)
     {
-        int triangleIndex[] =
+        if (isOutline)
         {
-            0, 1, 2,
-            0, 2, 3
-        };
+            // 바깥 테두리용
+            // 0 -> 1 -> 2 -> 3
 
-        for (int i = 0; i < 6; ++i)
-        {
-            int pointIndex = triangleIndex[i];
+            for (int i = 0; i < 4; ++i)
+            {
+                vertexData[i * 6] =
+                    types[index].point[i].x;
 
-            vertexData[i * 6] = types[index].point[pointIndex].x;
-            vertexData[i * 6 + 1] = types[index].point[pointIndex].y;
-            vertexData[i * 6 + 2] = types[index].point[pointIndex].z;
+                vertexData[i * 6 + 1] =
+                    types[index].point[i].y;
 
-            vertexData[i * 6 + 3] = types[index].color.r;
-            vertexData[i * 6 + 4] = types[index].color.g;
-            vertexData[i * 6 + 5] = types[index].color.b;
+                vertexData[i * 6 + 2] =
+                    types[index].point[i].z;
+            }
+
+            // 대각선용
+            // 0 -> 2
+            vertexData[4 * 6] =
+                types[index].point[0].x;
+
+            vertexData[4 * 6 + 1] =
+                types[index].point[0].y;
+
+            vertexData[4 * 6 + 2] =
+                types[index].point[0].z;
+
+            vertexData[5 * 6] =
+                types[index].point[2].x;
+
+            vertexData[5 * 6 + 1] =
+                types[index].point[2].y;
+
+            vertexData[5 * 6 + 2] =
+                types[index].point[2].z;
+
+            count = 6;
         }
+        else
+        {
+            // 사각형을 두 개의 삼각형으로 만들기
 
-        count = 6;
+            int triangleIndex[] =
+            {
+                0, 1, 2,
+                0, 2, 3
+            };
+
+            for (int i = 0; i < 6; ++i)
+            {
+                int pointIndex = triangleIndex[i];
+
+                vertexData[i * 6] =
+                    types[index].point[pointIndex].x;
+
+                vertexData[i * 6 + 1] =
+                    types[index].point[pointIndex].y;
+
+                vertexData[i * 6 + 2] =
+                    types[index].point[pointIndex].z;
+            }
+
+            count = 6;
+        }
     }
+
+    //--------------------------------------------------------------------------------------
+    // 점, 선, 삼각형
+    //--------------------------------------------------------------------------------------
     else
     {
         for (int i = 0; i < count; ++i)
         {
-            vertexData[i * 6] = types[index].point[i].x;
-            vertexData[i * 6 + 1] = types[index].point[i].y;
-            vertexData[i * 6 + 2] = types[index].point[i].z;
+            vertexData[i * 6] =
+                types[index].point[i].x;
 
-            vertexData[i * 6 + 3] = types[index].color.r;
-            vertexData[i * 6 + 4] = types[index].color.g;
-            vertexData[i * 6 + 5] = types[index].color.b;
+            vertexData[i * 6 + 1] =
+                types[index].point[i].y;
+
+            vertexData[i * 6 + 2] =
+                types[index].point[i].z;
+        }
+    }
+
+    //--------------------------------------------------------------------------------------
+    // 색상 설정
+    //--------------------------------------------------------------------------------------
+
+    for (int i = 0; i < count; ++i)
+    {
+        if (isOutline)
+        {
+            if (types[index].selected)
+            {
+                // 선택됨 -> 빨간색
+                vertexData[i * 6 + 3] = 1.0f;
+                vertexData[i * 6 + 4] = 0.0f;
+                vertexData[i * 6 + 5] = 0.0f;
+            }
+            else
+            {
+                // 선택 안 됨 -> 검은색
+                vertexData[i * 6 + 3] = 0.0f;
+                vertexData[i * 6 + 4] = 0.0f;
+                vertexData[i * 6 + 5] = 0.0f;
+            }
+        }
+        else
+        {
+            // 본체 -> 원래 색
+            vertexData[i * 6 + 3] =
+                types[index].color.r;
+
+            vertexData[i * 6 + 4] =
+                types[index].color.g;
+
+            vertexData[i * 6 + 5] =
+                types[index].color.b;
         }
     }
 
@@ -326,9 +512,13 @@ void MakeVertexData(int index)
     );
 }
 
+
+//------------------------------------------------------------------------------------------
+
 void AddShape(int type)
 {
-    if (ShapeCount >= 50) {
+    if (ShapeCount >= 50)
+    {
         std::cout << "갯수 초과 " << '\n';
         return;
     }
@@ -337,27 +527,41 @@ void AddShape(int type)
 
     shape.type = type;
 
+    // 랜덤 색상
     shape.color.r = colorDist(gen);
     shape.color.g = colorDist(gen);
     shape.color.b = colorDist(gen);
 
+    //--------------------------------------------------------------------------------------
     // 도형별 정점 저장
+    //--------------------------------------------------------------------------------------
+
     if (type == 0)
     {
         // 점
-        shape.point[0].x = positionDist(gen);
-        shape.point[0].y = positionDist(gen);
+        shape.point[0].x =
+            positionDist(gen);
+
+        shape.point[0].y =
+            positionDist(gen);
     }
+
     else if (type == 1)
     {
         // 선
-        for (int i = 0; i < 2; ++i) {
-            shape.point[i].x = positionDist(gen);
-            shape.point[i].y = positionDist(gen);
+        for (int i = 0; i < 2; ++i)
+        {
+            shape.point[i].x =
+                positionDist(gen);
+
+            shape.point[i].y =
+                positionDist(gen);
         }
     }
+
     else if (type == 2)
     {
+        // 삼각형
         float x = positionDist(gen);
         float y = positionDist(gen);
 
@@ -370,21 +574,31 @@ void AddShape(int type)
         float angle = 3.14159265f / 2.0f;
 
         // 첫 번째 점
-        shape.point[0].x = center.x + cos(angle) * size;
-        shape.point[0].y = center.y + sin(angle) * size;
+        shape.point[0].x =
+            center.x + cos(angle) * size;
+
+        shape.point[0].y =
+            center.y + sin(angle) * size;
 
         // 두 번째 점
         angle += 2.0f * 3.14159265f / 3.0f;
 
-        shape.point[1].x = center.x + cos(angle) * size;
-        shape.point[1].y = center.y + sin(angle) * size;
+        shape.point[1].x =
+            center.x + cos(angle) * size;
+
+        shape.point[1].y =
+            center.y + sin(angle) * size;
 
         // 세 번째 점
         angle += 2.0f * 3.14159265f / 3.0f;
 
-        shape.point[2].x = center.x + cos(angle) * size;
-        shape.point[2].y = center.y + sin(angle) * size;
+        shape.point[2].x =
+            center.x + cos(angle) * size;
+
+        shape.point[2].y =
+            center.y + sin(angle) * size;
     }
+
     else if (type == 3)
     {
         // 사각형의 대각선 양 끝점
@@ -410,12 +624,18 @@ void AddShape(int type)
         }
 
         // 사각형의 네 꼭짓점
-        shape.point[0] = { x1, y1, 0.0f };
-        shape.point[1] = { x2, y1, 0.0f };
-        shape.point[2] = { x2, y2, 0.0f };
-        shape.point[3] = { x1, y2, 0.0f };
+        shape.point[0] =
+        { x1, y1, 0.0f };
+
+        shape.point[1] =
+        { x2, y1, 0.0f };
+
+        shape.point[2] =
+        { x2, y2, 0.0f };
+
+        shape.point[3] =
+        { x1, y2, 0.0f };
     }
 
     ShapeCount++;
-
 }
