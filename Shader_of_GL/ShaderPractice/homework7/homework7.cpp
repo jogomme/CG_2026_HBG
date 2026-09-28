@@ -65,6 +65,11 @@ int main()
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
+    GLuint VBO;
+    glGenVertexArrays(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
+
     // --------------------------------------------------
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 

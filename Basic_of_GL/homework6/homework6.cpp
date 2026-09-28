@@ -1084,7 +1084,7 @@ void Animation4(RECTANGLE& rect)
 void ShrinkRect(RECTANGLE& rect)
 {
     const float shrinkSpeed =
-        0.0015f;
+        0.00015f;
 
 
     // 사각형 중심
