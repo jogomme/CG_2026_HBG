@@ -52,10 +52,16 @@ void MakeVertexData(int index, bool isOutline);
 
 void AddShape(int type);
 
+POINT SetPosToGL(float x, float y);
+
+POINT GetMousePosition(GLFWwindow* window);
 
 //------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------
+
+int wide = 1600;
+int height = 1200;
 
 // 0 : 점, 1 : 선, 2 : 삼각형, 3 : 사각형
 const int shape_index[] =
@@ -91,7 +97,7 @@ int main()
 
     // 창 생성
     GLFWwindow* window = glfwCreateWindow(
-        1600, 1200,
+        wide, height,
         "OpenGL Practice 7",
         nullptr,
         nullptr
@@ -119,7 +125,7 @@ int main()
     }
 
     // 화면 크기 설정
-    glViewport(0, 0, 1600, 1200);
+    glViewport(0, 0, wide, height);
 
     // --------------------------------------------------
     // 여기부터 실습 7 구현
@@ -638,4 +644,38 @@ void AddShape(int type)
     }
 
     ShapeCount++;
+}
+
+POINT SetPosToGL(float x, float y)
+{
+    POINT p{};
+
+    // x
+    p.x = (x / wide) * 2 - 1;
+
+    // y
+    p.y = 1 - (y / height) * 2;
+
+    return p;
+}
+
+POINT GetMousePosition(GLFWwindow* window)
+{
+    POINT position{};
+
+    double mouseX{};
+    double mouseY{};
+
+    glfwGetCursorPos(
+        window,
+        &mouseX,
+        &mouseY
+    );
+
+    position = SetPosToGL(
+        mouseX,
+        mouseY
+    );
+
+    return position;
 }
