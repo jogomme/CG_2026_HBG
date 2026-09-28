@@ -51,6 +51,10 @@ int ShapeCount{ 0 };
 int selectedRect{ -1 };
 bool isDragging{ false };
 
+GLuint VAO;
+GLuint VBO;
+
+
 //------------------------------------------------------------------------------------------
 int main()
 //------------------------------------------------------------------------------------------
@@ -110,11 +114,9 @@ int main()
           0.0f,  0.5f, 0.0f,
     };
 
-    GLuint VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    GLuint VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
@@ -209,7 +211,7 @@ void MakeVertexData(int index)
 
     POINT vertexs[4]{};
 
-    for (int i = 0; i < count - 1; ++i) {
+    for (int i = 0; i < count; ++i) {
         vertexs[i] = types[index].point[i];
     }
 
