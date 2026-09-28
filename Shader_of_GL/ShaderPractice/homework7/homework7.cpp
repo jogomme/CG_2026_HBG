@@ -1,11 +1,11 @@
-#include <GL/glew.h>
+ï»¿#include <GL/glew.h>
 #include <GL/glfw3.h>
 #include <iostream>
 #include <random>
 #include <cmath>
 
 //------------------------------------------------------------------------------------------
-// ·£´ı ¿£Áø
+// ëœë¤ ì—”ì§„
 //------------------------------------------------------------------------------------------
 std::random_device rd;
 std::mt19937 gen(rd());
@@ -16,7 +16,7 @@ std::uniform_real_distribution<float> sizeDist(0.15f, 0.35f);
 
 
 //------------------------------------------------------------------------------------------
-// ±¸Á¶Ã¼ ¼±¾ğ
+// êµ¬ì¡°ì²´ ì„ ì–¸
 //------------------------------------------------------------------------------------------
 struct POINT
 {
@@ -45,7 +45,7 @@ struct SHAPE_TYPE
 
 
 //------------------------------------------------------------------------------------------
-// ÇÔ¼ö ¼±¾ğ
+// í•¨ìˆ˜ ì„ ì–¸
 //------------------------------------------------------------------------------------------
 
 void MakeVertexData(int index, bool isOutline);
@@ -56,6 +56,8 @@ POINT SetPosToGL(float x, float y);
 
 POINT GetMousePosition(GLFWwindow* window);
 
+bool isin(POINT mouse, SHAPE_TYPE& shape);
+
 void MouseButtonCallback(
     GLFWwindow* window,
     int button,
@@ -64,13 +66,13 @@ void MouseButtonCallback(
 );
 
 //------------------------------------------------------------------------------------------
-// Àü¿ª º¯¼ö
+// ì „ì—­ ë³€ìˆ˜
 //------------------------------------------------------------------------------------------
 
 int wide = 1600;
 int height = 1200;
 
-// 0 : Á¡, 1 : ¼±, 2 : »ï°¢Çü, 3 : »ç°¢Çü
+// 0 : ì , 1 : ì„ , 2 : ì‚¼ê°í˜•, 3 : ì‚¬ê°í˜•
 const int shape_index[] =
 {
     1, 2, 3, 4
@@ -90,19 +92,19 @@ GLuint VBO;
 int main()
 //------------------------------------------------------------------------------------------
 {
-    // GLFW ÃÊ±âÈ­
+    // GLFW ì´ˆê¸°í™”
     if (!glfwInit())
     {
-        std::cout << "GLFW ÃÊ±âÈ­ ½ÇÆĞ\n";
+        std::cout << "GLFW ì´ˆê¸°í™” ì‹¤íŒ¨\n";
         return -1;
     }
 
-    // OpenGL 3.3 ¼³Á¤
+    // OpenGL 3.3 ì„¤ì •
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    // Ã¢ »ı¼º
+    // ì°½ ìƒì„±
     GLFWwindow* window = glfwCreateWindow(
         wide, height,
         "OpenGL Practice 7",
@@ -112,36 +114,36 @@ int main()
 
     if (!window)
     {
-        std::cout << "Window »ı¼º ½ÇÆĞ\n";
+        std::cout << "Window ìƒì„± ì‹¤íŒ¨\n";
         glfwTerminate();
         return -1;
     }
 
-    // OpenGL Context »ı¼º
+    // OpenGL Context ìƒì„±
     glfwMakeContextCurrent(window);
 
-    // GLEW ÃÊ±âÈ­
+    // GLEW ì´ˆê¸°í™”
     glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK)
     {
-        std::cout << "GLEW ÃÊ±âÈ­ ½ÇÆĞ\n";
+        std::cout << "GLEW ì´ˆê¸°í™” ì‹¤íŒ¨\n";
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
     }
 
-    // È­¸é Å©±â ¼³Á¤
+    // í™”ë©´ í¬ê¸° ì„¤ì •
     glViewport(0, 0, wide, height);
 
-    // ¸¶¿ì½º Äİ ¹é ÇÔ¼ö
+    // ë§ˆìš°ìŠ¤ ì½œ ë°± í•¨ìˆ˜
     glfwSetMouseButtonCallback(
         window,
         MouseButtonCallback
     );
 
     // --------------------------------------------------
-    // ¿©±âºÎÅÍ ½Ç½À 7 ±¸Çö
+    // ì—¬ê¸°ë¶€í„° ì‹¤ìŠµ 7 êµ¬í˜„
     // --------------------------------------------------
 
     float vertexs[] =
@@ -164,7 +166,7 @@ int main()
         GL_STATIC_DRAW
     );
 
-    // À§Ä¡
+    // ìœ„ì¹˜
     glVertexAttribPointer(
         0,
         3,
@@ -176,7 +178,7 @@ int main()
 
     glEnableVertexAttribArray(0);
 
-    // »ö»ó
+    // ìƒ‰ìƒ
     glVertexAttribPointer(
         1,
         3,
@@ -223,7 +225,7 @@ int main()
     )";
 
     //------------------------------------------------------------------------------------------
-    // Vertex Shader »ı¼º
+    // Vertex Shader ìƒì„±
     //------------------------------------------------------------------------------------------
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
@@ -237,7 +239,7 @@ int main()
     glCompileShader(vertexShader);
 
     //------------------------------------------------------------------------------------------
-    // Fragment Shader »ı¼º
+    // Fragment Shader ìƒì„±
     //------------------------------------------------------------------------------------------
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
@@ -251,7 +253,7 @@ int main()
     glCompileShader(fragmentShader);
 
     //------------------------------------------------------------------------------------------
-    // Shader Program »ı¼º
+    // Shader Program ìƒì„±
     //------------------------------------------------------------------------------------------
     GLuint shaderProgram = glCreateProgram();
 
@@ -271,21 +273,21 @@ int main()
         1.0f
     );
 
-    // Å×½ºÆ®¿ë µµÇü »ı¼º
+    // í…ŒìŠ¤íŠ¸ìš© ë„í˜• ìƒì„±
     AddShape(0);
     AddShape(1);
     AddShape(2);
     AddShape(3);
 
-    // Å×½ºÆ®
+    // í…ŒìŠ¤íŠ¸
     // types[0].selected = true;
 
     //------------------------------------------------------------------------------------------
-    // ¸ŞÀÎ ·çÇÁ
+    // ë©”ì¸ ë£¨í”„
     //------------------------------------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
     {
-        // È­¸é Áö¿ì±â
+        // í™”ë©´ ì§€ìš°ê¸°
         glClear(GL_COLOR_BUFFER_BIT);
 
 
@@ -296,17 +298,17 @@ int main()
             int type = types[i].type;
 
             //----------------------------------------------------------------------------------
-            // Á¡
+            // ì 
             //----------------------------------------------------------------------------------
             if (type == 0)
             {
-                // À±°û¼± »ö
+                // ìœ¤ê³½ì„  ìƒ‰
                 MakeVertexData(i, true);
 
                 glPointSize(12.0f);
                 glDrawArrays(GL_POINTS, 0, 1);
 
-                // º»Ã¼ »ö
+                // ë³¸ì²´ ìƒ‰
                 MakeVertexData(i, false);
 
                 glPointSize(7.0f);
@@ -314,17 +316,17 @@ int main()
             }
 
             //----------------------------------------------------------------------------------
-            // ¼±
+            // ì„ 
             //----------------------------------------------------------------------------------
             else if (type == 1)
             {
-                // À±°û¼± »ö
+                // ìœ¤ê³½ì„  ìƒ‰
                 MakeVertexData(i, true);
 
                 glLineWidth(7.0f);
                 glDrawArrays(GL_LINES, 0, 2);
 
-                // º»Ã¼ »ö
+                // ë³¸ì²´ ìƒ‰
                 MakeVertexData(i, false);
 
                 glLineWidth(3.0f);
@@ -332,16 +334,16 @@ int main()
             }
 
             //----------------------------------------------------------------------------------
-            // »ï°¢Çü
+            // ì‚¼ê°í˜•
             //----------------------------------------------------------------------------------
             else if (type == 2)
             {
-                // º»Ã¼
+                // ë³¸ì²´
                 MakeVertexData(i, false);
 
                 glDrawArrays(GL_TRIANGLES, 0, 3);
 
-                // À±°û¼±
+                // ìœ¤ê³½ì„ 
                 MakeVertexData(i, true);
 
                 glLineWidth(3.0f);
@@ -349,23 +351,23 @@ int main()
             }
 
             //----------------------------------------------------------------------------------
-            // »ç°¢Çü
+            // ì‚¬ê°í˜•
             //----------------------------------------------------------------------------------
             else if (type == 3)
             {
-                // º»Ã¼
+                // ë³¸ì²´
                 MakeVertexData(i, false);
 
                 glDrawArrays(GL_TRIANGLES, 0, 6);
 
-                // À±°û¼±
+                // ìœ¤ê³½ì„ 
                 MakeVertexData(i, true);
 
-                // ¹Ù±ù Å×µÎ¸®
+                // ë°”ê¹¥ í…Œë‘ë¦¬
                 glLineWidth(3.0f);
                 glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-                // ´ë°¢¼±
+                // ëŒ€ê°ì„ 
                 glDrawArrays(GL_LINES, 4, 2);
             }
         }
@@ -374,7 +376,7 @@ int main()
         glfwPollEvents();
     }
 
-    // Á¾·á
+    // ì¢…ë£Œ
     glfwDestroyWindow(window);
     glfwTerminate();
 
@@ -383,7 +385,7 @@ int main()
 
 
 //------------------------------------------------------------------------------------------
-// ÇÔ¼ö ±¸Çö
+// í•¨ìˆ˜ êµ¬í˜„
 //------------------------------------------------------------------------------------------
 
 void MakeVertexData(int index, bool isOutline)
@@ -391,18 +393,18 @@ void MakeVertexData(int index, bool isOutline)
     int type = types[index].type;
     int count = shape_index[type];
 
-    // ÃÖ´ë 6°³ÀÇ Á¤Á¡
-    // Á¤Á¡ ÇÏ³ª´ç À§Ä¡ 3 + »ö»ó 3
+    // ìµœëŒ€ 6ê°œì˜ ì •ì 
+    // ì •ì  í•˜ë‚˜ë‹¹ ìœ„ì¹˜ 3 + ìƒ‰ìƒ 3
     float vertexData[36]{};
 
     //--------------------------------------------------------------------------------------
-    // »ç°¢Çü
+    // ì‚¬ê°í˜•
     //--------------------------------------------------------------------------------------
     if (type == 3)
     {
         if (isOutline)
         {
-            // ¹Ù±ù Å×µÎ¸®¿ë
+            // ë°”ê¹¥ í…Œë‘ë¦¬ìš©
             // 0 -> 1 -> 2 -> 3
 
             for (int i = 0; i < 4; ++i)
@@ -417,7 +419,7 @@ void MakeVertexData(int index, bool isOutline)
                     types[index].point[i].z;
             }
 
-            // ´ë°¢¼±¿ë
+            // ëŒ€ê°ì„ ìš©
             // 0 -> 2
             vertexData[4 * 6] =
                 types[index].point[0].x;
@@ -441,7 +443,7 @@ void MakeVertexData(int index, bool isOutline)
         }
         else
         {
-            // »ç°¢ÇüÀ» µÎ °³ÀÇ »ï°¢ÇüÀ¸·Î ¸¸µé±â
+            // ì‚¬ê°í˜•ì„ ë‘ ê°œì˜ ì‚¼ê°í˜•ìœ¼ë¡œ ë§Œë“¤ê¸°
 
             int triangleIndex[] =
             {
@@ -468,7 +470,7 @@ void MakeVertexData(int index, bool isOutline)
     }
 
     //--------------------------------------------------------------------------------------
-    // Á¡, ¼±, »ï°¢Çü
+    // ì , ì„ , ì‚¼ê°í˜•
     //--------------------------------------------------------------------------------------
     else
     {
@@ -486,7 +488,7 @@ void MakeVertexData(int index, bool isOutline)
     }
 
     //--------------------------------------------------------------------------------------
-    // »ö»ó ¼³Á¤
+    // ìƒ‰ìƒ ì„¤ì •
     //--------------------------------------------------------------------------------------
 
     for (int i = 0; i < count; ++i)
@@ -495,14 +497,14 @@ void MakeVertexData(int index, bool isOutline)
         {
             if (types[index].selected)
             {
-                // ¼±ÅÃµÊ -> »¡°£»ö
+                // ì„ íƒë¨ -> ë¹¨ê°„ìƒ‰
                 vertexData[i * 6 + 3] = 1.0f;
                 vertexData[i * 6 + 4] = 0.0f;
                 vertexData[i * 6 + 5] = 0.0f;
             }
             else
             {
-                // ¼±ÅÃ ¾È µÊ -> °ËÀº»ö
+                // ì„ íƒ ì•ˆ ë¨ -> ê²€ì€ìƒ‰
                 vertexData[i * 6 + 3] = 0.0f;
                 vertexData[i * 6 + 4] = 0.0f;
                 vertexData[i * 6 + 5] = 0.0f;
@@ -510,7 +512,7 @@ void MakeVertexData(int index, bool isOutline)
         }
         else
         {
-            // º»Ã¼ -> ¿ø·¡ »ö
+            // ë³¸ì²´ -> ì›ë˜ ìƒ‰
             vertexData[i * 6 + 3] =
                 types[index].color.r;
 
@@ -539,7 +541,7 @@ void AddShape(int type)
 {
     if (ShapeCount >= 50)
     {
-        std::cout << "°¹¼ö ÃÊ°ú " << '\n';
+        std::cout << "ê°¯ìˆ˜ ì´ˆê³¼ " << '\n';
         return;
     }
 
@@ -547,18 +549,18 @@ void AddShape(int type)
 
     shape.type = type;
 
-    // ·£´ı »ö»ó
+    // ëœë¤ ìƒ‰ìƒ
     shape.color.r = colorDist(gen);
     shape.color.g = colorDist(gen);
     shape.color.b = colorDist(gen);
 
     //--------------------------------------------------------------------------------------
-    // µµÇüº° Á¤Á¡ ÀúÀå
+    // ë„í˜•ë³„ ì •ì  ì €ì¥
     //--------------------------------------------------------------------------------------
 
     if (type == 0)
     {
-        // Á¡
+        // ì 
         shape.point[0].x =
             positionDist(gen);
 
@@ -568,7 +570,7 @@ void AddShape(int type)
 
     else if (type == 1)
     {
-        // ¼±
+        // ì„ 
         for (int i = 0; i < 2; ++i)
         {
             shape.point[i].x =
@@ -581,7 +583,7 @@ void AddShape(int type)
 
     else if (type == 2)
     {
-        // »ï°¢Çü
+        // ì‚¼ê°í˜•
         float x = positionDist(gen);
         float y = positionDist(gen);
 
@@ -593,14 +595,14 @@ void AddShape(int type)
 
         float angle = 3.14159265f / 2.0f;
 
-        // Ã¹ ¹øÂ° Á¡
+        // ì²« ë²ˆì§¸ ì 
         shape.point[0].x =
             center.x + cos(angle) * size;
 
         shape.point[0].y =
             center.y + sin(angle) * size;
 
-        // µÎ ¹øÂ° Á¡
+        // ë‘ ë²ˆì§¸ ì 
         angle += 2.0f * 3.14159265f / 3.0f;
 
         shape.point[1].x =
@@ -609,7 +611,7 @@ void AddShape(int type)
         shape.point[1].y =
             center.y + sin(angle) * size;
 
-        // ¼¼ ¹øÂ° Á¡
+        // ì„¸ ë²ˆì§¸ ì 
         angle += 2.0f * 3.14159265f / 3.0f;
 
         shape.point[2].x =
@@ -621,14 +623,14 @@ void AddShape(int type)
 
     else if (type == 3)
     {
-        // »ç°¢ÇüÀÇ ´ë°¢¼± ¾ç ³¡Á¡
+        // ì‚¬ê°í˜•ì˜ ëŒ€ê°ì„  ì–‘ ëì 
         float x1 = positionDist(gen);
         float y1 = positionDist(gen);
 
         float x2 = positionDist(gen);
         float y2 = positionDist(gen);
 
-        // ÁÂÇ¥ ¼ø¼­ Á¤¸®
+        // ì¢Œí‘œ ìˆœì„œ ì •ë¦¬
         if (x1 > x2)
         {
             float temp = x1;
@@ -643,7 +645,7 @@ void AddShape(int type)
             y2 = temp;
         }
 
-        // »ç°¢ÇüÀÇ ³× ²ÀÁşÁ¡
+        // ì‚¬ê°í˜•ì˜ ë„¤ ê¼­ì§“ì 
         shape.point[0] =
         { x1, y1, 0.0f };
 
@@ -694,21 +696,148 @@ POINT GetMousePosition(GLFWwindow* window)
     return position;
 }
 
-void MouseButtonCallback(
-    GLFWwindow* window,
-    int button,
-    int action,
-    int mods
-)
+void MouseButtonCallback( GLFWwindow* window, int button, int action, int mods )
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT &&
         action == GLFW_PRESS)
     {
         POINT mouse = GetMousePosition(window);
 
+        for (int i = 0; i < ShapeCount; ++i)
+        {
+            if (isin(mouse, types[i]))
+            {
+                for (int j = 0; j < ShapeCount; ++j) {
+                    types[j].selected = false;
+                }
+                types[i].selected = true;
+            }
+        }
         std::cout
             << "x : " << mouse.x
             << ", y : " << mouse.y
             << '\n';
     }
+}
+
+bool isin(POINT mouse, SHAPE_TYPE& shape)
+{
+    int type = shape.type;
+
+
+
+    if (type == 0) {
+        float x = shape.point[0].x;
+        float y = shape.point[0].y;
+
+        float offsetX = 10.0f / wide * 2.0f;
+        float offsetY = 10.0f / height * 2.0f;
+
+        if (mouse.x >= x - offsetX &&
+            mouse.x <= x + offsetX &&
+            mouse.y >= y - offsetY &&
+            mouse.y <= y + offsetY)
+        {
+            return true;
+        }
+    }
+    else if (type == 1) {
+        float x1 = shape.point[0].x;
+        float y1 = shape.point[0].y;
+
+        float x2 = shape.point[1].x;
+        float y2 = shape.point[1].y;
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+
+        float length = dx * dx + dy * dy;
+
+        // ì„ ì˜ ê¸¸ì´ê°€ 0ì¸ ê²½ìš°
+        if (length == 0)
+        {
+            return false;
+        }
+
+        // ì„  ìœ„ì—ì„œ ë§ˆìš°ìŠ¤ì™€ ê°€ì¥ ê°€ê¹Œìš´ ìœ„ì¹˜
+        float t =
+            ((mouse.x - x1) * dx +
+                (mouse.y - y1) * dy) / length;
+
+        // ì„ ì˜ ì–‘ ë ë°”ê¹¥ìœ¼ë¡œ ë‚˜ê°„ ê²½ìš°
+        if (t < 0.0f)
+        {
+            t = 0.0f;
+        }
+        else if (t > 1.0f)
+        {
+            t = 1.0f;
+        }
+
+        // ê°€ì¥ ê°€ê¹Œìš´ ì 
+        float closeX = x1 + t * dx;
+        float closeY = y1 + t * dy;
+
+        // ë§ˆìš°ìŠ¤ì™€ ê°€ì¥ ê°€ê¹Œìš´ ì ì˜ ê±°ë¦¬
+        float distanceX = mouse.x - closeX;
+        float distanceY = mouse.y - closeY;
+
+        float distance =
+            sqrt(distanceX * distanceX +
+                distanceY * distanceY);
+
+        // ì´ ì •ë„ ê°€ê¹Œìš°ë©´ ì„ íƒ
+        float offset = 0.02f;
+
+        if (distance <= offset)
+        {
+            return true;
+        }
+    }
+    else if (type == 2) {
+
+        POINT A = shape.point[0];
+        POINT B = shape.point[1];
+        POINT C = shape.point[2];
+
+        // ì„¸ ë³€ì— ëŒ€í•´ ë§ˆìš°ìŠ¤ê°€ ì–´ëŠ ìª½ì— ìˆëŠ”ì§€ ê³„ì‚°
+        float d1 =
+            (mouse.x - B.x) * (A.y - B.y) -
+            (A.x - B.x) * (mouse.y - B.y);
+
+        float d2 =
+            (mouse.x - C.x) * (B.y - C.y) -
+            (B.x - C.x) * (mouse.y - C.y);
+
+        float d3 =
+            (mouse.x - A.x) * (C.y - A.y) -
+            (C.x - A.x) * (mouse.y - A.y);
+
+        // ì„¸ ê°’ì˜ ë¶€í˜¸ê°€ ëª¨ë‘ ê°™ìœ¼ë©´ ì‚¼ê°í˜• ë‚´ë¶€
+        if ((d1 >= 0 && d2 >= 0 && d3 >= 0) ||
+            (d1 <= 0 && d2 <= 0 && d3 <= 0))
+        {
+            return true;
+        }
+
+    }
+    else if (type == 3) {
+
+        float minX = shape.point[0].x;
+        float maxX = shape.point[2].x;
+
+        float minY = shape.point[0].y;
+        float maxY = shape.point[2].y;
+
+        if (mouse.x >= minX &&
+            mouse.x <= maxX &&
+            mouse.y >= minY &&
+            mouse.y <= maxY)
+        {
+            return true;
+        }
+
+    }
+
+    return false;
 }
