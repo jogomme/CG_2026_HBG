@@ -132,7 +132,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(0);
 
     const char* vertexShaderSource = R"(
@@ -150,11 +150,11 @@ int main()
     const char* fragmentShaderSource = R"(
     #version 330 core
     
-    out vec4 FragColor;
+    in vec3 ourColor
     
     void main()
     {
-        FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        FragColor = vec4(ourColor, 1.0);
     }
     )";
 
