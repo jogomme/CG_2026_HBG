@@ -2,6 +2,7 @@
 #include <GL/glfw3.h>
 #include <iostream>
 #include<random>
+#include<cmath>
 
 //------------------------------------------------------------------------------------------
 // 랜덤 엔진
@@ -10,7 +11,8 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
-std::uniform_real_distribution<float> positionDist(-1.0f, 1.0f);
+std::uniform_real_distribution<float> positionDist(-0.8f, 0.8f);
+std::uniform_real_distribution<float> sizeDist(0.15f, 0.35f);
 
 
 //------------------------------------------------------------------------------------------
@@ -231,7 +233,13 @@ int main()
 
             if (type == 0)
             {
-                glDrawArrays(GL_POINTS, 0, count);
+                glPointSize(10.0f);
+                // 윤곽선 색으로 그리기
+                glDrawArrays(GL_POINTS, 0, 1);
+
+                glPointSize(6.0f);
+                // 원래 색으로 다시 그리기
+                glDrawArrays(GL_POINTS, 0, 1);
             }
             else if (type == 1)
             {
@@ -243,7 +251,7 @@ int main()
             }
             else if (type == 3)
             {
-                glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+                glDrawArrays(GL_TRIANGLES, 0, 6);
             }
         }
 
@@ -269,16 +277,43 @@ void MakeVertexData(int index)
     int type = types[index].type;
     int count = shape_index[type];
 
-    float vertexData[24]{};
+    float vertexData[36]{};
 
-    for (int i = 0; i < count; ++i) {
-        vertexData[i * 6] = types[index].point[i].x;
-        vertexData[i * 6 + 1] = types[index].point[i].y;
-        vertexData[i * 6 + 2] = types[index].point[i].z;
+    if (type == 3)
+    {
+        int triangleIndex[] =
+        {
+            0, 1, 2,
+            0, 2, 3
+        };
 
-        vertexData[i * 6 + 3] = types[index].color.r;
-        vertexData[i * 6 + 4] = types[index].color.g;
-        vertexData[i * 6 + 5] = types[index].color.b;
+        for (int i = 0; i < 6; ++i)
+        {
+            int pointIndex = triangleIndex[i];
+
+            vertexData[i * 6] = types[index].point[pointIndex].x;
+            vertexData[i * 6 + 1] = types[index].point[pointIndex].y;
+            vertexData[i * 6 + 2] = types[index].point[pointIndex].z;
+
+            vertexData[i * 6 + 3] = types[index].color.r;
+            vertexData[i * 6 + 4] = types[index].color.g;
+            vertexData[i * 6 + 5] = types[index].color.b;
+        }
+
+        count = 6;
+    }
+    else
+    {
+        for (int i = 0; i < count; ++i)
+        {
+            vertexData[i * 6] = types[index].point[i].x;
+            vertexData[i * 6 + 1] = types[index].point[i].y;
+            vertexData[i * 6 + 2] = types[index].point[i].z;
+
+            vertexData[i * 6 + 3] = types[index].color.r;
+            vertexData[i * 6 + 4] = types[index].color.g;
+            vertexData[i * 6 + 5] = types[index].color.b;
+        }
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -323,16 +358,36 @@ void AddShape(int type)
     }
     else if (type == 2)
     {
-        // 삼각형
-        for (int i = 0; i < 3; ++i) {
-            shape.point[i].x = positionDist(gen);
-            shape.point[i].y = positionDist(gen);
-        }
+        float x = positionDist(gen);
+        float y = positionDist(gen);
+
+        float size = sizeDist(gen);
+
+        POINT center;
+        center.x = x;
+        center.y = y;
+
+        float angle = 3.14159265f / 2.0f;
+
+        // 첫 번째 점
+        shape.point[0].x = center.x + cos(angle) * size;
+        shape.point[0].y = center.y + sin(angle) * size;
+
+        // 두 번째 점
+        angle += 2.0f * 3.14159265f / 3.0f;
+
+        shape.point[1].x = center.x + cos(angle) * size;
+        shape.point[1].y = center.y + sin(angle) * size;
+
+        // 세 번째 점
+        angle += 2.0f * 3.14159265f / 3.0f;
+
+        shape.point[2].x = center.x + cos(angle) * size;
+        shape.point[2].y = center.y + sin(angle) * size;
     }
     else if (type == 3)
     {
-        // 사각형
-            // 사각형의 대각선 양 끝점
+        // 사각형의 대각선 양 끝점
         float x1 = positionDist(gen);
         float y1 = positionDist(gen);
 
