@@ -9,6 +9,7 @@ struct POINT
 {
     float x;
     float y;
+    float z{ 0 };
 };
 
 struct COLOR
@@ -209,22 +210,20 @@ void MakeVertexData(int index)
     int type = types[index].type;
     int count = shape_index[type];
 
-    POINT vertexs[4]{};
+    float vertexData[12]{};
 
     for (int i = 0; i < count; ++i) {
-        vertexs[i] = types[index].point[i];
+        vertexData[i * 3] = types[index].point[i].x;
+        vertexData[i * 3 + 1] = types[index].point[i].y;
+        vertexData[i * 3 + 2] = types[index].point[i].z;
     }
 
-    if (type == 0) {
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-    }
-    else if (type == 1) {
-
-    }
-    else if (type == 2) {
-
-    }
-    else if (type == 3) {
-
-    }
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        count * 3 * sizeof(float),
+        vertexData,
+        GL_DYNAMIC_DRAW
+    );
 }
