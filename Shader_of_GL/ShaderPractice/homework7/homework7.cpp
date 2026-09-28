@@ -1,6 +1,16 @@
 #include <GL/glew.h>
 #include <GL/glfw3.h>
 #include <iostream>
+#include<random>
+
+//------------------------------------------------------------------------------------------
+// 랜덤 엔진
+//------------------------------------------------------------------------------------------
+std::random_device rd;
+std::mt19937 gen(rd());
+
+std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+
 
 //------------------------------------------------------------------------------------------
 // 구조체 선언
@@ -122,7 +132,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertexs), vertexs, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
     const char* vertexShaderSource = R"(
@@ -234,19 +244,23 @@ void MakeVertexData(int index)
     int type = types[index].type;
     int count = shape_index[type];
 
-    float vertexData[12]{};
+    float vertexData[24]{};
 
     for (int i = 0; i < count; ++i) {
-        vertexData[i * 3] = types[index].point[i].x;
-        vertexData[i * 3 + 1] = types[index].point[i].y;
-        vertexData[i * 3 + 2] = types[index].point[i].z;
+        vertexData[i * 6] = types[index].point[i].x;
+        vertexData[i * 6 + 1] = types[index].point[i].y;
+        vertexData[i * 6 + 2] = types[index].point[i].z;
+
+        vertexData[i * 6 + 3] = types[index].color.r;
+        vertexData[i * 6 + 4] = types[index].color.g;
+        vertexData[i * 6 + 5] = types[index].color.b;
     }
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     glBufferData(
         GL_ARRAY_BUFFER,
-        count * 3 * sizeof(float),
+        count * 6 * sizeof(float),
         vertexData,
         GL_DYNAMIC_DRAW
     );
