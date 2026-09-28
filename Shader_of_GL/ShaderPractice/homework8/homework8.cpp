@@ -110,6 +110,7 @@ GLuint VBO;
 GLuint quadrantVAO;
 GLuint quadrantVBO;
 
+bool isFill{ true };
 
 //------------------------------------------------------------------------------------------
 // main
@@ -519,11 +520,22 @@ int main()
         {
             MakeVertexData(i);
 
-            glDrawArrays(
-                GL_TRIANGLES,
-                0,
-                3
-            );
+            if (isFill)
+            {
+                glDrawArrays(
+                    GL_TRIANGLES,
+                    0,
+                    3
+                );
+            }
+            else
+            {
+                glDrawArrays(
+                    GL_LINE_LOOP,
+                    0,
+                    3
+                );
+            }
         }
 
 
@@ -735,7 +747,15 @@ void KeyCallback(
             AddTriangle(triangles[i], x, y, sizeDist(gen));
         }
     }
+    else if (key == GLFW_KEY_A) {
+        isFill = true;
+    }
+    else if (key == GLFW_KEY_B) {
+        isFill = false;
+    }
 }
+
+
 
 
 //------------------------------------------------------------------------------------------
