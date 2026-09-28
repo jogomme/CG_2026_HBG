@@ -56,6 +56,13 @@ POINT SetPosToGL(float x, float y);
 
 POINT GetMousePosition(GLFWwindow* window);
 
+void MouseButtonCallback(
+    GLFWwindow* window,
+    int button,
+    int action,
+    int mods
+);
+
 //------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------
@@ -274,6 +281,11 @@ int main()
     {
         // 화면 지우기
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glfwSetMouseButtonCallback(
+            window,
+            MouseButtonCallback
+        );
 
         glBindVertexArray(VAO);
 
@@ -678,4 +690,23 @@ POINT GetMousePosition(GLFWwindow* window)
     );
 
     return position;
+}
+
+void MouseButtonCallback(
+    GLFWwindow* window,
+    int button,
+    int action,
+    int mods
+)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT &&
+        action == GLFW_PRESS)
+    {
+        POINT mouse = GetMousePosition(window);
+
+        std::cout
+            << "x : " << mouse.x
+            << ", y : " << mouse.y
+            << '\n';
+    }
 }
