@@ -205,6 +205,11 @@ int main()
     // --------------------------------------------------
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
+    AddShape(0);
+    AddShape(1);
+    AddShape(2);
+    AddShape(3);
+
     // 메인 루프
     while (!glfwWindowShouldClose(window))
     {
@@ -327,10 +332,33 @@ void AddShape(int type)
     else if (type == 3)
     {
         // 사각형
-        for (int i = 0; i < 4; ++i) {
-            shape.point[i].x = positionDist(gen);
-            shape.point[i].y = positionDist(gen);
+            // 사각형의 대각선 양 끝점
+        float x1 = positionDist(gen);
+        float y1 = positionDist(gen);
+
+        float x2 = positionDist(gen);
+        float y2 = positionDist(gen);
+
+        // 좌표 순서 정리
+        if (x1 > x2)
+        {
+            float temp = x1;
+            x1 = x2;
+            x2 = temp;
         }
+
+        if (y1 > y2)
+        {
+            float temp = y1;
+            y1 = y2;
+            y2 = temp;
+        }
+
+        // 사각형의 네 꼭짓점
+        shape.point[0] = { x1, y1, 0.0f };
+        shape.point[1] = { x2, y1, 0.0f };
+        shape.point[2] = { x2, y2, 0.0f };
+        shape.point[3] = { x1, y2, 0.0f };
     }
 
     ShapeCount++;
