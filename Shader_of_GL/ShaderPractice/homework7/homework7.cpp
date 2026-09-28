@@ -118,6 +118,8 @@ int main()
 
     glLinkProgram(shaderProgram);
 
+    glUseProgram(shaderProgram);
+
     // --------------------------------------------------
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
