@@ -96,6 +96,20 @@ int main()
     }
     )";
 
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+
+    glCompileShader(vertexShader);
+
+
+
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+
+    glCompileShader(fragmentShader);
+
     // --------------------------------------------------
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
