@@ -186,7 +186,31 @@ int main()
         // --------------------------------------------------
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        for (int i = 0; i < ShapeCount; ++i)
+        {
+            MakeVertexData(i);
+
+            int type = types[i].type;
+            int count = shape_index[type];
+
+            if (type == 0)
+            {
+                glDrawArrays(GL_POINTS, 0, count);
+            }
+            else if (type == 1)
+            {
+                glDrawArrays(GL_LINES, 0, count);
+            }
+            else if (type == 2)
+            {
+                glDrawArrays(GL_TRIANGLES, 0, count);
+            }
+            else if (type == 3)
+            {
+                glDrawArrays(GL_TRIANGLE_FAN, 0, count);
+            }
+        }
 
         // --------------------------------------------------
 
