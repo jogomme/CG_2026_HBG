@@ -73,6 +73,8 @@ void KeyCallback(
     int mods
 );
 
+POINT centerShape(int index);
+
 //------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------
@@ -312,10 +314,16 @@ int main()
 
             float speed = 0.001f;
 
+            POINT oldP[4]{};
+
+            for (int j = 0; j < shape_index[type]; ++j)
+            {
+                oldP[j] = types[i].point[j];
+            }
+
             // 이동 - WASD, IJLK
             if (types[i].selected) {
 
-                
                 //W
                 if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
                     for (int j = 0; j < shape_index[type]; ++j) {
@@ -408,6 +416,15 @@ int main()
                 for (int j = 0; j < shape_index[type]; ++j)
                 {
                     types[i].point[j].x += speed;
+                }
+            }
+
+            POINT pc = centerShape(i);
+
+            if (pc.x > 1.0f || pc.x < -1.0f || pc.y > 1.0f || pc.y < -1.0f) {
+                for (int j = 0; j < shape_index[type]; ++j)
+                {
+                    types[i].point[j] = oldP[j];
                 }
             }
 
@@ -997,4 +1014,22 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         // C
         ShapeCount = 0;
     }
+}
+
+POINT centerShape(int index)
+{
+    SHAPE_TYPE& type = types[index];
+
+    POINT p{};
+
+    for (int i = 0; i < shape_index[type.type]; ++i) {
+        p.x += type.point[i].x;
+        p.y += type.point[i].y;
+    }
+
+    p.x = p.x / shape_index[type.type];
+    p.y = p.y / shape_index[type.type];
+
+    return p;
+
 }
