@@ -141,7 +141,7 @@ void StopMove();
 //------------------------------------------------------------------------------------------
 
 int wide = 1200;
-int height = 1200;
+int height = 1600;
 
 
 // 삼각형 2개
@@ -1579,11 +1579,11 @@ void MoveSpiral(TRIANGLE& triangle)
     // 각도와 반지름 변화
     //--------------------------------------------------------------------------------------
 
-    float angleStep = triangle.speed * 12.0f;
-    float radiusStep = triangle.speed * 0.1f;
+    float angleStep =  (triangle.speed * 0.05  ) * 12.0f;
+    float radiusStep = (triangle.speed * 0.05 ) * 0.1f;
 
 
-    triangle.spiralAngle += angleStep;
+    triangle.spiralAngle  += angleStep;
     triangle.spiralRadius += radiusStep;
 
 
