@@ -1,6 +1,7 @@
 #include <GL/glew.h>
 #include <GL/glfw3.h>
 #include<gl/glm/glm.hpp>
+#include <gl/glm/gtc/matrix_transform.hpp>
 
 
 #include <iostream>
@@ -40,7 +41,11 @@ void MouseButtonCallback(GLFWwindow* window,int button,int action, int mods );
 void KeyCallback(GLFWwindow* window,int key,int scancode,int action,int mods );
 
 // 시작 함수
-void StartMap(ShapeType& ls, ShapeType& rs);
+void StartMap(ShapeType ls[], ShapeType rs[]);
+
+glm::mat4 MakeModelMatrix(ShapeType& shape);
+
+void DrawScenes(ShapeType& shape, GLuint modelLocation);
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -340,15 +345,17 @@ int main()
     //------------------------------------------------------------------------------------------
     const char* vertexShaderSource = R"(
     #version 330 core
-
+    
     layout (location = 0) in vec3 aPos;
     layout (location = 1) in vec3 aColor;
-
+    
+    uniform mat4 model;
+    
     out vec3 ourColor;
-
+    
     void main()
     {
-        gl_Position = vec4(aPos, 1.0);
+        gl_Position = model * vec4(aPos, 1.0);
         ourColor = aColor;
     }
     )";
@@ -416,6 +423,9 @@ int main()
         1.0f
     );
 
+    GLuint modelLocation = glGetUniformLocation(shaderProgram, "model");
+
+
 
     //------------------------------------------------------------------------------------------
     // 메인 루프
@@ -450,7 +460,25 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 }
 
-void StartMap(ShapeType& ls, ShapeType& rs)
+void StartMap(ShapeType ls[], ShapeType rs[])
 {
     // 기본 도형 10개의 도형 위치
+}
+
+glm::mat4 MakeModelMatrix(ShapeType& shape)
+{
+    glm::mat4 model(1.0f);
+
+    model = glm::translate(model, glm::vec3(shape.position, 0.0f));
+
+    return model;
+}
+
+void DrawScenes(ShapeType& shape, GLuint modelLocation)
+{
+    glm::mat4 model(1.0f);
+
+    model = MakeModelMatrix(shape);
+
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
 }
