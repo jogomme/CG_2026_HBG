@@ -5,7 +5,16 @@
 
 
 #include <iostream>
+#include <random>
 
+//------------------------------------------------------------------------------------------------------
+// 랜덤 엔진
+//------------------------------------------------------------------------------------------------------
+std::random_device rd;
+std::mt19937 gen(rd());
+
+std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+std::uniform_real_distribution<float> posDist(-1.0f, 1.0f);
 
 //------------------------------------------------------------------------------------------------------
 // 구조체 선언
@@ -20,8 +29,14 @@ struct ShapeType {
     // 오른쪽 타일이랑 왼쪽 내가 끌고가는게 같아야 함
     int MatchType;
 
-    // 처음으로 glm 써봄
+    // vertexs 의 몇 번째 도형을 사용할 지에 관한 내용
+    int vertexIndex;
+
+    // 정점의 중점 데이터
     glm::vec2 position;
+
+    // 정점의 color 데이터
+    glm::vec3 color;
 
     // 선택 된 것인지 확인
     bool selected{ false };
@@ -47,12 +62,13 @@ glm::mat4 MakeModelMatrix(ShapeType& shape);
 
 void DrawScenes(ShapeType& shape, GLuint modelLocation);
 
+void MakeVertexData(ShapeType& shape);
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
 
-glm::vec2 vertexs[20][4] =
-{
+glm::vec2 vertexs[20][4] = {
     // ------------------------------------------------------------
     // 위쪽 모양판 : 직사각형 4개
     // ------------------------------------------------------------
@@ -318,9 +334,9 @@ int main()
 
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(float),
+        sizeof(float) * 6 * 4,
         nullptr,
-        GL_STATIC_DRAW
+        GL_DYNAMIC_DRAW
     );
 
     // 위치
@@ -427,6 +443,10 @@ int main()
 
 
 
+
+
+    StartMap(LS, RS);
+
     //------------------------------------------------------------------------------------------
     // 메인 루프
     //------------------------------------------------------------------------------------------
@@ -438,7 +458,7 @@ int main()
 
         glBindVertexArray(VAO);
 
-       
+        DrawScenes(LS[0], modelLocation);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -462,7 +482,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void StartMap(ShapeType ls[], ShapeType rs[])
 {
-    // 기본 도형 10개의 도형 위치
+    ls[0].type = 0;
+    ls[0].vertexIndex = 0;
+    ls[0].position = glm::vec2(-0.5f, 0.0f);
+    ls[0].color.r = colorDist(gen);
+    ls[0].color.g = colorDist(gen);
+    ls[0].color.b = colorDist(gen);
+
+
 }
 
 glm::mat4 MakeModelMatrix(ShapeType& shape)
@@ -476,9 +503,38 @@ glm::mat4 MakeModelMatrix(ShapeType& shape)
 
 void DrawScenes(ShapeType& shape, GLuint modelLocation)
 {
-    glm::mat4 model(1.0f);
+    MakeVertexData(shape);
 
-    model = MakeModelMatrix(shape);
+    glm::mat4 model = MakeModelMatrix(shape);
 
     glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount[shape.type]);
+}
+
+void MakeVertexData(ShapeType& shape)
+{
+    float vertexData[24]{};
+
+    int count = vertexCount[shape.type];
+
+    for (int i = 0; i < count; ++i)
+    {
+        vertexData[i * 6 + 0] = vertexs[shape.vertexIndex][i].x;
+        vertexData[i * 6 + 1] = vertexs[shape.vertexIndex][i].y;
+        vertexData[i * 6 + 2] = 0.0f;
+
+        vertexData[i * 6 + 3] = shape.color.r;
+        vertexData[i * 6 + 4] = shape.color.g;
+        vertexData[i * 6 + 5] = shape.color.b;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(float) * 6 * count,
+        vertexData
+    );
 }
