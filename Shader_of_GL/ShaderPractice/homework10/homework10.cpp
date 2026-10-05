@@ -46,6 +46,12 @@ struct ShapeType {
 
 };
 
+enum class ShapeSide
+{
+    Left,
+    Right
+};
+
 
 //------------------------------------------------------------------------------------------------------
 // 함수 선언
@@ -60,7 +66,7 @@ void StartMap(ShapeType ls[], ShapeType rs[]);
 
 glm::mat4 MakeModelMatrix(ShapeType& shape);
 
-void DrawScenes(ShapeType& shape, GLuint modelLocation);
+void DrawScenes(ShapeType& shape, GLuint modelLocation, ShapeSide side);
 
 void MakeVertexData(ShapeType& shape);
 
@@ -458,7 +464,8 @@ int main()
 
         glBindVertexArray(VAO);
 
-        DrawScenes(LS[0], modelLocation);
+        DrawScenes(LS[0], modelLocation, ShapeSide::Left);
+        DrawScenes(RS[0], modelLocation, ShapeSide::Right);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -485,11 +492,16 @@ void StartMap(ShapeType ls[], ShapeType rs[])
     ls[0].type = 0;
     ls[0].vertexIndex = 0;
     ls[0].position = glm::vec2(-0.5f, 0.0f);
+
     ls[0].color.r = colorDist(gen);
     ls[0].color.g = colorDist(gen);
     ls[0].color.b = colorDist(gen);
 
+    rs[0].type = 0;
+    rs[0].vertexIndex = 0;
+    rs[0].position = glm::vec2(0.5f, 0.0f);
 
+    rs[0].color = glm::vec3(0.5f, 0.5f, 0.5f);
 }
 
 glm::mat4 MakeModelMatrix(ShapeType& shape)
@@ -501,7 +513,7 @@ glm::mat4 MakeModelMatrix(ShapeType& shape)
     return model;
 }
 
-void DrawScenes(ShapeType& shape, GLuint modelLocation)
+void DrawScenes(ShapeType& shape, GLuint modelLocation, ShapeSide side)
 {
     MakeVertexData(shape);
 
@@ -509,7 +521,13 @@ void DrawScenes(ShapeType& shape, GLuint modelLocation)
 
     glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
 
-    glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount[shape.type]);
+    if (side == ShapeSide::Left) {
+        glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount[shape.type]);
+    }
+    else {
+        glLineWidth(3.0f);
+        glDrawArrays(GL_LINE_LOOP, 0, vertexCount[shape.type]);
+    }
 }
 
 void MakeVertexData(ShapeType& shape)
