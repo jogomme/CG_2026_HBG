@@ -464,8 +464,10 @@ int main()
 
         glBindVertexArray(VAO);
 
-        DrawScenes(LS[0], modelLocation, ShapeSide::Left);
-        DrawScenes(RS[0], modelLocation, ShapeSide::Right);
+        for (int i = 0; i < 12; ++i) {
+            DrawScenes(LS[i], modelLocation, ShapeSide::Left);
+            DrawScenes(RS[i], modelLocation, ShapeSide::Right);
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -489,19 +491,109 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void StartMap(ShapeType ls[], ShapeType rs[])
 {
-    ls[0].type = 0;
-    ls[0].vertexIndex = 0;
-    ls[0].position = glm::vec2(-0.5f, 0.0f);
+    int i{};
 
-    ls[0].color.r = colorDist(gen);
-    ls[0].color.g = colorDist(gen);
-    ls[0].color.b = colorDist(gen);
+    // 사각형 4개
+    for (int i = 0; i < 4; ++i) {
 
+        ls[i].type = 0;
+        ls[i].MatchType = i;
+        ls[i].vertexIndex = i;
+        ls[i].position = glm::vec2(-0.7f, 0.6f - i * 0.18f);
+        ls[i].color = glm::vec3(colorDist(gen), colorDist(gen), colorDist(gen));
+    }
+
+    // 삼각형 4개
+    for (int i = 0; i < 3; ++i) {
+
+        int index = 4 + i;
+
+        ls[index].type = 1;
+        ls[index].MatchType = index;
+        ls[index].vertexIndex = 4 + i;
+        ls[index].position = glm::vec2(-0.4f, 0.6f - i * 0.18f);
+        ls[index].color = glm::vec3(colorDist(gen), colorDist(gen), colorDist(gen));
+    }
+
+    // 가운데 사각형
+    ls[8].type = 0;
+    ls[8].MatchType = 8;
+    ls[8].vertexIndex = 8;
+    ls[8].position = glm::vec2(-0.1f, 0.3f);
+    ls[8].color = glm::vec3(colorDist(gen), colorDist(gen), colorDist(gen));
+
+    // 직각삼각형 2개
+    for (int i = 0; i < 2; ++i)
+    {
+        int index = 9 + i;
+
+        ls[index].type = 2;
+        ls[index].MatchType = index;
+        ls[index].vertexIndex = index;
+        ls[index].position = glm::vec2(-0.7f, -0.2f - i * 0.3f);
+        ls[index].color = glm::vec3(colorDist(gen), colorDist(gen), colorDist(gen));
+    }
+
+
+    // 위쪽 사각형 4개
     rs[0].type = 0;
+    rs[0].MatchType = 0;
     rs[0].vertexIndex = 0;
-    rs[0].position = glm::vec2(0.5f, 0.0f);
+    rs[0].position = glm::vec2(0.65f, 0.65f);
 
-    rs[0].color = glm::vec3(0.5f, 0.5f, 0.5f);
+    rs[1].type = 0;
+    rs[1].MatchType = 1;
+    rs[1].vertexIndex = 1;
+    rs[1].position = glm::vec2(0.65f, 0.45f);
+
+    rs[2].type = 0;
+    rs[2].MatchType = 2;
+    rs[2].vertexIndex = 2;
+    rs[2].position = glm::vec2(0.85f, 0.65f);
+
+    rs[3].type = 0;
+    rs[3].MatchType = 3;
+    rs[3].vertexIndex = 3;
+    rs[3].position = glm::vec2(0.85f, 0.45f);
+
+    // 가운데 삼각형 4개
+    rs[4].type = 1;
+    rs[4].MatchType = 4;
+    rs[4].vertexIndex = 4;
+    rs[4].position = glm::vec2(0.65f, 0.15f);
+
+    rs[5].type = 1;
+    rs[5].MatchType = 5;
+    rs[5].vertexIndex = 5;
+    rs[5].position = glm::vec2(0.85f, 0.15f);
+
+    rs[6].type = 1;
+    rs[6].MatchType = 6;
+    rs[6].vertexIndex = 6;
+    rs[6].position = glm::vec2(0.75f, -0.05f);
+
+    rs[7].type = 1;
+    rs[7].MatchType = 7;
+    rs[7].vertexIndex = 7;
+    rs[7].position = glm::vec2(0.55f, 0.15f);
+
+    // 가운데 사각형
+    rs[8].type = 0;
+    rs[8].MatchType = 8;
+    rs[8].vertexIndex = 8;
+    rs[8].position = glm::vec2(0.75f, 0.15f);
+
+    // 아래 직각삼각형
+    rs[9].type = 2;
+    rs[9].MatchType = 9;
+    rs[9].vertexIndex = 9;
+    rs[9].position = glm::vec2(0.65f, -0.45f);
+
+    rs[10].type = 2;
+    rs[10].MatchType = 10;
+    rs[10].vertexIndex = 10;
+    rs[10].position = glm::vec2(0.85f, -0.45f);
+
 }
 
 glm::mat4 MakeModelMatrix(ShapeType& shape)
