@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<VSTemplate Version="3.0.0" Type="Project" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" xmlns:sdk="http://schemas.microsoft.com/developer/vstemplate-sdkextension/2010">
+  <TemplateData>
+    <Name>OpenGL 3.3 실습</Name>
+    <Description>OpenGL 3.3 Core + GLFW + GLEW + GLM 기본 프로젝트. 링커 설정(C++20, /utf-8, opengl32/glew32/glfw3dll)이 내장되어 있어 바로 빌드됩니다. x64 전용.</Description>
+    <ProjectType>VC</ProjectType>
+    <TemplateID>CG2026HBG.OpenGL33Shader</TemplateID>
+    <SortOrder>10</SortOrder>
+    <CreateNewFolder>true</CreateNewFolder>
+    <DefaultName>OpenGLHomework</DefaultName>
+    <ProvideDefaultName>true</ProvideDefaultName>
+    <CreateInPlace>false</CreateInPlace>
+    <NumberOfParentCategoriesToRollUp>1</NumberOfParentCategoriesToRollUp>
+    <LanguageTag>cpp</LanguageTag>
+  </TemplateData>
+  <TemplateContent>
+    <Project File="OpenGL33Shader.vcxproj" ReplaceParameters="true" TargetFileName="$safeprojectname$.vcxproj">
+      <ProjectItem ReplaceParameters="true" TargetFileName="$safeprojectname$.vcxproj.filters">OpenGL33Shader.vcxproj.filters</ProjectItem>
+      <ProjectItem ReplaceParameters="true" TargetFileName="$safeprojectname$.cpp">main.cpp</ProjectItem>
+    </Project>
+  </TemplateContent>
+</VSTemplate>
