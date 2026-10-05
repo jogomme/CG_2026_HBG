@@ -3,9 +3,10 @@
 #include <gl/glm/glm.hpp>
 #include <gl/glm/gtc/matrix_transform.hpp>
 
-
 #include <iostream>
 #include <random>
+#include <algorithm>
+#include <cmath>
 
 //------------------------------------------------------------------------------------------------------
 // 랜덤 엔진
@@ -286,11 +287,11 @@ int vertexCount[3]{ 4, 3, 3 };
 GLuint VAO;
 GLuint VBO;
 
-// 왼쪽 도형 12개
-ShapeType LS[12];
+// 왼쪽 도형 13개
+ShapeType LS[13];
 
-// 오른쪽 도형 12개
-ShapeType RS[12];
+// 오른쪽 도형 13개
+ShapeType RS[13];
 
 int selectedShape = -1;
 glm::vec2 dragOffset;
@@ -374,7 +375,14 @@ int main()
     glEnableVertexAttribArray(0);
 
     // 색상
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
+    );
 
     glEnableVertexAttribArray(1);
 
@@ -463,10 +471,6 @@ int main()
 
     GLuint modelLocation = glGetUniformLocation(shaderProgram, "model");
 
-
-
-
-
     StartMap(LS, RS);
 
     //------------------------------------------------------------------------------------------
@@ -477,12 +481,16 @@ int main()
         // 화면 지우기
         glClear(GL_COLOR_BUFFER_BIT);
 
-
         glBindVertexArray(VAO);
 
         DrawCenterLine(modelLocation);
 
-        for (int i = 0; i < 12; ++i) {
+        if (selectedShape != -1) {
+            glm::vec2 mousePosition = GetMousePosition(window);
+            LS[selectedShape].position = mousePosition + dragOffset;
+        }
+
+        for (int i = 0; i < 13; ++i) {
             DrawScenes(LS[i], modelLocation, ShapeSide::Left);
             DrawScenes(RS[i], modelLocation, ShapeSide::Right);
         }
@@ -510,7 +518,7 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
             if (IsInsideShape(LS[i], mousePosition)) {
                 selectedShape = i;
 
-                for (int j = 0; j < 12; ++j) {
+                for (int j = 0; j < 13; ++j) {
                     LS[j].selected = false;
                 }
 
@@ -523,7 +531,7 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 
         }
     }
-    else if (action == GLFW_RELEASE) {
+    else if (action == GLFW_RELEASE && button == GLFW_MOUSE_BUTTON_LEFT) {
         if (selectedShape == -1) {
             return;
         }
@@ -560,7 +568,12 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        StartMap(LS, RS);
+    }
+    else if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+        glfwDestroyWindow(window);
+    }
 }
 
 glm::vec2 GetMousePosition(GLFWwindow* window)
@@ -588,7 +601,9 @@ bool IsInsideShape(ShapeType& shape, glm::vec2 point)
         glm::vec2 a = vertexs[shape.vertexIndex][i] + shape.position;
         glm::vec2 b = vertexs[shape.vertexIndex][next] + shape.position;
 
-        float cross = (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+        float cross =
+            (b.x - a.x) * (point.y - a.y) -
+            (b.y - a.y) * (point.x - a.x);
 
         if (cross > 0.0f)
         {
@@ -640,14 +655,28 @@ void DrawScenes(ShapeType& shape, GLuint modelLocation, ShapeSide side)
 
     glm::mat4 model = MakeModelMatrix(shape);
 
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(
+        modelLocation,
+        1,
+        GL_FALSE,
+        &model[0][0]
+    );
 
     if (side == ShapeSide::Left) {
-        glDrawArrays(GL_TRIANGLE_FAN, 0, vertexCount[shape.type]);
+        glDrawArrays(
+            GL_TRIANGLE_FAN,
+            0,
+            vertexCount[shape.type]
+        );
     }
     else {
         glLineWidth(3.0f);
-        glDrawArrays(GL_LINE_LOOP, 0, vertexCount[shape.type]);
+
+        glDrawArrays(
+            GL_LINE_LOOP,
+            0,
+            vertexCount[shape.type]
+        );
     }
 }
 
@@ -688,9 +717,14 @@ bool IsOverlap(glm::vec4 a, glm::vec4 b)
     return true;
 }
 
-glm::vec2 GetRandomBoardPosition(glm::vec2 halfSize, glm::vec4 boards[], int boardCount)
+glm::vec2 GetRandomBoardPosition(
+    glm::vec2 halfSize,
+    glm::vec4 boards[],
+    int boardCount
+)
 {
     const float gap = 0.03f;
+    const int maxAttempt = 10000;
 
     std::uniform_real_distribution<float> xDist(
         halfSize.x + gap,
@@ -702,9 +736,13 @@ glm::vec2 GetRandomBoardPosition(glm::vec2 halfSize, glm::vec4 boards[], int boa
         1.0f - halfSize.y - gap
     );
 
-    while (true)
+    // 랜덤 위치 탐색
+    for (int attempt = 0; attempt < maxAttempt; ++attempt)
     {
-        glm::vec2 position(xDist(gen), yDist(gen));
+        glm::vec2 position(
+            xDist(gen),
+            yDist(gen)
+        );
 
         glm::vec4 newBoard(
             position.x - halfSize.x - gap,
@@ -730,6 +768,48 @@ glm::vec2 GetRandomBoardPosition(glm::vec2 halfSize, glm::vec4 boards[], int boa
             return position;
         }
     }
+
+    // 랜덤으로 찾지 못하면 일정한 간격으로 다시 탐색
+    const float step = 0.02f;
+
+    for (float x = halfSize.x + gap;
+        x <= 1.0f - halfSize.x - gap;
+        x += step)
+    {
+        for (float y = -1.0f + halfSize.y + gap;
+            y <= 1.0f - halfSize.y - gap;
+            y += step)
+        {
+            glm::vec2 position(x, y);
+
+            glm::vec4 newBoard(
+                position.x - halfSize.x - gap,
+                position.x + halfSize.x + gap,
+                position.y - halfSize.y - gap,
+                position.y + halfSize.y + gap
+            );
+
+            bool overlap = false;
+
+            for (int i = 0; i < boardCount; ++i)
+            {
+                if (IsOverlap(newBoard, boards[i]))
+                {
+                    overlap = true;
+                    break;
+                }
+            }
+
+            if (!overlap)
+            {
+                boards[boardCount] = newBoard;
+                return position;
+            }
+        }
+    }
+
+    // 현재 배치에서는 들어갈 공간이 없음
+    return glm::vec2(-2.0f);
 }
 
 int GetShapeType(int vertexIndex)
@@ -772,7 +852,10 @@ void StartMap(ShapeType ls[], ShapeType rs[])
         ls[index].type = 1;
         ls[index].MatchType = index;
         ls[index].vertexIndex = 4 + i;
-        ls[index].position = glm::vec2(-0.4f, 0.7f - i * 0.18f);
+        ls[index].position = glm::vec2(
+            -0.4f,
+            0.7f - i * 0.18f
+        );
         ls[index].color = glm::vec3(
             colorDist(gen),
             colorDist(gen),
@@ -803,7 +886,10 @@ void StartMap(ShapeType ls[], ShapeType rs[])
         ls[index].type = 2;
         ls[index].MatchType = index;
         ls[index].vertexIndex = 9 + i;
-        ls[index].position = glm::vec2(-0.7f, -0.2f - i * 0.3f);
+        ls[index].position = glm::vec2(
+            -0.7f,
+            -0.2f - i * 0.3f
+        );
         ls[index].color = glm::vec3(
             colorDist(gen),
             colorDist(gen),
@@ -844,7 +930,91 @@ void StartMap(ShapeType ls[], ShapeType rs[])
     // 오른쪽 모양판
     // ------------------------------------------------------------
 
-    glm::vec4 boards[5]{};
+    glm::vec2 board0;
+    glm::vec2 board1;
+    glm::vec2 board2;
+    glm::vec2 board3;
+    glm::vec2 board4;
+
+    // 랜덤 배치가 불가능한 경우 전체 보드 다시 배치
+    while (true)
+    {
+        glm::vec4 boards[5]{};
+
+        // ------------------------------------------------------------
+        // 첫 번째 모양판
+        // 사각형 4개
+        // ------------------------------------------------------------
+
+        board0 = GetRandomBoardPosition(
+            glm::vec2(0.16f, 0.12f),
+            boards,
+            0
+        );
+
+        if (board0.x < -1.5f)
+            continue;
+
+
+        // ------------------------------------------------------------
+        // 두 번째 모양판
+        // 삼각형 4개 + 가운데 사각형
+        // ------------------------------------------------------------
+
+        board1 = GetRandomBoardPosition(
+            glm::vec2(0.27f, 0.27f),
+            boards,
+            1
+        );
+
+        if (board1.x < -1.5f)
+            continue;
+
+
+        // ------------------------------------------------------------
+        // 세 번째 모양판
+        // 직각삼각형 2개
+        // ------------------------------------------------------------
+
+        board2 = GetRandomBoardPosition(
+            glm::vec2(0.12f, 0.20f),
+            boards,
+            2
+        );
+
+        if (board2.x < -1.5f)
+            continue;
+
+
+        // ------------------------------------------------------------
+        // 사용자 정의 도형 11
+        // ------------------------------------------------------------
+
+        board3 = GetRandomBoardPosition(
+            glm::vec2(0.08f, 0.20f),
+            boards,
+            3
+        );
+
+        if (board3.x < -1.5f)
+            continue;
+
+
+        // ------------------------------------------------------------
+        // 사용자 정의 도형 12
+        // ------------------------------------------------------------
+
+        board4 = GetRandomBoardPosition(
+            glm::vec2(0.20f, 0.08f),
+            boards,
+            4
+        );
+
+        if (board4.x < -1.5f)
+            continue;
+
+        break;
+    }
 
 
     // ------------------------------------------------------------
@@ -852,35 +1022,37 @@ void StartMap(ShapeType ls[], ShapeType rs[])
     // 사각형 4개
     // ------------------------------------------------------------
 
-    glm::vec2 board0 = GetRandomBoardPosition(
-        glm::vec2(0.16f, 0.12f),
-        boards,
-        0
-    );
-
     rs[0].type = 0;
     rs[0].MatchType = 0;
     rs[0].vertexIndex = 0;
     rs[0].position = board0 + glm::vec2(-0.08f, 0.06f);
     rs[0].color = glm::vec3(0.3f);
+    rs[0].selected = false;
+    rs[0].completed = false;
 
     rs[1].type = 0;
     rs[1].MatchType = 1;
     rs[1].vertexIndex = 0;
     rs[1].position = board0 + glm::vec2(0.08f, 0.06f);
     rs[1].color = glm::vec3(0.3f);
+    rs[1].selected = false;
+    rs[1].completed = false;
 
     rs[2].type = 0;
     rs[2].MatchType = 2;
     rs[2].vertexIndex = 0;
     rs[2].position = board0 + glm::vec2(-0.08f, -0.06f);
     rs[2].color = glm::vec3(0.3f);
+    rs[2].selected = false;
+    rs[2].completed = false;
 
     rs[3].type = 0;
     rs[3].MatchType = 3;
     rs[3].vertexIndex = 0;
     rs[3].position = board0 + glm::vec2(0.08f, -0.06f);
     rs[3].color = glm::vec3(0.3f);
+    rs[3].selected = false;
+    rs[3].completed = false;
 
 
     // ------------------------------------------------------------
@@ -888,41 +1060,45 @@ void StartMap(ShapeType ls[], ShapeType rs[])
     // 삼각형 4개 + 가운데 사각형
     // ------------------------------------------------------------
 
-    glm::vec2 board1 = GetRandomBoardPosition(
-        glm::vec2(0.27f, 0.27f),
-        boards,
-        1
-    );
-
     rs[4].type = 1;
     rs[4].MatchType = 4;
     rs[4].vertexIndex = 4;
     rs[4].position = board1 + glm::vec2(0.0f, 0.12f);
     rs[4].color = glm::vec3(0.3f);
+    rs[4].selected = false;
+    rs[4].completed = false;
 
     rs[5].type = 1;
     rs[5].MatchType = 5;
     rs[5].vertexIndex = 5;
     rs[5].position = board1 + glm::vec2(0.12f, 0.0f);
     rs[5].color = glm::vec3(0.3f);
+    rs[5].selected = false;
+    rs[5].completed = false;
 
     rs[6].type = 1;
     rs[6].MatchType = 6;
     rs[6].vertexIndex = 6;
     rs[6].position = board1 + glm::vec2(0.0f, -0.12f);
     rs[6].color = glm::vec3(0.3f);
+    rs[6].selected = false;
+    rs[6].completed = false;
 
     rs[7].type = 1;
     rs[7].MatchType = 7;
     rs[7].vertexIndex = 7;
     rs[7].position = board1 + glm::vec2(-0.12f, 0.0f);
     rs[7].color = glm::vec3(0.3f);
+    rs[7].selected = false;
+    rs[7].completed = false;
 
     rs[8].type = 0;
     rs[8].MatchType = 8;
     rs[8].vertexIndex = 8;
     rs[8].position = board1;
     rs[8].color = glm::vec3(0.3f);
+    rs[8].selected = false;
+    rs[8].completed = false;
 
 
     // ------------------------------------------------------------
@@ -930,23 +1106,21 @@ void StartMap(ShapeType ls[], ShapeType rs[])
     // 직각삼각형 2개
     // ------------------------------------------------------------
 
-    glm::vec2 board2 = GetRandomBoardPosition(
-        glm::vec2(0.12f, 0.20f),
-        boards,
-        2
-    );
-
     rs[9].type = 2;
     rs[9].MatchType = 9;
     rs[9].vertexIndex = 9;
     rs[9].position = board2;
     rs[9].color = glm::vec3(0.3f);
+    rs[9].selected = false;
+    rs[9].completed = false;
 
     rs[10].type = 2;
     rs[10].MatchType = 10;
     rs[10].vertexIndex = 10;
     rs[10].position = board2;
     rs[10].color = glm::vec3(0.3f);
+    rs[10].selected = false;
+    rs[10].completed = false;
 
 
     // ------------------------------------------------------------
@@ -956,22 +1130,18 @@ void StartMap(ShapeType ls[], ShapeType rs[])
     rs[11].type = 0;
     rs[11].MatchType = 11;
     rs[11].vertexIndex = 11;
-    rs[11].position = GetRandomBoardPosition(
-        glm::vec2(0.08f, 0.20f),
-        boards,
-        3
-    );
+    rs[11].position = board3;
     rs[11].color = glm::vec3(0.3f);
+    rs[11].selected = false;
+    rs[11].completed = false;
 
     rs[12].type = 0;
     rs[12].MatchType = 12;
     rs[12].vertexIndex = 12;
-    rs[12].position = GetRandomBoardPosition(
-        glm::vec2(0.20f, 0.08f),
-        boards,
-        4
-    );
+    rs[12].position = board4;
     rs[12].color = glm::vec3(0.3f);
+    rs[12].selected = false;
+    rs[12].completed = false;
 }
 
 void DrawCenterLine(GLuint modelLocation)
@@ -993,9 +1163,18 @@ void DrawCenterLine(GLuint modelLocation)
 
     glm::mat4 model(1.0f);
 
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(
+        modelLocation,
+        1,
+        GL_FALSE,
+        &model[0][0]
+    );
 
     glLineWidth(3.0f);
 
-    glDrawArrays(GL_LINES, 0, 2);
+    glDrawArrays(
+        GL_LINES,
+        0,
+        2
+    );
 }
