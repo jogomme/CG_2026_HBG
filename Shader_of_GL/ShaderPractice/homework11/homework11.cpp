@@ -24,6 +24,8 @@ void SetMap();
 
 void SetPlayer();
 
+void MovePlayer();
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -68,6 +70,7 @@ int BoardVertexCount = 0;
 int Pcol{};
 int Prow{};
 
+glm::vec2 startPosition;
 glm::vec2 playerPosition;
 glm::vec2 targetPosition;
 
@@ -76,6 +79,7 @@ const int PlayerVertexCount = 6;
 float moveTime = 0.2f;
 float moveProgress = 0.0f;
 bool moving = false;
+double lastTime{};
 
 
 //------------------------------------------------------------------------------------------------------
@@ -325,6 +329,9 @@ int main()
         // ------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT);
 
+
+        MovePlayer();
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -553,6 +560,47 @@ void SetPlayer()
     );
 }
 
+void MovePlayer()
+{
+    double currentTime = glfwGetTime();
+    double deltaTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    if (!moving) {
+        if (Pcol < BoardX - 1) {
+            startPosition = playerPosition;
+
+            targetPosition.x = playerPosition.x + cellWidth;
+            targetPosition.y = playerPosition.y;
+
+            moveProgress = 0.0f;
+            moving = true;
+        }
+    }
+
+    if (moving)
+    {
+        moveProgress += static_cast<float>(deltaTime / moveTime);
+
+        if (moveProgress >= 1.0f)
+        {
+            moveProgress = 1.0f;
+            moving = false;
+
+            playerPosition = targetPosition;
+
+            ++Pcol;
+        }
+        else
+        {
+            playerPosition = startPosition +
+                (targetPosition - startPosition) * moveProgress;
+        }
+
+        SetPlayer();
+    }
+
+}
 
 
 bool CheckShader(GLuint shader)
