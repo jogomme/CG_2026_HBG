@@ -74,13 +74,19 @@ glm::vec2 startPosition;
 glm::vec2 playerPosition;
 glm::vec2 targetPosition;
 
+int targetCol{};
+int targetRow{};
+
 const int PlayerVertexCount = 6;
 
 float moveTime = 0.2f;
 float moveProgress = 0.0f;
 bool moving = false;
+
 double lastTime{};
 
+// 1 오른 , -1 왼
+int moveDirection = 1;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -388,6 +394,14 @@ void SetAll()
 {
     SetMap();
     SetPlayer();
+
+    moving = false;
+    moveProgress = 0.0f;
+    lastTime = glfwGetTime();
+    targetPosition = playerPosition;
+
+    targetRow = Prow;
+    targetCol = Pcol;
 }
 
 void SetMap()
@@ -566,16 +580,49 @@ void MovePlayer()
     double deltaTime = currentTime - lastTime;
     lastTime = currentTime;
 
-    if (!moving) {
-        if (Pcol < BoardX - 1) {
-            startPosition = playerPosition;
+    if (!moving)
+    {
+        targetRow = Prow;
+        targetCol = Pcol;
 
-            targetPosition.x = playerPosition.x + cellWidth;
-            targetPosition.y = playerPosition.y;
-
-            moveProgress = 0.0f;
-            moving = true;
+        if (moveDirection == 1)
+        {
+            if (Pcol < BoardX - 1)
+            {
+                targetCol = Pcol + 1;
+            }
+            else if (Prow < BoardY - 1)
+            {
+                targetRow = Prow + 1;
+            }
+            else
+            {
+                return;
+            }
         }
+        else
+        {
+            if (Pcol > 0)
+            {
+                targetCol = Pcol - 1;
+            }
+            else if (Prow < BoardY - 1)
+            {
+                targetRow = Prow + 1;
+            }
+            else
+            {
+                return;
+            }
+        }
+
+        startPosition = playerPosition;
+
+        targetPosition.x = -1.0f + cellWidth * (targetCol + 0.5f);
+        targetPosition.y = 1.0f - cellHeight * (targetRow + 0.5f);
+
+        moveProgress = 0.0f;
+        moving = true;
     }
 
     if (moving)
@@ -589,7 +636,15 @@ void MovePlayer()
 
             playerPosition = targetPosition;
 
-            ++Pcol;
+            bool rowChanged = (targetRow != Prow);
+
+            Prow = targetRow;
+            Pcol = targetCol;
+
+            if (rowChanged)
+            {
+                moveDirection *= -1;
+            }
         }
         else
         {
@@ -599,7 +654,6 @@ void MovePlayer()
 
         SetPlayer();
     }
-
 }
 
 
