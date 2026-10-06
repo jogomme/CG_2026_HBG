@@ -1,4 +1,4 @@
-#include <GL/glew.h>
+﻿#include <GL/glew.h>
 #include <GL/glfw3.h>
 #include <GL/glm/glm.hpp>
 #include <GL/glm/gtc/matrix_transform.hpp>
@@ -17,6 +17,8 @@ bool CheckShader(GLuint shader);
 bool CheckProgram(GLuint program);
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
+void SetMap();
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -48,14 +50,9 @@ int height = 1200;
 GLuint VAO;
 GLuint VBO;
 
-GLuint BoardVAO;
+int BoardX = 20;
+int BoardY = 20;
 
-const int BoardSize = 20;
-
-const float BOARD_LEFT = -0.75f;
-const float BOARD_RIGHT = 0.75f;
-const float BOARD_BOTTOM = -1.0f;
-const float BOARD_TOP = 1.0f;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -283,6 +280,8 @@ int main()
 
     GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
 
+    SetMap();
+
     //------------------------------------------------------------------------------------------
     // 메인 루프
     //------------------------------------------------------------------------------------------
@@ -333,6 +332,24 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 }
+
+void SetMap()
+{
+    while (true) {
+        std::cout << "( x, y ) : ";
+
+        std::cin >> BoardX >> BoardY;
+
+        if (BoardX >= 10 && BoardX <= 30 && BoardY >= 10 && BoardY <= 30) {
+            break;
+        }
+        else {
+            std::cout << "다른 값 다시 입력하세요 '\n";
+        }
+    }
+    
+}
+
 
 bool CheckShader(GLuint shader)
 {
