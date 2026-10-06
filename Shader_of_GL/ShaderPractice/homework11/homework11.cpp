@@ -40,6 +40,8 @@ float vertices[] = {
      0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f
 };
 
+
+
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------------------
@@ -53,6 +55,10 @@ GLuint VBO;
 int BoardX = 20;
 int BoardY = 20;
 
+double cellWidth{};
+double cellHeight{};
+
+int BoardVertexCount = 0;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -298,9 +304,9 @@ int main()
         glBindVertexArray(VAO);
 
         glDrawArrays(
-            GL_TRIANGLES,
+            GL_LINES,
             0,
-            3
+            BoardVertexCount
         );
 
         glfwSwapBuffers(window);
@@ -319,6 +325,8 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
 }
+//------------------------------------------------------------------------------------------------------
+
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -335,6 +343,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void SetMap()
 {
+    std::cout << "=============================================================" << '\n';
+
     while (true) {
         std::cout << "( x, y ) : ";
 
@@ -347,7 +357,73 @@ void SetMap()
             std::cout << "다른 값 다시 입력하세요 '\n";
         }
     }
+
+    cellWidth = 2.0f / BoardX;
+    cellHeight = 2.0f / BoardY;
     
+    // 가로 세로 줄 그리기
+    float BoardVertices[124]{};
+
+    int index{};
+
+    for (int row = 0; row <= BoardY; ++row) {
+        
+        float y = 1.0f - cellHeight * row;
+
+
+        BoardVertices[index++] = -1.0f;     //x
+        BoardVertices[index++] = y;         //y
+        BoardVertices[index++] = 0.0f;      //z
+
+        BoardVertices[index++] = 0.5f;   // r
+        BoardVertices[index++] = 0.5f;   // g
+        BoardVertices[index++] = 0.5f;   // b
+
+        // 오른쪽
+        BoardVertices[index++] = 1.0f;
+        BoardVertices[index++] = y;
+        BoardVertices[index++] = 0.0f;
+
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+
+    }
+
+    for (int col = 0; col <= BoardX; col++)
+    {
+        float x = -1.0f + cellWidth * col;
+
+        // 아래
+        BoardVertices[index++] = x;
+        BoardVertices[index++] = -1.0f;
+        BoardVertices[index++] = 0.0f;
+
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+
+        // 위
+        BoardVertices[index++] = x;
+        BoardVertices[index++] = 1.0f;
+        BoardVertices[index++] = 0.0f;
+
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+    }
+
+    BoardVertexCount = index / 6;
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        BoardVertexCount * 6 * sizeof(float),
+        BoardVertices,
+        GL_STATIC_DRAW
+    );
+
 }
 
 
