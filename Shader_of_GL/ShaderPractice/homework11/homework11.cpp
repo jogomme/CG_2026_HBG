@@ -20,6 +20,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 void SetMap();
 
+void SetPlayer();
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -59,6 +61,20 @@ double cellWidth{};
 double cellHeight{};
 
 int BoardVertexCount = 0;
+
+//Player
+int Pcol{};
+int Prow{};
+
+glm::vec2 playerPosition;
+glm::vec2 targetPosition;
+
+const int PlayerVertexCount = 6;
+
+float moveTime = 0.2f;
+float moveProgress = 0.0f;
+bool moving = false;
+
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -318,6 +334,12 @@ int main()
             BoardVertexCount
         );
 
+        glDrawArrays(
+            GL_TRIANGLES,
+            BoardVertexCount,
+            PlayerVertexCount
+        );
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -431,13 +453,97 @@ void SetMap()
 
     glBufferData(
         GL_ARRAY_BUFFER,
-        BoardVertexCount * 6 * sizeof(float),
-        BoardVertices,
-        GL_STATIC_DRAW
+        (BoardVertexCount + PlayerVertexCount) * 6 * sizeof(float),
+        nullptr,
+        GL_DYNAMIC_DRAW
     );
 
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        BoardVertexCount * 6 * sizeof(float),
+        BoardVertices
+    );
+
+    playerPosition.x = -1.0f + cellWidth * 0.5f;
+    playerPosition.y = 1.0f - cellHeight * 0.5f;
+
+    Prow = 0;
+    Pcol = 0;
 }
 
+void SetPlayer()
+{
+    float playerWidth = cellWidth * 0.8f;
+    float playerHeight = cellHeight * 0.8f;
+
+    float left = playerPosition.x - playerWidth * 0.5f;
+    float right = playerPosition.x + playerWidth * 0.5f;
+
+    float bottom = playerPosition.y - playerHeight * 0.5f;
+    float top = playerPosition.y + playerHeight * 0.5f;
+
+    float PlayerVertices[6 * 6]{};
+
+    int index{};
+
+    // 왼쪽 아래
+    PlayerVertices[index++] = left;
+    PlayerVertices[index++] = bottom;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 1.0f;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 0.0f;
+
+    // 오른쪽 아래
+    PlayerVertices[index++] = right;
+    PlayerVertices[index++] = bottom;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 1.0f;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 0.0f;
+
+    // 오른쪽 위
+    PlayerVertices[index++] = right;
+    PlayerVertices[index++] = top;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 1.0f;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 0.0f;
+
+    // 왼쪽 아래
+    PlayerVertices[index++] = left;
+    PlayerVertices[index++] = bottom;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 1.0f;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 0.0f;
+
+    // 오른쪽 위
+    PlayerVertices[index++] = right;
+    PlayerVertices[index++] = top;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 1.0f;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 0.0f;
+
+    // 왼쪽 위
+    PlayerVertices[index++] = left;
+    PlayerVertices[index++] = top;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 1.0f;
+    PlayerVertices[index++] = 0.0f;
+    PlayerVertices[index++] = 0.0f;
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        BoardVertexCount * 6 * sizeof(float),
+        sizeof(PlayerVertices),
+        PlayerVertices
+    );
+}
 
 bool CheckShader(GLuint shader)
 {
