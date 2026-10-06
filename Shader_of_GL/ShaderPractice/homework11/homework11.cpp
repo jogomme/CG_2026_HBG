@@ -286,6 +286,15 @@ int main()
 
     GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
 
+    glm::mat4 model(1.0f);
+
+    glUniformMatrix4fv(
+        modelLocation,
+        1,
+        GL_FALSE,
+        &model[0][0]
+    );
+
     SetMap();
 
     //------------------------------------------------------------------------------------------
@@ -339,6 +348,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
+    else if (key == GLFW_KEY_R) {
+        SetMap();
+    }
 }
 
 void SetMap()
@@ -362,7 +374,7 @@ void SetMap()
     cellHeight = 2.0f / BoardY;
     
     // 가로 세로 줄 그리기
-    float BoardVertices[124]{};
+    float BoardVertices[124 * 6]{};
 
     int index{};
 
