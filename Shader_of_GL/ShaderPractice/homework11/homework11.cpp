@@ -18,6 +18,8 @@ bool CheckProgram(GLuint program);
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
+void SetAll();
+
 void SetMap();
 
 void SetPlayer();
@@ -311,7 +313,7 @@ int main()
         &model[0][0]
     );
 
-    SetMap();
+    SetAll();
 
     //------------------------------------------------------------------------------------------
     // 메인 루프
@@ -371,8 +373,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
     else if (key == GLFW_KEY_R) {
-        SetMap();
+        SetAll();
     }
+}
+
+void SetAll()
+{
+    SetMap();
+    SetPlayer();
 }
 
 void SetMap()
@@ -544,6 +552,8 @@ void SetPlayer()
         PlayerVertices
     );
 }
+
+
 
 bool CheckShader(GLuint shader)
 {
