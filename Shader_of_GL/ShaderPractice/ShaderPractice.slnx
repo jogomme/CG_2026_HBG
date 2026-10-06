@@ -4,6 +4,9 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="homework10/homework10.vcxproj" Id="5dd29869-22f4-4fc0-ab2c-a3ead2aef7a8" />
+  <Project Path="homework11/homework11.vcxproj">
+    <Platform Project="x64" />
+  </Project>
   <Project Path="homework7/homework7.vcxproj" Id="e1ae6061-e7d2-4704-a765-50c8027efa5a" />
   <Project Path="homework8/homework8.vcxproj" Id="23ca1959-27c1-40c4-adb4-fa487414a31d" />
   <Project Path="homework9/homework9.vcxproj" Id="de85f154-7ad4-4def-b0f2-e03867243d73" />
