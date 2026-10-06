@@ -10,14 +10,13 @@
 // 함수 선언
 //------------------------------------------------------------------------------------------------------
 
-void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // 셰이더 컴파일 / 링크 결과 확인
 bool CheckShader(GLuint shader);
 
 bool CheckProgram(GLuint program);
 
-glm::mat4 MakeModelMatrix(float angle);
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -43,11 +42,20 @@ float vertices[] = {
 // 전역 변수
 //------------------------------------------------------------------------------------------------------
 
-int wide = 1600;
+int wide = 1200;
 int height = 1200;
 
 GLuint VAO;
 GLuint VBO;
+
+GLuint BoardVAO;
+
+const int BoardSize = 20;
+
+const float BOARD_LEFT = -0.75f;
+const float BOARD_RIGHT = 0.75f;
+const float BOARD_BOTTOM = -1.0f;
+const float BOARD_TOP = 1.0f;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -286,20 +294,6 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         // ------------------------------------------------------------
-        // 회전 각도 계산
-        // ------------------------------------------------------------
-        float angle = static_cast<float>(glfwGetTime()) * glm::radians(90.0f);
-
-        glm::mat4 model = MakeModelMatrix(angle);
-
-        glUniformMatrix4fv(
-            modelLocation,
-            1,
-            GL_FALSE,
-            &model[0][0]
-        );
-
-        // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
         glBindVertexArray(VAO);
@@ -400,15 +394,3 @@ bool CheckProgram(GLuint program)
     return true;
 }
 
-glm::mat4 MakeModelMatrix(float angle)
-{
-    glm::mat4 model(1.0f);
-
-    model = glm::rotate(
-        model,
-        angle,
-        glm::vec3(0.0f, 0.0f, 1.0f)
-    );
-
-    return model;
-}
