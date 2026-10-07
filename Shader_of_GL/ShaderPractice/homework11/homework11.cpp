@@ -123,13 +123,13 @@ int moveDirection = 1;
 
 // 장애물
 
-Obstacle ob[100]{};
+Obstacle ob[1000]{};
 
 int obstacleCount;
 
 int ObstacleVertexCount{};
 
-const int MaxObstacleCount = 100;
+const int MaxObstacleCount = 1000;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -693,7 +693,7 @@ void SetObstacleCount()
 
 void SetObstacle()
 {
-    float ObstacleVertices[100 * 4 * 6]{};
+    float ObstacleVertices[1000 * 4 * 6]{};
 
     int index{};
 
@@ -763,7 +763,7 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.b;
 
             // 오른쪽 위
-            ObstacleVertices[index++] = right;
+            ObstacleVertices[index++] = left;
             ObstacleVertices[index++] = top;
             ObstacleVertices[index++] = 0.0f;
 
@@ -771,8 +771,7 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.g;
             ObstacleVertices[index++] = ob[i].color.b;
 
-            // 오른쪽 위
-            ObstacleVertices[index++] = left;
+            ObstacleVertices[index++] = right;
             ObstacleVertices[index++] = top;
             ObstacleVertices[index++] = 0.0f;
 
