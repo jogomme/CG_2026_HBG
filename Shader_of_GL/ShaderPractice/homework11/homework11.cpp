@@ -481,13 +481,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isS = !isS;
     }
     else if (key == GLFW_KEY_EQUAL) {
-        PM -= 0.01f;
-        if(PM < 0.05){
-            PM = 0.05;
-        }
+        PM += 0.1f;
     }
     else if (key == GLFW_KEY_MINUS) {
-        PM += 0.01f;
+        PM -= 0.1f;
+
+        if (PM < 0.05f) {
+            PM = 0.05f;
+        }
     }
 }
 
