@@ -4,7 +4,31 @@
 #include <GL/glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
+#include<random>
 #include <cmath>
+
+//------------------------------------------------------------------------------------------------------
+// 랜덤 엔진
+//------------------------------------------------------------------------------------------------------
+std::random_device rd;
+std::mt19937 gen(rd());
+
+std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+std::uniform_real_distribution<int> typeDist(1,3);
+std::uniform_real_distribution<int> vecDist(0, 29);
+
+//------------------------------------------------------------------------------------------------------
+// 구조체 선언
+//------------------------------------------------------------------------------------------------------
+
+struct Obstacle
+{
+    int row{-1};
+    int col{-1};
+    int type;
+    float size;
+    glm::vec3 color;
+};
 
 //------------------------------------------------------------------------------------------------------
 // 함수 선언
@@ -23,6 +47,8 @@ void SetAll();
 void SetMap();
 
 void SetPlayer();
+
+void SetObstacleCount();
 
 void MovePlayer();
 
@@ -87,6 +113,12 @@ double lastTime{};
 
 // 1 오른 , -1 왼
 int moveDirection = 1;
+
+// 장애물
+
+Obstacle ob[100]{};
+
+int obstacleCount;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -394,6 +426,7 @@ void SetAll()
 {
     SetMap();
     SetPlayer();
+    SetObstacleCount();
 
     moving = false;
     moveProgress = 0.0f;
@@ -572,6 +605,54 @@ void SetPlayer()
         sizeof(PlayerVertices),
         PlayerVertices
     );
+}
+
+void SetObstacleCount()
+{
+    std::cout << "=============================================================" << '\n';
+
+    while (true) {
+        std::cout << "배치 갯수 : ";
+        std::cin >> obstacleCount;
+
+        if (obstacleCount >= 1) {
+            break;
+        }
+    }
+
+    for (int i = 0; i < obstacleCount; ++i) {
+
+        while (true) {
+            int row = vecDist(gen);
+            int col = vecDist(gen);
+
+            if (row > BoardY || col > BoardX) {
+                continue;
+            }
+
+            for (int j = 0; j < i; ++j) {
+                if (row == ob[j].row && col == ob[j].col) {
+                    continue;
+                }
+            }
+
+            ob[i].col = col;
+            ob[i].row = row;
+
+            glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
+            ob[i].color = color;
+            
+            ob[i].size  = (cellWidth < cellHeight ? cellWidth : cellHeight) * 0.8f;
+            
+            ob[i].type = typeDist(gen);
+
+            break;
+        }
+
+    }
+
+
+
 }
 
 void MovePlayer()
