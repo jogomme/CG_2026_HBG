@@ -7,6 +7,13 @@
 #include<random>
 #include <cmath>
 
+
+int wide = 1200;
+int height = 1200;
+
+int BoardX = 20;
+int BoardY = 20;
+
 //------------------------------------------------------------------------------------------------------
 // 랜덤 엔진
 //------------------------------------------------------------------------------------------------------
@@ -15,7 +22,8 @@ std::mt19937 gen(rd());
 
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
 std::uniform_int_distribution<int> typeDist(1,3);
-std::uniform_int_distribution<int> vecDist(0, 29);
+std::uniform_int_distribution<int> rowDist(1, BoardY - 1);
+std::uniform_int_distribution<int> colDist(1, BoardX - 1);
 
 //------------------------------------------------------------------------------------------------------
 // 구조체 선언
@@ -28,6 +36,9 @@ struct Obstacle
     int type;
     float size;
     glm::vec3 color;
+
+    int vertexStart{};
+    int vertexCount{};
 };
 
 //------------------------------------------------------------------------------------------------------
@@ -78,14 +89,10 @@ float vertices[] = {
 // 전역 변수
 //------------------------------------------------------------------------------------------------------
 
-int wide = 1200;
-int height = 1200;
 
 GLuint VAO;
 GLuint VBO;
 
-int BoardX = 20;
-int BoardY = 20;
 
 double cellWidth{};
 double cellHeight{};
@@ -391,11 +398,25 @@ int main()
             PlayerVertexCount
         );
 
-        glDrawArrays(
-            GL_TRIANGLES,
-            BoardVertexCount + PlayerVertexCount,
-            ObstacleVertexCount
-        );
+        for (int i = 0; i < obstacleCount; ++i)
+        {
+            if (ob[i].type == 2)
+            {
+                glDrawArrays(
+                    GL_TRIANGLE_STRIP,
+                    ob[i].vertexStart,
+                    ob[i].vertexCount
+                );
+            }
+            else
+            {
+                glDrawArrays(
+                    GL_TRIANGLES,
+                    ob[i].vertexStart,
+                    ob[i].vertexCount
+                );
+            }
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -626,20 +647,21 @@ void SetObstacleCount()
         std::cout << "배치 갯수 : ";
         std::cin >> obstacleCount;
 
-        if (obstacleCount >= 1 || obstacleCount >= BoardX * BoardY) {
+        if (obstacleCount >= 1 && obstacleCount <= BoardX * BoardY) {
             break;
         }
     }
 
     for (int i = 0; i < obstacleCount; ++i) {
 
-        bool isgood{ true };
-
         while (true) {
-            int row = vecDist(gen);
-            int col = vecDist(gen);
+            int row = rowDist(gen);
+            int col = colDist(gen);
 
             if (!(row >= BoardY || col >= BoardX)) {
+                
+                bool isgood{ true };
+
                 for (int j = 0; j < i; ++j) {
                     if (row == ob[j].row && col == ob[j].col) {
                         isgood = false;
@@ -688,6 +710,9 @@ void SetObstacle()
         float right = x + halfSize;
         float bottom = y - halfSize;
         float top = y + halfSize;
+
+        ob[i].vertexStart = BoardVertexCount + PlayerVertexCount + index / 6;
+        ob[i].vertexCount = 3;
 
         if (type == 1) {
             // 왼쪽 아래
@@ -754,6 +779,8 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.r;
             ObstacleVertices[index++] = ob[i].color.g;
             ObstacleVertices[index++] = ob[i].color.b;
+
+            ob[i].vertexCount = 4;
 
         }
         else if (type == 3)
