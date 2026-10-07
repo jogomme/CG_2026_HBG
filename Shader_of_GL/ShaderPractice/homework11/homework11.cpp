@@ -11,8 +11,8 @@
 int wide = 1200;
 int height = 1200;
 
-int BoardX = 20;
-int BoardY = 20;
+int BoardX = 30;
+int BoardY = 30;    
 
 //------------------------------------------------------------------------------------------------------
 // 랜덤 엔진
@@ -65,6 +65,8 @@ void SetObstacle();
 
 void MovePlayer();
 
+int CheckAttack();
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -100,6 +102,9 @@ double cellHeight{};
 int BoardVertexCount = 0;
 
 //Player
+
+int pType{2};
+
 int Pcol{};
 int Prow{};
 
@@ -827,7 +832,6 @@ void SetObstacle()
     );
 }
 
-
 void MovePlayer()
 {
     double currentTime = glfwGetTime();
@@ -908,6 +912,28 @@ void MovePlayer()
 
         SetPlayer();
     }
+    int checked = CheckAttack();
+
+    if (checked >= 0) {
+        int tmp = pType;
+        pType = ob[checked].type;
+        ob[checked].type = tmp;
+    }
+
+}
+
+int CheckAttack()
+{
+    for (int i = 0; i < obstacleCount; ++i)
+    {
+        if (Prow == ob[i].row && Pcol == ob[i].col)
+        {
+            std::cout << i << " is Checked" << '\n';
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 bool CheckShader(GLuint shader)
