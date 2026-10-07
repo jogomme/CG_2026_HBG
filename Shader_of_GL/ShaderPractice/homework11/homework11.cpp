@@ -4,7 +4,7 @@
 #include <GL/glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include<random>
+#include <random>
 #include <cmath>
 
 
@@ -12,7 +12,7 @@ int wide = 1200;
 int height = 1200;
 
 int BoardX = 30;
-int BoardY = 30;    
+int BoardY = 30;
 
 //------------------------------------------------------------------------------------------------------
 // 랜덤 엔진
@@ -21,9 +21,7 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
-std::uniform_int_distribution<int> typeDist(1,3);
-std::uniform_int_distribution<int> rowDist(1, BoardY - 1);
-std::uniform_int_distribution<int> colDist(1, BoardX - 1);
+std::uniform_int_distribution<int> typeDist(1, 3);
 
 //------------------------------------------------------------------------------------------------------
 // 구조체 선언
@@ -31,8 +29,8 @@ std::uniform_int_distribution<int> colDist(1, BoardX - 1);
 
 struct Obstacle
 {
-    int row{-1};
-    int col{-1};
+    int row{ -1 };
+    int col{ -1 };
     int type;
     float size;
     glm::vec3 color;
@@ -67,6 +65,8 @@ void MovePlayer();
 
 int CheckAttack();
 
+void UpdateCollisionEffect(float deltaTime);
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -83,8 +83,8 @@ float vertices[] = {
     // 1 : 오른쪽 아래
      0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,
 
-    // 2 : 위쪽
-     0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f
+     // 2 : 위쪽
+      0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f
 };
 
 //------------------------------------------------------------------------------------------------------
@@ -101,9 +101,10 @@ double cellHeight{};
 
 int BoardVertexCount = 0;
 
-//Player
+// Player
 
-int pType{2};
+int pType{ 2 };
+int PlayerDrawVertexCount = 6;
 
 int Pcol{};
 int Prow{};
@@ -121,10 +122,23 @@ float moveTime = 0.2f;
 float moveProgress = 0.0f;
 bool moving = false;
 
+float PM{ 1 };
+
 double lastTime{};
 
-// 1 오른 , -1 왼
+// 1 오른쪽, -1 왼쪽
 int moveDirection = 1;
+
+// 플레이어 색
+glm::vec3 playerColor{ 0.0f, 1.0f, 0.0f };
+
+// 충돌 효과
+bool collisionEffect = false;
+float collisionEffectTime = 0.0f;
+float colorChangeTime = 0.0f;
+
+const float collisionEffectDuration = 1.0f;
+const float colorChangeInterval = 0.1f;
 
 // 장애물
 
@@ -135,6 +149,9 @@ int obstacleCount;
 int ObstacleVertexCount{};
 
 const int MaxObstacleCount = 1000;
+
+
+bool isS{ false };
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -383,7 +400,6 @@ int main()
         // ------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT);
 
-
         MovePlayer();
 
         // ------------------------------------------------------------
@@ -391,18 +407,21 @@ int main()
         // ------------------------------------------------------------
         glBindVertexArray(VAO);
 
+        // 보드
         glDrawArrays(
             GL_LINES,
             0,
             BoardVertexCount
         );
 
+        // 플레이어
         glDrawArrays(
             GL_TRIANGLES,
             BoardVertexCount,
-            PlayerVertexCount
+            PlayerDrawVertexCount
         );
 
+        // 장애물
         for (int i = 0; i < obstacleCount; ++i)
         {
             if (ob[i].type == 2)
@@ -439,6 +458,7 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
 }
+
 //------------------------------------------------------------------------------------------------------
 
 
@@ -453,14 +473,37 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
-    else if (key == GLFW_KEY_R) {
+    else if (key == GLFW_KEY_R)
+    {
         SetAll();
+    }
+    else if (key == GLFW_KEY_S) {
+        isS = !isS;
+    }
+    else if (key == GLFW_KEY_EQUAL) {
+        PM -= 0.01f;
+        if(PM < 0.05){
+            PM = 0.05;
+        }
+    }
+    else if (key == GLFW_KEY_MINUS) {
+        PM += 0.01f;
     }
 }
 
 void SetAll()
 {
     SetMap();
+
+    pType = 2;
+    PlayerDrawVertexCount = 6;
+
+    playerColor = { 0.0f, 1.0f, 0.0f };
+
+    collisionEffect = false;
+    collisionEffectTime = 0.0f;
+    colorChangeTime = 0.0f;
+
     SetPlayer();
     SetObstacleCount();
     SetObstacle();
@@ -472,45 +515,51 @@ void SetAll()
 
     targetRow = Prow;
     targetCol = Pcol;
+
+    moveDirection = 1;
 }
 
 void SetMap()
 {
     std::cout << "=============================================================" << '\n';
 
-    while (true) {
+    while (true)
+    {
         std::cout << "( x, y ) : ";
 
         std::cin >> BoardX >> BoardY;
 
-        if (BoardX >= 10 && BoardX <= 30 && BoardY >= 10 && BoardY <= 30) {
+        if (BoardX >= 10 && BoardX <= 30 &&
+            BoardY >= 10 && BoardY <= 30)
+        {
             break;
         }
-        else {
-            std::cout << "다른 값 다시 입력하세요 '\n";
+        else
+        {
+            std::cout << "다른 값 다시 입력하세요\n";
         }
     }
 
     cellWidth = 2.0f / BoardX;
     cellHeight = 2.0f / BoardY;
-    
+
     // 가로 세로 줄 그리기
     float BoardVertices[124 * 6]{};
 
     int index{};
 
-    for (int row = 0; row <= BoardY; ++row) {
-        
+    for (int row = 0; row <= BoardY; ++row)
+    {
         float y = 1.0f - cellHeight * row;
 
+        // 왼쪽
+        BoardVertices[index++] = -1.0f;
+        BoardVertices[index++] = y;
+        BoardVertices[index++] = 0.0f;
 
-        BoardVertices[index++] = -1.0f;     //x
-        BoardVertices[index++] = y;         //y
-        BoardVertices[index++] = 0.0f;      //z
-
-        BoardVertices[index++] = 0.5f;   // r
-        BoardVertices[index++] = 0.5f;   // g
-        BoardVertices[index++] = 0.5f;   // b
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
+        BoardVertices[index++] = 0.5f;
 
         // 오른쪽
         BoardVertices[index++] = 1.0f;
@@ -520,7 +569,6 @@ void SetMap()
         BoardVertices[index++] = 0.5f;
         BoardVertices[index++] = 0.5f;
         BoardVertices[index++] = 0.5f;
-
     }
 
     for (int col = 0; col <= BoardX; col++)
@@ -552,7 +600,8 @@ void SetMap()
 
     glBufferData(
         GL_ARRAY_BUFFER,
-        (BoardVertexCount + PlayerVertexCount + MaxObstacleCount * 4) * 6 * sizeof(float),
+        (BoardVertexCount + PlayerVertexCount + MaxObstacleCount * 4)
+        * 6 * sizeof(float),
         nullptr,
         GL_DYNAMIC_DRAW
     );
@@ -564,6 +613,7 @@ void SetMap()
         BoardVertices
     );
 
+    // 플레이어 시작 위치
     playerPosition.x = -1.0f + cellWidth * 0.5f;
     playerPosition.y = 1.0f - cellHeight * 0.5f;
 
@@ -586,53 +636,134 @@ void SetPlayer()
 
     int index{};
 
-    // 왼쪽 아래
-    PlayerVertices[index++] = left;
-    PlayerVertices[index++] = bottom;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 1.0f;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 0.0f;
+    PlayerDrawVertexCount = 6;
 
-    // 오른쪽 아래
-    PlayerVertices[index++] = right;
-    PlayerVertices[index++] = bottom;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 1.0f;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 0.0f;
+    if (pType == 1)
+    {
+        // 삼각형
 
-    // 오른쪽 위
-    PlayerVertices[index++] = right;
-    PlayerVertices[index++] = top;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 1.0f;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 0.0f;
+        // 왼쪽 아래
+        PlayerVertices[index++] = left;
+        PlayerVertices[index++] = bottom;
+        PlayerVertices[index++] = 0.0f;
 
-    // 왼쪽 아래
-    PlayerVertices[index++] = left;
-    PlayerVertices[index++] = bottom;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 1.0f;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 0.0f;
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
 
-    // 오른쪽 위
-    PlayerVertices[index++] = right;
-    PlayerVertices[index++] = top;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 1.0f;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 0.0f;
+        // 오른쪽 아래
+        PlayerVertices[index++] = right;
+        PlayerVertices[index++] = bottom;
+        PlayerVertices[index++] = 0.0f;
 
-    // 왼쪽 위
-    PlayerVertices[index++] = left;
-    PlayerVertices[index++] = top;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 1.0f;
-    PlayerVertices[index++] = 0.0f;
-    PlayerVertices[index++] = 0.0f;
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 위쪽
+        PlayerVertices[index++] = playerPosition.x;
+        PlayerVertices[index++] = top;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        PlayerDrawVertexCount = 3;
+    }
+    else if (pType == 2)
+    {
+        // 사각형
+
+        // 왼쪽 아래
+        PlayerVertices[index++] = left;
+        PlayerVertices[index++] = bottom;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 오른쪽 아래
+        PlayerVertices[index++] = right;
+        PlayerVertices[index++] = bottom;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 오른쪽 위
+        PlayerVertices[index++] = right;
+        PlayerVertices[index++] = top;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 왼쪽 아래
+        PlayerVertices[index++] = left;
+        PlayerVertices[index++] = bottom;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 오른쪽 위
+        PlayerVertices[index++] = right;
+        PlayerVertices[index++] = top;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 왼쪽 위
+        PlayerVertices[index++] = left;
+        PlayerVertices[index++] = top;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        PlayerDrawVertexCount = 6;
+    }
+    else if (pType == 3)
+    {
+        // 역삼각형
+
+        // 왼쪽 위
+        PlayerVertices[index++] = left;
+        PlayerVertices[index++] = top;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 오른쪽 위
+        PlayerVertices[index++] = right;
+        PlayerVertices[index++] = top;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        // 아래쪽
+        PlayerVertices[index++] = playerPosition.x;
+        PlayerVertices[index++] = bottom;
+        PlayerVertices[index++] = 0.0f;
+
+        PlayerVertices[index++] = playerColor.r;
+        PlayerVertices[index++] = playerColor.g;
+        PlayerVertices[index++] = playerColor.b;
+
+        PlayerDrawVertexCount = 3;
+    }
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
@@ -648,52 +779,72 @@ void SetObstacleCount()
 {
     std::cout << "=============================================================" << '\n';
 
-    while (true) {
+    while (true)
+    {
         std::cout << "배치 갯수 : ";
         std::cin >> obstacleCount;
 
-        if (obstacleCount >= 1 && obstacleCount <= BoardX * BoardY) {
+        // 플레이어 시작 칸 (0,0)은 제외
+        if (obstacleCount >= 1 &&
+            obstacleCount <= BoardX * BoardY - 1)
+        {
             break;
         }
     }
 
-    for (int i = 0; i < obstacleCount; ++i) {
+    // 현재 보드 크기에 맞춰 랜덤 범위 생성
+    std::uniform_int_distribution<int> rowDist(0, BoardY - 1);
+    std::uniform_int_distribution<int> colDist(0, BoardX - 1);
 
-        while (true) {
+    for (int i = 0; i < obstacleCount; ++i)
+    {
+        while (true)
+        {
             int row = rowDist(gen);
             int col = colDist(gen);
 
-            if (!(row >= BoardY || col >= BoardX)) {
-                
-                bool isgood{ true };
+            // 플레이어 시작 위치에는 배치하지 않음
+            if (row == 0 && col == 0)
+            {
+                continue;
+            }
 
-                for (int j = 0; j < i; ++j) {
-                    if (row == ob[j].row && col == ob[j].col) {
-                        isgood = false;
-                    }
-                }
+            bool isgood{ true };
 
-                if (isgood) {
-                    ob[i].col = col;
-                    ob[i].row = row;
-
-                    glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
-                    ob[i].color = color;
-
-                    ob[i].size = (cellWidth < cellHeight ? cellWidth : cellHeight) * 0.8f;
-
-                    ob[i].type = typeDist(gen);
-
+            // 이미 배치된 장애물과 위치가 겹치는지 검사
+            for (int j = 0; j < i; ++j)
+            {
+                if (row == ob[j].row && col == ob[j].col)
+                {
+                    isgood = false;
                     break;
                 }
+            }
 
+            if (isgood)
+            {
+                ob[i].col = col;
+                ob[i].row = row;
+
+                ob[i].color = {
+                    colorDist(gen),
+                    colorDist(gen),
+                    colorDist(gen)
+                };
+
+                // 모든 장애물 크기 동일
+                ob[i].size =
+                    (cellWidth < cellHeight ? cellWidth : cellHeight) * 0.8f;
+
+                // 1 삼각형
+                // 2 사각형
+                // 3 역삼각형
+                ob[i].type = typeDist(gen);
+
+                break;
             }
         }
-
     }
-
-
-
 }
 
 void SetObstacle()
@@ -702,8 +853,8 @@ void SetObstacle()
 
     int index{};
 
-    for (int i = 0; i < obstacleCount; ++i) {
-
+    for (int i = 0; i < obstacleCount; ++i)
+    {
         float x = -1.0f + cellWidth * (ob[i].col + 0.5f);
         float y = 1.0f - cellHeight * (ob[i].row + 0.5f);
 
@@ -716,10 +867,15 @@ void SetObstacle()
         float bottom = y - halfSize;
         float top = y + halfSize;
 
-        ob[i].vertexStart = BoardVertexCount + PlayerVertexCount + index / 6;
+        ob[i].vertexStart =
+            BoardVertexCount + PlayerVertexCount + index / 6;
+
         ob[i].vertexCount = 3;
 
-        if (type == 1) {
+        if (type == 1)
+        {
+            // 삼각형
+
             // 왼쪽 아래
             ObstacleVertices[index++] = left;
             ObstacleVertices[index++] = bottom;
@@ -747,7 +903,9 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.g;
             ObstacleVertices[index++] = ob[i].color.b;
         }
-        else if (type == 2) {
+        else if (type == 2)
+        {
+            // 사각형
 
             // 왼쪽 아래
             ObstacleVertices[index++] = left;
@@ -767,7 +925,7 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.g;
             ObstacleVertices[index++] = ob[i].color.b;
 
-            // 오른쪽 위
+            // 왼쪽 위
             ObstacleVertices[index++] = left;
             ObstacleVertices[index++] = top;
             ObstacleVertices[index++] = 0.0f;
@@ -776,6 +934,7 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.g;
             ObstacleVertices[index++] = ob[i].color.b;
 
+            // 오른쪽 위
             ObstacleVertices[index++] = right;
             ObstacleVertices[index++] = top;
             ObstacleVertices[index++] = 0.0f;
@@ -785,7 +944,6 @@ void SetObstacle()
             ObstacleVertices[index++] = ob[i].color.b;
 
             ob[i].vertexCount = 4;
-
         }
         else if (type == 3)
         {
@@ -834,9 +992,13 @@ void SetObstacle()
 
 void MovePlayer()
 {
+
     double currentTime = glfwGetTime();
     double deltaTime = currentTime - lastTime;
     lastTime = currentTime;
+    if (isS) {
+        return;
+    }
 
     if (!moving)
     {
@@ -876,8 +1038,11 @@ void MovePlayer()
 
         startPosition = playerPosition;
 
-        targetPosition.x = -1.0f + cellWidth * (targetCol + 0.5f);
-        targetPosition.y = 1.0f - cellHeight * (targetRow + 0.5f);
+        targetPosition.x =
+            -1.0f + cellWidth * (targetCol + 0.5f);
+
+        targetPosition.y =
+            1.0f - cellHeight * (targetRow + 0.5f);
 
         moveProgress = 0.0f;
         moving = true;
@@ -885,7 +1050,8 @@ void MovePlayer()
 
     if (moving)
     {
-        moveProgress += static_cast<float>(deltaTime / moveTime);
+        moveProgress +=
+            static_cast<float>(deltaTime / moveTime * PM);
 
         if (moveProgress >= 1.0f)
         {
@@ -894,7 +1060,8 @@ void MovePlayer()
 
             playerPosition = targetPosition;
 
-            bool rowChanged = (targetRow != Prow);
+            bool rowChanged =
+                (targetRow != Prow);
 
             Prow = targetRow;
             Pcol = targetCol;
@@ -903,37 +1070,106 @@ void MovePlayer()
             {
                 moveDirection *= -1;
             }
+
+            // 한 칸 이동을 끝낸 순간 충돌 검사
+            int checked = CheckAttack();
+
+            if (checked >= 0)
+            {
+                // 플레이어와 장애물의 모양 교환
+                int tmp = pType;
+
+                pType = ob[checked].type;
+                ob[checked].type = tmp;
+
+                // 충돌 효과 시작
+                collisionEffect = true;
+                collisionEffectTime = 0.0f;
+                colorChangeTime = 0.0f;
+
+                playerColor = {
+                    colorDist(gen),
+                    colorDist(gen),
+                    colorDist(gen)
+                };
+
+                // 장애물 모양 갱신
+                SetObstacle();
+            }
         }
         else
         {
-            playerPosition = startPosition +
+            playerPosition =
+                startPosition +
                 (targetPosition - startPosition) * moveProgress;
         }
-
-        SetPlayer();
-    }
-    int checked = CheckAttack();
-
-    if (checked >= 0) {
-        int tmp = pType;
-        pType = ob[checked].type;
-        ob[checked].type = tmp;
     }
 
+    // 충돌 색상 효과
+    UpdateCollisionEffect(
+        static_cast<float>(deltaTime)
+    );
+
+    // 플레이어 갱신
+    SetPlayer();
 }
 
 int CheckAttack()
 {
     for (int i = 0; i < obstacleCount; ++i)
     {
-        if (Prow == ob[i].row && Pcol == ob[i].col)
+        if (Prow == ob[i].row &&
+            Pcol == ob[i].col)
         {
-            std::cout << i << " is Checked" << '\n';
+            std::cout
+                << i
+                << " is Checked"
+                << '\n';
+
             return i;
         }
     }
 
     return -1;
+}
+
+void UpdateCollisionEffect(float deltaTime)
+{
+    if (!collisionEffect)
+    {
+        return;
+    }
+
+    collisionEffectTime += deltaTime;
+    colorChangeTime += deltaTime;
+
+    // 0.1초마다 랜덤 색상 변경
+    if (colorChangeTime >= colorChangeInterval)
+    {
+        playerColor = {
+            colorDist(gen),
+            colorDist(gen),
+            colorDist(gen)
+        };
+
+        colorChangeTime = 0.0f;
+    }
+
+    // 1초 후 효과 종료
+    if (collisionEffectTime >= collisionEffectDuration)
+    {
+        collisionEffect = false;
+
+        collisionEffectTime = 0.0f;
+        colorChangeTime = 0.0f;
+
+        // 원래 색으로 복구
+        playerColor = {
+            0.0f,
+            1.0f,
+            0.0f
+        };
+    }
 }
 
 bool CheckShader(GLuint shader)
@@ -995,4 +1231,3 @@ bool CheckProgram(GLuint program)
 
     return true;
 }
-
