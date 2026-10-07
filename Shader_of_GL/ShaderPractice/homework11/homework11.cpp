@@ -14,8 +14,8 @@ std::random_device rd;
 std::mt19937 gen(rd());
 
 std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
-std::uniform_real_distribution<int> typeDist(1,3);
-std::uniform_real_distribution<int> vecDist(0, 29);
+std::uniform_int_distribution<int> typeDist(1,3);
+std::uniform_int_distribution<int> vecDist(0, 29);
 
 //------------------------------------------------------------------------------------------------------
 // 구조체 선언
@@ -50,6 +50,8 @@ void SetPlayer();
 
 void SetObstacleCount();
 
+void SetObstacle();
+
 void MovePlayer();
 
 //------------------------------------------------------------------------------------------------------
@@ -71,8 +73,6 @@ float vertices[] = {
     // 2 : 위쪽
      0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f
 };
-
-
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
@@ -119,6 +119,10 @@ int moveDirection = 1;
 Obstacle ob[100]{};
 
 int obstacleCount;
+
+int ObstacleVertexCount{};
+
+const int MaxObstacleCount = 100;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -387,6 +391,12 @@ int main()
             PlayerVertexCount
         );
 
+        glDrawArrays(
+            GL_TRIANGLES,
+            BoardVertexCount + PlayerVertexCount,
+            ObstacleVertexCount
+        );
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -427,6 +437,7 @@ void SetAll()
     SetMap();
     SetPlayer();
     SetObstacleCount();
+    SetObstacle();
 
     moving = false;
     moveProgress = 0.0f;
@@ -515,7 +526,7 @@ void SetMap()
 
     glBufferData(
         GL_ARRAY_BUFFER,
-        (BoardVertexCount + PlayerVertexCount) * 6 * sizeof(float),
+        (BoardVertexCount + PlayerVertexCount + MaxObstacleCount * 4) * 6 * sizeof(float),
         nullptr,
         GL_DYNAMIC_DRAW
     );
@@ -658,6 +669,139 @@ void SetObstacleCount()
 
 }
 
+void SetObstacle()
+{
+    float ObstacleVertices[100 * 4 * 6]{};
+
+    int index{};
+
+    for (int i = 0; i < obstacleCount; ++i) {
+
+        float x = -1.0f + cellWidth * (ob[i].col + 0.5f);
+        float y = 1.0f - cellHeight * (ob[i].row + 0.5f);
+
+        float halfSize = ob[i].size * 0.5f;
+
+        int type = ob[i].type;
+
+        float left = x - halfSize;
+        float right = x + halfSize;
+        float bottom = y - halfSize;
+        float top = y + halfSize;
+
+        if (type == 1) {
+            // 왼쪽 아래
+            ObstacleVertices[index++] = left;
+            ObstacleVertices[index++] = bottom;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 오른쪽 아래
+            ObstacleVertices[index++] = right;
+            ObstacleVertices[index++] = bottom;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 위쪽
+            ObstacleVertices[index++] = x;
+            ObstacleVertices[index++] = top;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+        }
+        else if (type == 2) {
+
+            // 왼쪽 아래
+            ObstacleVertices[index++] = left;
+            ObstacleVertices[index++] = bottom;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 오른쪽 아래
+            ObstacleVertices[index++] = right;
+            ObstacleVertices[index++] = bottom;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 오른쪽 위
+            ObstacleVertices[index++] = right;
+            ObstacleVertices[index++] = top;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 오른쪽 위
+            ObstacleVertices[index++] = left;
+            ObstacleVertices[index++] = top;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+        }
+        else if (type == 3)
+        {
+            // 역삼각형
+
+            // 왼쪽 위
+            ObstacleVertices[index++] = left;
+            ObstacleVertices[index++] = top;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 오른쪽 위
+            ObstacleVertices[index++] = right;
+            ObstacleVertices[index++] = top;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+
+            // 아래쪽
+            ObstacleVertices[index++] = x;
+            ObstacleVertices[index++] = bottom;
+            ObstacleVertices[index++] = 0.0f;
+
+            ObstacleVertices[index++] = ob[i].color.r;
+            ObstacleVertices[index++] = ob[i].color.g;
+            ObstacleVertices[index++] = ob[i].color.b;
+        }
+    }
+
+    ObstacleVertexCount = index / 6;
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        (BoardVertexCount + PlayerVertexCount) * 6 * sizeof(float),
+        ObstacleVertexCount * 6 * sizeof(float),
+        ObstacleVertices
+    );
+}
+
+
 void MovePlayer()
 {
     double currentTime = glfwGetTime();
@@ -739,7 +883,6 @@ void MovePlayer()
         SetPlayer();
     }
 }
-
 
 bool CheckShader(GLuint shader)
 {
