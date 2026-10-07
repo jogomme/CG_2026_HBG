@@ -615,38 +615,41 @@ void SetObstacleCount()
         std::cout << "배치 갯수 : ";
         std::cin >> obstacleCount;
 
-        if (obstacleCount >= 1) {
+        if (obstacleCount >= 1 || obstacleCount >= BoardX * BoardY) {
             break;
         }
     }
 
     for (int i = 0; i < obstacleCount; ++i) {
 
+        bool isgood{ true };
+
         while (true) {
             int row = vecDist(gen);
             int col = vecDist(gen);
 
-            if (row > BoardY || col > BoardX) {
-                continue;
-            }
-
-            for (int j = 0; j < i; ++j) {
-                if (row == ob[j].row && col == ob[j].col) {
-                    continue;
+            if (!(row >= BoardY || col >= BoardX)) {
+                for (int j = 0; j < i; ++j) {
+                    if (row == ob[j].row && col == ob[j].col) {
+                        isgood = false;
+                    }
                 }
+
+                if (isgood) {
+                    ob[i].col = col;
+                    ob[i].row = row;
+
+                    glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
+                    ob[i].color = color;
+
+                    ob[i].size = (cellWidth < cellHeight ? cellWidth : cellHeight) * 0.8f;
+
+                    ob[i].type = typeDist(gen);
+
+                    break;
+                }
+
             }
-
-            ob[i].col = col;
-            ob[i].row = row;
-
-            glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
-            ob[i].color = color;
-            
-            ob[i].size  = (cellWidth < cellHeight ? cellWidth : cellHeight) * 0.8f;
-            
-            ob[i].type = typeDist(gen);
-
-            break;
         }
 
     }
