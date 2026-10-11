@@ -6,7 +6,7 @@
 #include <GL/glm/gtc/matrix_transform.hpp>
 
 #include <iostream>
-#include <cmath>
+#include <random>
 
 //------------------------------------------------------------------------------------------------------
 // 함수 선언
@@ -24,8 +24,6 @@ glm::mat4 MakeModelMatrix(float angleX, float angleY);
 void MakeCubeVertices();
 void DrawCube();
 
-void DrawAll(GLint modelLocation);
-
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -33,23 +31,27 @@ void DrawAll(GLint modelLocation);
 // 위치 3개 + 색상 3개 = 한 정점 6 float
 float vertices[] = {
     // ------------------------------------------------------------
-     // X축 - 빨간색
-     // ------------------------------------------------------------
-     -0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-      0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+    // X축 - 빨간색
+    // ------------------------------------------------------------
+    -0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+     0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
 
-      // ------------------------------------------------------------
-      // Y축 - 초록색
-      // ------------------------------------------------------------
+     // ------------------------------------------------------------
+     // Y축 - 초록색
+     // ------------------------------------------------------------
       0.0f, -0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
       0.0f,  0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
 
       // ------------------------------------------------------------
       // Z축 - 파란색
       // ------------------------------------------------------------
-      0.0f, 0.0f, -0.8f,    0.0f, 0.0f, 1.0f,
-      0.0f, 0.0f,  0.8f,    0.0f, 0.0f, 1.0f
+       0.0f, 0.0f, -0.8f,    0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f,  0.8f,    0.0f, 0.0f, 1.0f
 };
+
+//------------------------------------------------------------------------------------------------------
+// 육면체 데이터
+//------------------------------------------------------------------------------------------------------
 
 const float h = 0.4f;
 
@@ -69,7 +71,7 @@ glm::vec3 cubeCorners[8] = {
 // 각 면에서 사용할 꼭짓점 번호
 int cubeFaces[6][4] = {
     {0, 1, 2, 3}, // 앞면
-    {4, 6, 5, 7}, // 뒷면
+    {4, 5, 6, 7}, // 뒷면
     {1, 5, 3, 7}, // 오른쪽 면
     {4, 0, 6, 2}, // 왼쪽 면
     {2, 3, 6, 7}, // 윗면
@@ -89,6 +91,14 @@ glm::vec3 faceColors[6] = {
 // 면 6개 * 정점 4개 * 정점당 float 6개
 float cubeVertices[6 * 4 * 6]{};
 
+// 각 면을 화면에 표시할지 저장
+bool cubeFaceVisible[6]{};
+
+// 랜덤 면 선택에 사용할 난수 생성기
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_int_distribution<int> faceDistribution(0, 5);
+
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------------------
@@ -105,8 +115,6 @@ int main()
 {
     //------------------------------------------------------------------------------------------
     // 콘솔 출력 코드페이지를 UTF-8 로 설정
-    //   /utf-8 로 컴파일되므로 문자열은 UTF-8 로 나간다.
-    //   콘솔 기본 코드페이지(949)로는 깨지므로 맞춰준다.
     //------------------------------------------------------------------------------------------
     SetConsoleOutputCP(CP_UTF8);
 
@@ -123,7 +131,6 @@ int main()
     // OpenGL 3.3 설정
     //------------------------------------------------------------------------------------------
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
     glfwWindowHint(
@@ -135,7 +142,7 @@ int main()
     // 창 생성
     //------------------------------------------------------------------------------------------
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
-    
+
     GLFWwindow* window = glfwCreateWindow(
         wide, height,
         "__WINDOWTITLE__",
@@ -173,6 +180,7 @@ int main()
     //------------------------------------------------------------------------------------------
     glViewport(0, 0, wide, height);
 
+    // 은면 제거를 위한 깊이 검사
     glEnable(GL_DEPTH_TEST);
 
     //------------------------------------------------------------------------------------------
@@ -191,6 +199,7 @@ int main()
 
     MakeCubeVertices();
 
+    // 좌표축 데이터와 육면체 데이터를 한 버퍼에 저장
     glBufferData(
         GL_ARRAY_BUFFER,
         sizeof(vertices) + sizeof(cubeVertices),
@@ -198,6 +207,7 @@ int main()
         GL_STATIC_DRAW
     );
 
+    // 좌표축 데이터 저장
     glBufferSubData(
         GL_ARRAY_BUFFER,
         0,
@@ -205,6 +215,7 @@ int main()
         vertices
     );
 
+    // 육면체 데이터 저장
     glBufferSubData(
         GL_ARRAY_BUFFER,
         sizeof(vertices),
@@ -288,6 +299,7 @@ int main()
 
     if (!CheckShader(vertexShader))
     {
+        glDeleteShader(vertexShader);
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
@@ -310,6 +322,7 @@ int main()
     if (!CheckShader(fragmentShader))
     {
         glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
@@ -362,12 +375,30 @@ int main()
         // ------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // ------------------------------------------------------------
-        // 회전 각도 계산
-        // ------------------------------------------------------------
-        float angle = static_cast<float>(glfwGetTime()) * glm::radians(90.0f);
+        glBindVertexArray(VAO);
 
-        glm::mat4 model = MakeModelMatrix(
+        // ------------------------------------------------------------
+        // 좌표축 그리기: 회전하지 않음
+        // ------------------------------------------------------------
+        glm::mat4 model(1.0f);
+
+        glUniformMatrix4fv(
+            modelLocation,
+            1,
+            GL_FALSE,
+            &model[0][0]
+        );
+
+        glDrawArrays(
+            GL_LINES,
+            0,
+            6
+        );
+
+        // ------------------------------------------------------------
+        // 육면체 그리기: X축 30도, Y축 30도 회전
+        // ------------------------------------------------------------
+        model = MakeModelMatrix(
             glm::radians(30.0f),
             glm::radians(30.0f)
         );
@@ -379,12 +410,7 @@ int main()
             &model[0][0]
         );
 
-        // ------------------------------------------------------------
-        // 그리기
-        // ------------------------------------------------------------
-        glBindVertexArray(VAO);
-        
-        DrawAll(modelLocation);
+        DrawCube();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -402,6 +428,7 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
 }
+
 //------------------------------------------------------------------------------------------------------
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -411,10 +438,58 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         return;
     }
 
+    // 종료
     if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+        return;
     }
+
+    // 1~6: 육면체의 해당 면 하나를 표시
+    if (key >= GLFW_KEY_1 && key <= GLFW_KEY_6)
+    {
+        // 입력한 번호에 해당하는 면 표시
+        cubeFaceVisible[key - GLFW_KEY_1] = !cubeFaceVisible[key - GLFW_KEY_1];
+    }
+    // c: 육면체에서 랜덤한 두 면 표시
+    else if (key == GLFW_KEY_C)
+    {
+        int cnt{};
+
+        for (int i = 0; i < 6; ++i) {
+            if (cubeFaceVisible[i]) {
+                cnt++;
+            }
+        }
+
+        int target{};
+
+        if (cnt < 5) {
+            target = 2;
+        }
+        else if (cnt == 5) {
+            target = 1;
+        }
+
+        int n{};
+
+        while (n < target) {
+            int Face = faceDistribution(gen);
+
+            if (!cubeFaceVisible[Face]) {
+                cubeFaceVisible[Face] = true;
+                n++;
+            }
+        }
+    }
+
+    std::cout << "현재 그려진 면 : ";
+    for (int i = 0; i < 6; ++i) {
+        if (cubeFaceVisible[i]) {
+            std::cout << i << ", ";
+        }
+    }
+    std::cout << '\n';
 }
 
 void MakeCubeVertices()
@@ -442,6 +517,12 @@ void DrawCube()
 {
     for (int i = 0; i < 6; ++i)
     {
+        // 선택되지 않은 면은 그리지 않음
+        if (!cubeFaceVisible[i])
+        {
+            continue;
+        }
+
         glDrawArrays(
             GL_TRIANGLE_STRIP,
             6 + i * 4,
@@ -449,38 +530,6 @@ void DrawCube()
         );
     }
 }
-
-void DrawAll(GLint modelLocation)
-{
-// ------------------------------------------------------------
-// 좌표축과 큐브 회전
-// ------------------------------------------------------------
-    glm::mat4 model = MakeModelMatrix(
-        glm::radians(30.0f),
-        glm::radians(30.0f)
-    );
-
-    glUniformMatrix4fv(
-        modelLocation,
-        1,
-        GL_FALSE,
-        &model[0][0]
-    );
-
-    // ------------------------------------------------------------
-    // 그리기
-    // ------------------------------------------------------------
-    glBindVertexArray(VAO);
-
-    glDrawArrays(
-        GL_LINES,
-        0,
-        6
-    );
-
-    DrawCube();
-}
-
 
 bool CheckShader(GLuint shader)
 {
