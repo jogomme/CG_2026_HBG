@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include <windows.h>
 
 #include <GL/glew.h>
@@ -5,64 +6,55 @@
 #include <GL/glm/glm.hpp>
 #include <GL/glm/gtc/matrix_transform.hpp>
 
+#include <algorithm>
 #include <iostream>
 #include <random>
 
-//------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------
 // 함수 선언
-//------------------------------------------------------------------------------------------------------
-
+// ------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 bool CheckShader(GLuint shader);
 bool CheckProgram(GLuint program);
-
 glm::mat4 MakeModelMatrix(float angleX, float angleY);
-
 void MakeCubeVertices();
 void DrawCube();
-
 void MakePyramidVertices();
 void DrawPyramid();
 
-//------------------------------------------------------------------------------------------------------
-// 정점 위치 3개 + 색상 3개
-//------------------------------------------------------------------------------------------------------
-
+// ------------------------------------------------------------
+// 좌표축 정점: 위치 3개 + 색상 3개
+// ------------------------------------------------------------
 float vertices[] = {
     // X축 - 빨간색
-    -0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
-     0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+    -0.8f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
+     0.8f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
 
      // Y축 - 초록색
-      0.0f, -0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
-      0.0f,  0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
+      0.0f, -0.8f, 0.0f,  0.0f, 1.0f, 0.0f,
+      0.0f,  0.8f, 0.0f,  0.0f, 1.0f, 0.0f,
 
       // Z축 - 파란색
-       0.0f, 0.0f, -0.8f,    0.0f, 0.0f, 1.0f,
-       0.0f, 0.0f,  0.8f,    0.0f, 0.0f, 1.0f
+       0.0f, 0.0f, -0.8f,  0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f,  0.8f,  0.0f, 0.0f, 1.0f
 };
 
-//------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------
 // 육면체 데이터
-//------------------------------------------------------------------------------------------------------
-
+// ------------------------------------------------------------
 const float h = 0.4f;
 
-// 육면체의 실제 꼭짓점 8개
 glm::vec3 cubeCorners[8] = {
     {-h, -h,  h},  // 0
     { h, -h,  h},  // 1
     {-h,  h,  h},  // 2
     { h,  h,  h},  // 3
-
     {-h, -h, -h},  // 4
     { h, -h, -h},  // 5
     {-h,  h, -h},  // 6
     { h,  h, -h}   // 7
 };
 
-// 각 면에서 사용할 꼭짓점 번호
 int cubeFaces[6][4] = {
     {0, 1, 2, 3}, // 앞면
     {4, 5, 6, 7}, // 뒷면
@@ -72,7 +64,6 @@ int cubeFaces[6][4] = {
     {4, 5, 0, 1}  // 아랫면
 };
 
-// 면마다 사용할 색상
 glm::vec3 faceColors[6] = {
     {1.0f, 0.0f, 0.0f}, // 빨강
     {1.0f, 0.5f, 0.0f}, // 주황
@@ -82,24 +73,14 @@ glm::vec3 faceColors[6] = {
     {1.0f, 0.0f, 1.0f}  // 보라
 };
 
-// 면 6개 * 정점 4개 * 정점당 float 6개
 float cubeVertices[6 * 4 * 6]{};
-
-// 각 면을 화면에 표시할지 저장
 bool cubeFaceVisible[6]{};
 
-// 랜덤 면 선택에 사용할 난수 생성기
-std::random_device rd;
-std::mt19937 gen(rd());
-std::uniform_int_distribution<int> faceDistribution(0, 5);
-
-//------------------------------------------------------------------------------------------------------
-// 사각뿔 데이터 (13.5.2 기준)
-//------------------------------------------------------------------------------------------------------
-
+// ------------------------------------------------------------
+// 사각뿔 데이터
+// ------------------------------------------------------------
 const float pyramidSize = 0.4f;
 
-// 사각뿔의 꼭짓점 5개
 glm::vec3 pyramidCorners[5] = {
     {-pyramidSize, -pyramidSize, -pyramidSize}, // 0: 밑면 앞 왼쪽
     { pyramidSize, -pyramidSize, -pyramidSize}, // 1: 밑면 앞 오른쪽
@@ -108,7 +89,6 @@ glm::vec3 pyramidCorners[5] = {
     { 0.0f, pyramidSize, 0.0f}                  // 4: 위쪽 꼭짓점
 };
 
-// 삼각형 옆면 4개에서 사용할 꼭짓점 번호
 int pyramidFaces[4][3] = {
     {0, 4, 1}, // 앞쪽 삼각형
     {1, 4, 2}, // 오른쪽 삼각형
@@ -116,16 +96,10 @@ int pyramidFaces[4][3] = {
     {3, 4, 0}  // 왼쪽 삼각형
 };
 
-int pyramidBottom[4] = {
-    0,1,2,3
-};
+int pyramidBottom[4] = { 0, 1, 2, 3 };
 
-// 바닥면 색상
-glm::vec3 pyramidBottomColor = {
-    0.3f, 0.3f, 0.3f
-};
+glm::vec3 pyramidBottomColor = { 0.3f, 0.3f, 0.3f };
 
-// 면마다 사용할 색상
 glm::vec3 pyramidFaceColors[4] = {
     {0.0f, 1.0f, 1.0f}, // 하늘색
     {1.0f, 0.5f, 0.0f}, // 주황색
@@ -133,57 +107,50 @@ glm::vec3 pyramidFaceColors[4] = {
     {0.5f, 0.0f, 1.0f}  // 보라색
 };
 
-// 옆면 4개는 삼각형 12개 정점,
-// 바닥면은 사각형 4개 정점
+// 옆면 4개(정점 12개) + 바닥면(정점 4개)
 float pyramidVertices[(4 * 3 + 4) * 6]{};
+bool pyramidFaceVisible[5]{}; // 0~3: 삼각형, 4: 바닥면
+bool pyramidMode{};            // false: 육면체, true: 사각뿔
 
-// 각 삼각형을 화면에 표시할지 저장
-bool pyramidFaceVisible[5]{};
-
-// 현재 표시할 도형: false는 육면체, true는 사각뿔
-bool pyramidMode{};
-
-//------------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------
 // 전역 변수
-//------------------------------------------------------------------------------------------------------
-
+// ------------------------------------------------------------
 int wide = 1600;
 int height = 1200;
 
-GLuint VAO;
-GLuint VBO;
+GLuint VAO{};
+GLuint VBO{};
 
-//------------------------------------------------------------------------------------------------------
+std::random_device rd;
+std::mt19937 gen(rd());
+std::uniform_int_distribution<int> cubeFaceDistribution(0, 5);
+std::uniform_int_distribution<int> pyramidFaceDistribution(0, 3);
+
+// 카메라 회전 상태(방향키로 조절)
+float cameraYaw = 45.0f;
+float cameraPitch = 25.0f;
+const float cameraDistance = 2.5f;
+
+// ------------------------------------------------------------
+// main
+// ------------------------------------------------------------
 int main()
-//------------------------------------------------------------------------------------------------------
 {
-    // 콘솔 출력 코드페이지를 UTF-8로 설정
     SetConsoleOutputCP(CP_UTF8);
 
-    // GLFW 초기화
     if (!glfwInit())
     {
         std::cout << "GLFW 초기화 실패\n";
         return -1;
     }
 
-    // OpenGL 3.3 설정
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-    glfwWindowHint(
-        GLFW_OPENGL_PROFILE,
-        GLFW_OPENGL_CORE_PROFILE
-    );
-
-    // 창 생성
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
     GLFWwindow* window = glfwCreateWindow(
-        wide, height,
-        "__WINDOWTITLE__",
-        nullptr,
-        nullptr
+        wide, height, "Homework 13", nullptr, nullptr
     );
 
     if (!window)
@@ -193,10 +160,8 @@ int main()
         return -1;
     }
 
-    // OpenGL Context 생성
     glfwMakeContextCurrent(window);
 
-    // GLEW 초기화
     glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK)
@@ -207,13 +172,8 @@ int main()
         return -1;
     }
 
-    // 화면 크기 설정
     glViewport(0, 0, wide, height);
-
-    // 은면 제거를 위한 깊이 검사
     glEnable(GL_DEPTH_TEST);
-
-    // 키 콜백 함수
     glfwSetKeyCallback(window, KeyCallback);
 
     // VAO / VBO 설정
@@ -234,15 +194,10 @@ int main()
         GL_STATIC_DRAW
     );
 
-    // 좌표축 데이터 저장
     glBufferSubData(
-        GL_ARRAY_BUFFER,
-        0,
-        sizeof(vertices),
-        vertices
+        GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices
     );
 
-    // 육면체 데이터 저장
     glBufferSubData(
         GL_ARRAY_BUFFER,
         sizeof(vertices),
@@ -250,7 +205,6 @@ int main()
         cubeVertices
     );
 
-    // 사각뿔 데이터 저장
     glBufferSubData(
         GL_ARRAY_BUFFER,
         sizeof(vertices) + sizeof(cubeVertices),
@@ -260,26 +214,15 @@ int main()
 
     // 위치
     glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
+        0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0
     );
-
     glEnableVertexAttribArray(0);
 
     // 색상
     glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
+        1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
         (void*)(3 * sizeof(float))
     );
-
     glEnableVertexAttribArray(1);
 
     // Vertex Shader
@@ -290,12 +233,14 @@ int main()
     layout (location = 1) in vec3 aColor;
 
     uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
 
     out vec3 ourColor;
 
     void main()
     {
-        gl_Position = model * vec4(aPos, 1.0);
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
         ourColor = aColor;
     }
     )";
@@ -316,14 +261,7 @@ int main()
 
     // Vertex Shader 생성
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    glShaderSource(
-        vertexShader,
-        1,
-        &vertexShaderSource,
-        nullptr
-    );
-
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
     glCompileShader(vertexShader);
 
     if (!CheckShader(vertexShader))
@@ -336,14 +274,7 @@ int main()
 
     // Fragment Shader 생성
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    glShaderSource(
-        fragmentShader,
-        1,
-        &fragmentShaderSource,
-        nullptr
-    );
-
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
     glCompileShader(fragmentShader);
 
     if (!CheckShader(fragmentShader))
@@ -357,10 +288,8 @@ int main()
 
     // Shader Program 생성
     GLuint shaderProgram = glCreateProgram();
-
     glAttachShader(shaderProgram, vertexShader);
     glAttachShader(shaderProgram, fragmentShader);
-
     glLinkProgram(shaderProgram);
 
     if (!CheckProgram(shaderProgram))
@@ -373,64 +302,103 @@ int main()
         return -1;
     }
 
-    // Program 사용
     glUseProgram(shaderProgram);
-
-    // 화면 배경색 설정
-    glClearColor(
-        1.0f,
-        1.0f,
-        1.0f,
-        1.0f
-    );
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
+    GLint viewLocation = glGetUniformLocation(shaderProgram, "view");
+    GLint projectionLocation = glGetUniformLocation(shaderProgram, "projection");
 
+    float lastFrame = static_cast<float>(glfwGetTime());
+
+    // ------------------------------------------------------------
     // 메인 루프
+    // ------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
     {
-        // 화면 지우기
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        float currentFrame = static_cast<float>(glfwGetTime());
+        float deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
+        const float rotateSpeed = 60.0f;
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        {
+            cameraYaw -= rotateSpeed * deltaTime;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        {
+            cameraYaw += rotateSpeed * deltaTime;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
+            cameraPitch += rotateSpeed * deltaTime;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        {
+            cameraPitch -= rotateSpeed * deltaTime;
+        }
+
+        cameraPitch = std::clamp(cameraPitch, -80.0f, 80.0f);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glBindVertexArray(VAO);
 
-        // ------------------------------------------------------------
-        // 좌표축 그리기
-        // 13.1~13.3처럼 좌표축에도 회전을 적용한다.
-        // 단위 행렬을 사용하면 Z축이 깊이 방향에 놓여 화면에서 보이지 않는다.
-        // ------------------------------------------------------------
-        glm::mat4 axisModel = MakeModelMatrix(
-            glm::radians(30.0f),
-            glm::radians(30.0f)
+        // 카메라 위치 계산: GLM 회전 행렬 사용
+        glm::mat4 cameraRotation(1.0f);
+
+        cameraRotation = glm::rotate(
+            cameraRotation,
+            glm::radians(cameraYaw),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
+        cameraRotation = glm::rotate(
+            cameraRotation,
+            glm::radians(-cameraPitch),
+            glm::vec3(1.0f, 0.0f, 0.0f)
+        );
+
+        glm::vec3 cameraPos = glm::vec3(
+            cameraRotation * glm::vec4(0.0f, 0.0f, cameraDistance, 1.0f)
+        );
+
+        glm::mat4 view = glm::lookAt(
+            cameraPos,
+            glm::vec3(0.0f, 0.0f, 0.0f),
+            glm::vec3(0.0f, 1.0f, 0.0f)
+        );
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f),
+            static_cast<float>(wide) / static_cast<float>(height),
+            0.1f,
+            100.0f
         );
 
         glUniformMatrix4fv(
-            modelLocation,
-            1,
-            GL_FALSE,
-            &axisModel[0][0]
+            viewLocation, 1, GL_FALSE, &view[0][0]
         );
 
-        glDrawArrays(
-            GL_LINES,
-            0,
-            6
+        glUniformMatrix4fv(
+            projectionLocation, 1, GL_FALSE, &projection[0][0]
         );
 
-        // ------------------------------------------------------------
-        // 객체 그리기: X축 30도, Y축 30도 회전
-        // ------------------------------------------------------------
+        // 핵심: 좌표축과 도형이 동일한 모델 행렬을 공유한다.
         glm::mat4 model = MakeModelMatrix(
             glm::radians(30.0f),
             glm::radians(30.0f)
         );
 
         glUniformMatrix4fv(
-            modelLocation,
-            1,
-            GL_FALSE,
-            &model[0][0]
+            modelLocation, 1, GL_FALSE, &model[0][0]
         );
+
+        // 좌표축을 그리고 같은 행렬로 도형도 그린다.
+        glDrawArrays(GL_LINES, 0, 6);
 
         if (pyramidMode)
         {
@@ -458,8 +426,9 @@ int main()
     return 0;
 }
 
-//------------------------------------------------------------------------------------------------------
-
+// ------------------------------------------------------------
+// 키 입력
+// ------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action != GLFW_PRESS)
@@ -486,14 +455,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
 
         pyramidMode = false;
-
-        // 입력한 번호에 해당하는 면 표시
         cubeFaceVisible[key - GLFW_KEY_1] =
             !cubeFaceVisible[key - GLFW_KEY_1];
     }
-    // c: 육면체에서 랜덤한 두 면 표시
+    // C: 육면체에서 랜덤한 두 면을 새로 선택
     else if (key == GLFW_KEY_C)
     {
+        std::uniform_int_distribution<int> faceDistribution(0, 5);
+
         if (pyramidMode)
         {
             for (int i = 0; i < 5; ++i)
@@ -537,11 +506,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 n++;
             }
         }
+
+
+
     }
-    // 7~9: 사각뿔의 삼각형 면 표시/숨기기
+    // 7~9: 사각뿔의 첫 번째~세 번째 삼각형 면 표시/숨기기
     else if (key >= GLFW_KEY_7 && key <= GLFW_KEY_9)
     {
-        // 육면체에서 사각뿔로 전환할 때 육면체 면 숨기기
         if (!pyramidMode)
         {
             for (int i = 0; i < 6; ++i)
@@ -569,6 +540,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         pyramidMode = true;
         pyramidFaceVisible[3] = !pyramidFaceVisible[3];
     }
+    // T: 바닥면과 랜덤한 삼각형 옆면 하나만 표시
     else if (key == GLFW_KEY_T) {
 
         if (!pyramidMode)
@@ -612,6 +584,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             }
         }
 
+
+
         pyramidFaceVisible[4] = true;
 
     }
@@ -644,6 +618,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     std::cout << '\n';
 }
 
+// ------------------------------------------------------------
+// 육면체 정점 생성
+// ------------------------------------------------------------
 void MakeCubeVertices()
 {
     int index{};
@@ -669,7 +646,6 @@ void DrawCube()
 {
     for (int i = 0; i < 6; ++i)
     {
-        // 선택되지 않은 면은 그리지 않음
         if (!cubeFaceVisible[i])
         {
             continue;
@@ -683,19 +659,17 @@ void DrawCube()
     }
 }
 
+// ------------------------------------------------------------
+// 셰이더 확인
+// ------------------------------------------------------------
 bool CheckShader(GLuint shader)
 {
-    int success = 0;
-
-    glGetShaderiv(
-        shader,
-        GL_COMPILE_STATUS,
-        &success
-    );
+    GLint success = GL_FALSE;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
     if (success == GL_FALSE)
     {
-        char log[1024];
+        char log[1024]{};
 
         glGetShaderInfoLog(
             shader,
@@ -704,9 +678,7 @@ bool CheckShader(GLuint shader)
             log
         );
 
-        std::cout << "셰이더 컴파일 실패\n";
-        std::cout << log << '\n';
-
+        std::cout << "셰이더 컴파일 실패\n" << log << '\n';
         return false;
     }
 
@@ -715,17 +687,12 @@ bool CheckShader(GLuint shader)
 
 bool CheckProgram(GLuint program)
 {
-    int success = 0;
-
-    glGetProgramiv(
-        program,
-        GL_LINK_STATUS,
-        &success
-    );
+    GLint success = GL_FALSE;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
 
     if (success == GL_FALSE)
     {
-        char log[1024];
+        char log[1024]{};
 
         glGetProgramInfoLog(
             program,
@@ -734,15 +701,16 @@ bool CheckProgram(GLuint program)
             log
         );
 
-        std::cout << "Program 링크 실패\n";
-        std::cout << log << '\n';
-
+        std::cout << "Program 링크 실패\n" << log << '\n';
         return false;
     }
 
     return true;
 }
 
+// ------------------------------------------------------------
+// 모델 행렬: X축 30도, Y축 30도 회전
+// ------------------------------------------------------------
 glm::mat4 MakeModelMatrix(float angleX, float angleY)
 {
     glm::mat4 model(1.0f);
@@ -762,10 +730,14 @@ glm::mat4 MakeModelMatrix(float angleX, float angleY)
     return model;
 }
 
+// ------------------------------------------------------------
+// 사각뿔 정점 생성
+// ------------------------------------------------------------
 void MakePyramidVertices()
 {
     int index{};
 
+    // 삼각형 옆면 4개
     for (int face = 0; face < 4; ++face)
     {
         for (int vertex = 0; vertex < 3; ++vertex)
@@ -783,7 +755,7 @@ void MakePyramidVertices()
         }
     }
 
-    // 바닥면 정점 데이터 생성
+    // 바닥면 정점 데이터
     for (int vertex = 0; vertex < 4; ++vertex)
     {
         glm::vec3 position =
@@ -797,14 +769,13 @@ void MakePyramidVertices()
         pyramidVertices[index++] = pyramidBottomColor.g;
         pyramidVertices[index++] = pyramidBottomColor.b;
     }
-
 }
 
 void DrawPyramid()
 {
+    // 삼각형 옆면 4개
     for (int i = 0; i < 4; ++i)
     {
-        // 선택되지 않은 면은 그리지 않음
         if (!pyramidFaceVisible[i])
         {
             continue;
@@ -817,7 +788,7 @@ void DrawPyramid()
         );
     }
 
-     // 바닥면 그리기
+    // 바닥면
     if (pyramidFaceVisible[4])
     {
         glDrawArrays(
@@ -826,5 +797,4 @@ void DrawPyramid()
             4
         );
     }
-
 }
