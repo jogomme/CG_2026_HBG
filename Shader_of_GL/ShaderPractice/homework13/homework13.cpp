@@ -120,6 +120,11 @@ int pyramidBottom[4] = {
     0,1,2,3
 };
 
+// 바닥면 색상
+glm::vec3 pyramidBottomColor = {
+    0.3f, 0.3f, 0.3f
+};
+
 // 면마다 사용할 색상
 glm::vec3 pyramidFaceColors[4] = {
     {0.0f, 1.0f, 1.0f}, // 하늘색
@@ -128,8 +133,9 @@ glm::vec3 pyramidFaceColors[4] = {
     {0.5f, 0.0f, 1.0f}  // 보라색
 };
 
-// 면 4개 * 정점 3개 * 정점당 float 6개
-float pyramidVertices[4 * 3 * 6]{};
+// 옆면 4개는 삼각형 12개 정점,
+// 바닥면은 사각형 4개 정점
+float pyramidVertices[(4 * 3 + 4) * 6]{};
 
 // 각 삼각형을 화면에 표시할지 저장
 bool pyramidFaceVisible[5]{};
@@ -776,6 +782,22 @@ void MakePyramidVertices()
             pyramidVertices[index++] = pyramidFaceColors[face].b;
         }
     }
+
+    // 바닥면 정점 데이터 생성
+    for (int vertex = 0; vertex < 4; ++vertex)
+    {
+        glm::vec3 position =
+            pyramidCorners[pyramidBottom[vertex]];
+
+        pyramidVertices[index++] = position.x;
+        pyramidVertices[index++] = position.y;
+        pyramidVertices[index++] = position.z;
+
+        pyramidVertices[index++] = pyramidBottomColor.r;
+        pyramidVertices[index++] = pyramidBottomColor.g;
+        pyramidVertices[index++] = pyramidBottomColor.b;
+    }
+
 }
 
 void DrawPyramid()
@@ -794,4 +816,15 @@ void DrawPyramid()
             3
         );
     }
+
+    // 바닥면 그리기
+    if (pyramidFaceVisible[4])
+    {
+        glDrawArrays(
+            GL_TRIANGLE_FAN,
+            42,
+            4
+        );
+    }
+
 }
