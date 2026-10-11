@@ -21,6 +21,9 @@ bool CheckProgram(GLuint program);
 
 glm::mat4 MakeModelMatrix(float angleX, float angleY);
 
+void MakeCubeVertices();
+void DrawCube();
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -45,6 +48,44 @@ float vertices[] = {
       0.0f, 0.0f, -0.8f,    0.0f, 0.0f, 1.0f,
       0.0f, 0.0f,  0.8f,    0.0f, 0.0f, 1.0f
 };
+
+const float h = 0.4f;
+
+// 육면체의 실제 꼭짓점 8개
+glm::vec3 cubeCorners[8] = {
+    {-h, -h,  h},  // 0
+    { h, -h,  h},  // 1
+    {-h,  h,  h},  // 2
+    { h,  h,  h},  // 3
+
+    {-h, -h, -h},  // 4
+    { h, -h, -h},  // 5
+    {-h,  h, -h},  // 6
+    { h,  h, -h}   // 7
+};
+
+// 각 면에서 사용할 꼭짓점 번호
+int cubeFaces[6][4] = {
+    {0, 1, 2, 3}, // 앞면
+    {4, 5, 6, 7}, // 뒷면
+    {1, 5, 3, 7}, // 오른쪽 면
+    {4, 0, 6, 2}, // 왼쪽 면
+    {2, 3, 6, 7}, // 윗면
+    {4, 5, 0, 1}  // 아랫면
+};
+
+// 면마다 사용할 색상
+glm::vec3 faceColors[6] = {
+    {1.0f, 0.0f, 0.0f}, // 빨강
+    {1.0f, 0.5f, 0.0f}, // 주황
+    {0.0f, 1.0f, 0.0f}, // 초록
+    {0.0f, 0.0f, 1.0f}, // 파랑
+    {1.0f, 1.0f, 0.0f}, // 노랑
+    {1.0f, 0.0f, 1.0f}  // 보라
+};
+
+// 면 6개 * 정점 4개 * 정점당 float 6개
+float cubeVertices[6 * 4 * 6]{};
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
@@ -146,11 +187,27 @@ int main()
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+    MakeCubeVertices();
+
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(vertices),
-        vertices,
+        sizeof(vertices) + sizeof(cubeVertices),
+        nullptr,
         GL_STATIC_DRAW
+    );
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        0,
+        sizeof(vertices),
+        vertices
+    );
+
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        sizeof(vertices),
+        sizeof(cubeVertices),
+        cubeVertices
     );
 
     // 위치
@@ -331,6 +388,8 @@ int main()
             6
         );
 
+        DrawCube();
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
@@ -361,6 +420,42 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
 }
+
+void MakeCubeVertices()
+{
+    int index{};
+
+    for (int face = 0; face < 6; ++face)
+    {
+        for (int vertex = 0; vertex < 4; ++vertex)
+        {
+            glm::vec3 position = cubeCorners[cubeFaces[face][vertex]];
+
+            cubeVertices[index++] = position.x;
+            cubeVertices[index++] = position.y;
+            cubeVertices[index++] = position.z;
+
+            cubeVertices[index++] = faceColors[face].r;
+            cubeVertices[index++] = faceColors[face].g;
+            cubeVertices[index++] = faceColors[face].b;
+        }
+    }
+}
+
+void DrawCube()
+{
+    for (int i = 0; i < 6; ++i)
+    {
+        glDrawArrays(
+            GL_TRIANGLE_STRIP,
+            6 + i * 4,
+            4
+        );
+    }
+}
+
+
+
 
 bool CheckShader(GLuint shader)
 {
