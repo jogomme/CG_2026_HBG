@@ -19,7 +19,7 @@ bool CheckShader(GLuint shader);
 
 bool CheckProgram(GLuint program);
 
-glm::mat4 MakeModelMatrix(float angle);
+glm::mat4 MakeModelMatrix(float angleX, float angleY);
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -28,17 +28,22 @@ glm::mat4 MakeModelMatrix(float angle);
 // 위치 3개 + 색상 3개 = 한 정점 6 float
 float vertices[] = {
     // ------------------------------------------------------------
-    // 삼각형
-    // ------------------------------------------------------------
+     // X축 - 빨간색
+     // ------------------------------------------------------------
+     -0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
+      0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
 
-    // 0 : 왼쪽 아래
-    -0.5f, -0.5f, 0.0f,    1.0f, 0.0f, 0.0f,
+      // ------------------------------------------------------------
+      // Y축 - 초록색
+      // ------------------------------------------------------------
+      0.0f, -0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
+      0.0f,  0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
 
-    // 1 : 오른쪽 아래
-     0.5f, -0.5f, 0.0f,    0.0f, 1.0f, 0.0f,
-
-    // 2 : 위쪽
-     0.0f,  0.5f, 0.0f,    0.0f, 0.0f, 1.0f
+      // ------------------------------------------------------------
+      // Z축 - 파란색
+      // ------------------------------------------------------------
+      0.0f, 0.0f, -0.8f,    0.0f, 0.0f, 1.0f,
+      0.0f, 0.0f,  0.8f,    0.0f, 0.0f, 1.0f
 };
 
 //------------------------------------------------------------------------------------------------------
@@ -86,6 +91,8 @@ int main()
     //------------------------------------------------------------------------------------------
     // 창 생성
     //------------------------------------------------------------------------------------------
+    glfwWindowHint(GLFW_DEPTH_BITS, 24);
+    
     GLFWwindow* window = glfwCreateWindow(
         wide, height,
         "__WINDOWTITLE__",
@@ -122,6 +129,8 @@ int main()
     // 화면 크기 설정
     //------------------------------------------------------------------------------------------
     glViewport(0, 0, wide, height);
+
+    glEnable(GL_DEPTH_TEST);
 
     //------------------------------------------------------------------------------------------
     // 키 콜백 함수
@@ -292,14 +301,17 @@ int main()
         // ------------------------------------------------------------
         // 화면 지우기
         // ------------------------------------------------------------
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // ------------------------------------------------------------
         // 회전 각도 계산
         // ------------------------------------------------------------
         float angle = static_cast<float>(glfwGetTime()) * glm::radians(90.0f);
 
-        glm::mat4 model = MakeModelMatrix(angle);
+        glm::mat4 model = MakeModelMatrix(
+            glm::radians(30.0f),
+            glm::radians(30.0f)
+        );
 
         glUniformMatrix4fv(
             modelLocation,
@@ -312,11 +324,11 @@ int main()
         // 그리기
         // ------------------------------------------------------------
         glBindVertexArray(VAO);
-
+        
         glDrawArrays(
-            GL_TRIANGLES,
+            GL_LINES,
             0,
-            3
+            6
         );
 
         glfwSwapBuffers(window);
@@ -410,14 +422,20 @@ bool CheckProgram(GLuint program)
     return true;
 }
 
-glm::mat4 MakeModelMatrix(float angle)
+glm::mat4 MakeModelMatrix(float angleX, float angleY)
 {
     glm::mat4 model(1.0f);
 
     model = glm::rotate(
         model,
-        angle,
-        glm::vec3(0.0f, 0.0f, 1.0f)
+        angleX,
+        glm::vec3(1.0f, 0.0f, 0.0f)
+    );
+
+    model = glm::rotate(
+        model,
+        angleY,
+        glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
     return model;
