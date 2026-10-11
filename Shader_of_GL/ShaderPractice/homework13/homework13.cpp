@@ -817,7 +817,7 @@ void DrawPyramid()
         );
     }
 
-    // 바닥면 그리기
+     // 바닥면 그리기
     if (pyramidFaceVisible[4])
     {
         glDrawArrays(
