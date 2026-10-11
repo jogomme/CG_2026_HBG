@@ -112,17 +112,17 @@ const float pyramidSize = 0.4f;
 glm::vec3 pyramidCorners[5] = {
     {-pyramidSize, -pyramidSize, -pyramidSize}, // 0: 밑면 앞 왼쪽
     { pyramidSize, -pyramidSize, -pyramidSize}, // 1: 밑면 앞 오른쪽
-    { pyramidSize,  pyramidSize, -pyramidSize}, // 2: 밑면 뒤 오른쪽
-    {-pyramidSize,  pyramidSize, -pyramidSize}, // 3: 밑면 뒤 왼쪽
-    { 0.0f, 0.0f, pyramidSize}                  // 4: 꼭짓점
+    { pyramidSize, -pyramidSize,  pyramidSize}, // 2: 밑면 뒤 오른쪽
+    {-pyramidSize, -pyramidSize,  pyramidSize}, // 3: 밑면 뒤 왼쪽
+    { 0.0f, pyramidSize, 0.0f}                  // 4: 위쪽 꼭짓점
 };
 
 // 삼각형 옆면 4개에서 사용할 꼭짓점 번호
 int pyramidFaces[4][3] = {
-    {0, 1, 4}, // 앞쪽 삼각형
-    {1, 2, 4}, // 오른쪽 삼각형
-    {2, 3, 4}, // 뒤쪽 삼각형
-    {3, 0, 4}  // 왼쪽 삼각형
+    {0, 4, 1}, // 앞쪽 삼각형
+    {1, 4, 2}, // 오른쪽 삼각형
+    {2, 4, 3}, // 뒤쪽 삼각형
+    {3, 4, 0}  // 왼쪽 삼각형
 };
 
 // 면마다 사용할 색상
