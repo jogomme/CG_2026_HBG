@@ -24,6 +24,8 @@ glm::mat4 MakeModelMatrix(float angleX, float angleY);
 void MakeCubeVertices();
 void DrawCube();
 
+void DrawAll(GLint modelLocation);
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -67,7 +69,7 @@ glm::vec3 cubeCorners[8] = {
 // 각 면에서 사용할 꼭짓점 번호
 int cubeFaces[6][4] = {
     {0, 1, 2, 3}, // 앞면
-    {4, 5, 6, 7}, // 뒷면
+    {4, 6, 5, 7}, // 뒷면
     {1, 5, 3, 7}, // 오른쪽 면
     {4, 0, 6, 2}, // 왼쪽 면
     {2, 3, 6, 7}, // 윗면
@@ -382,13 +384,7 @@ int main()
         // ------------------------------------------------------------
         glBindVertexArray(VAO);
         
-        glDrawArrays(
-            GL_LINES,
-            0,
-            6
-        );
-
-        DrawCube();
+        DrawAll(modelLocation);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -454,7 +450,36 @@ void DrawCube()
     }
 }
 
+void DrawAll(GLint modelLocation)
+{
+// ------------------------------------------------------------
+// 좌표축과 큐브 회전
+// ------------------------------------------------------------
+    glm::mat4 model = MakeModelMatrix(
+        glm::radians(30.0f),
+        glm::radians(30.0f)
+    );
 
+    glUniformMatrix4fv(
+        modelLocation,
+        1,
+        GL_FALSE,
+        &model[0][0]
+    );
+
+    // ------------------------------------------------------------
+    // 그리기
+    // ------------------------------------------------------------
+    glBindVertexArray(VAO);
+
+    glDrawArrays(
+        GL_LINES,
+        0,
+        6
+    );
+
+    DrawCube();
+}
 
 
 bool CheckShader(GLuint shader)
