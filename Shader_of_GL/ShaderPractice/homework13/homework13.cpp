@@ -116,6 +116,10 @@ int pyramidFaces[4][3] = {
     {3, 4, 0}  // 왼쪽 삼각형
 };
 
+int pyramidBottom[4] = {
+    0,1,2,3
+};
+
 // 면마다 사용할 색상
 glm::vec3 pyramidFaceColors[4] = {
     {0.0f, 1.0f, 1.0f}, // 하늘색
@@ -128,7 +132,7 @@ glm::vec3 pyramidFaceColors[4] = {
 float pyramidVertices[4 * 3 * 6]{};
 
 // 각 삼각형을 화면에 표시할지 저장
-bool pyramidFaceVisible[4]{};
+bool pyramidFaceVisible[5]{};
 
 // 현재 표시할 도형: false는 육면체, true는 사각뿔
 bool pyramidMode{};
@@ -469,7 +473,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         if (pyramidMode)
         {
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 5; ++i)
             {
                 pyramidFaceVisible[i] = false;
             }
@@ -486,7 +490,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         if (pyramidMode)
         {
-            for (int i = 0; i < 4; ++i)
+            for (int i = 0; i < 5; ++i)
             {
                 pyramidFaceVisible[i] = false;
             }
@@ -559,12 +563,58 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         pyramidMode = true;
         pyramidFaceVisible[3] = !pyramidFaceVisible[3];
     }
+    else if (key == GLFW_KEY_T) {
+
+        if (!pyramidMode)
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                cubeFaceVisible[i] = false;
+            }
+        }
+
+        pyramidMode = true;
+
+        int cnt{};
+
+        for (int i = 0; i < 4; ++i)
+        {
+            if (pyramidFaceVisible[i])
+            {
+                cnt++;
+            }
+        }
+
+        int target{};
+
+        if (cnt < 4)
+        {
+            target = 1;
+        }
+
+        int n{};
+
+        while (n < target) {
+            std::uniform_int_distribution<int> pDist(0, 3);
+
+            int Face = pDist(gen);
+
+            if (!pyramidFaceVisible[Face])
+            {
+                pyramidFaceVisible[Face] = true;
+                n++;
+            }
+        }
+
+        pyramidFaceVisible[4] = true;
+
+    }
 
     if (pyramidMode)
     {
         std::cout << "현재 그려진 '사각뿔' 면: ";
 
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 5; ++i)
         {
             if (pyramidFaceVisible[i])
             {
