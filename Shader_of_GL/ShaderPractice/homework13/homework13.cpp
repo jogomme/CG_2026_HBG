@@ -24,6 +24,9 @@ glm::mat4 MakeModelMatrix(float angleX, float angleY);
 void MakeCubeVertices();
 void DrawCube();
 
+void MakePyramidVertices();
+void DrawPyramid();
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -98,6 +101,46 @@ bool cubeFaceVisible[6]{};
 std::random_device rd;
 std::mt19937 gen(rd());
 std::uniform_int_distribution<int> faceDistribution(0, 5);
+
+//------------------------------------------------------------------------------------------------------
+// 사각뿔 데이터
+//------------------------------------------------------------------------------------------------------
+
+const float pyramidSize = 0.4f;
+
+// 사각뿔의 꼭짓점 5개
+glm::vec3 pyramidCorners[5] = {
+    {-pyramidSize, -pyramidSize, -pyramidSize}, // 0: 밑면 앞 왼쪽
+    { pyramidSize, -pyramidSize, -pyramidSize}, // 1: 밑면 앞 오른쪽
+    { pyramidSize,  pyramidSize, -pyramidSize}, // 2: 밑면 뒤 오른쪽
+    {-pyramidSize,  pyramidSize, -pyramidSize}, // 3: 밑면 뒤 왼쪽
+    { 0.0f, 0.0f, pyramidSize}                  // 4: 꼭짓점
+};
+
+// 삼각형 옆면 4개에서 사용할 꼭짓점 번호
+int pyramidFaces[4][3] = {
+    {0, 1, 4}, // 앞쪽 삼각형
+    {1, 2, 4}, // 오른쪽 삼각형
+    {2, 3, 4}, // 뒤쪽 삼각형
+    {3, 0, 4}  // 왼쪽 삼각형
+};
+
+// 면마다 사용할 색상
+glm::vec3 pyramidFaceColors[4] = {
+    {0.0f, 1.0f, 1.0f}, // 하늘색
+    {1.0f, 0.5f, 0.0f}, // 주황색
+    {1.0f, 0.0f, 0.5f}, // 분홍색
+    {0.5f, 0.0f, 1.0f}  // 보라색
+};
+
+// 면 4개 * 정점 3개 * 정점당 float 6개
+float pyramidVertices[4 * 3 * 6]{};
+
+// 각 삼각형을 화면에 표시할지 저장
+bool pyramidFaceVisible[4]{};
+
+// 현재 표시할 도형: false는 육면체, true는 사각뿔
+bool pyramidMode{};
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
@@ -198,11 +241,12 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     MakeCubeVertices();
+    MakePyramidVertices();
 
     // 좌표축 데이터와 육면체 데이터를 한 버퍼에 저장
     glBufferData(
         GL_ARRAY_BUFFER,
-        sizeof(vertices) + sizeof(cubeVertices),
+        sizeof(vertices) + sizeof(cubeVertices) + sizeof(pyramidVertices),
         nullptr,
         GL_STATIC_DRAW
     );
@@ -221,6 +265,14 @@ int main()
         sizeof(vertices),
         sizeof(cubeVertices),
         cubeVertices
+    );
+
+    // 사각뿔 데이터 저장
+    glBufferSubData(
+        GL_ARRAY_BUFFER,
+        sizeof(vertices) + sizeof(cubeVertices),
+        sizeof(pyramidVertices),
+        pyramidVertices
     );
 
     // 위치
@@ -410,7 +462,14 @@ int main()
             &model[0][0]
         );
 
-        DrawCube();
+        if (pyramidMode)
+        {
+            DrawPyramid();
+        }
+        else
+        {
+            DrawCube();
+        }
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -448,6 +507,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     // 1~6: 육면체의 해당 면 하나를 표시
     if (key >= GLFW_KEY_1 && key <= GLFW_KEY_6)
     {
+        if (pyramidMode)
+        {
+            for (int i = 0; i < 5; ++i)
+            {
+                pyramidFaceVisible[i] = false;
+            }
+        }
+
+        pyramidMode = false;
+
         // 입력한 번호에 해당하는 면 표시
         cubeFaceVisible[key - GLFW_KEY_1] = !cubeFaceVisible[key - GLFW_KEY_1];
     }
@@ -482,11 +551,55 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             }
         }
     }
+    // 7~9: 사각뿔의 삼각형 면 표시·숨기기
+    else if (key >= GLFW_KEY_7 && key <= GLFW_KEY_9)
+    {
+        // 육면체에서 사각뿔로 전환할 때 육면체 면 숨기기
+        if (!pyramidMode)
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                cubeFaceVisible[i] = false;
+            }
+        }
+
+        pyramidMode = true;
+
+        int face = key - GLFW_KEY_7;
+        pyramidFaceVisible[face] = !pyramidFaceVisible[face];
+    }
+    // 0: 사각뿔의 네 번째 삼각형 면 표시·숨기기
+    else if (key == GLFW_KEY_0)
+    {
+        if (!pyramidMode)
+        {
+            for (int i = 0; i < 6; ++i)
+            {
+                cubeFaceVisible[i] = false;
+            }
+        }
+
+
+        pyramidMode = true;
+        pyramidFaceVisible[3] = !pyramidFaceVisible[3];
+    }
+
 
     std::cout << "현재 그려진 면 : ";
-    for (int i = 0; i < 6; ++i) {
-        if (cubeFaceVisible[i]) {
-            std::cout << i << ", ";
+    if (pyramidMode)
+    {
+        for (int i = 0; i < 5; ++i) {
+            if (pyramidFaceVisible[i]) {
+                std::cout << i << ", ";
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < 6; ++i) {
+            if (cubeFaceVisible[i]) {
+                std::cout << i << ", ";
+            }
         }
     }
     std::cout << '\n';
@@ -608,4 +721,44 @@ glm::mat4 MakeModelMatrix(float angleX, float angleY)
     );
 
     return model;
+}
+
+void MakePyramidVertices()
+{
+    int index{};
+
+    for (int face = 0; face < 4; ++face)
+    {
+        for (int vertex = 0; vertex < 3; ++vertex)
+        {
+            glm::vec3 position =
+                pyramidCorners[pyramidFaces[face][vertex]];
+
+            pyramidVertices[index++] = position.x;
+            pyramidVertices[index++] = position.y;
+            pyramidVertices[index++] = position.z;
+
+            pyramidVertices[index++] = pyramidFaceColors[face].r;
+            pyramidVertices[index++] = pyramidFaceColors[face].g;
+            pyramidVertices[index++] = pyramidFaceColors[face].b;
+        }
+    }
+}
+
+void DrawPyramid()
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        // 선택되지 않은 면은 그리지 않음
+        if (!pyramidFaceVisible[i])
+        {
+            continue;
+        }
+
+        glDrawArrays(
+            GL_TRIANGLES,
+            30 + i * 3,
+            3
+        );
+    }
 }
