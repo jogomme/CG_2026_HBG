@@ -509,7 +509,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         if (pyramidMode)
         {
-            for (int i = 0; i < 5; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 pyramidFaceVisible[i] = false;
             }
@@ -523,6 +523,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     // c: 육면체에서 랜덤한 두 면 표시
     else if (key == GLFW_KEY_C)
     {
+        if (pyramidMode)
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                pyramidFaceVisible[i] = false;
+            }
+        }
+
+        pyramidMode = false;
+
         int cnt{};
 
         for (int i = 0; i < 6; ++i) {
@@ -585,10 +595,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 
 
-    std::cout << "현재 그려진 면 : ";
     if (pyramidMode)
     {
-        for (int i = 0; i < 5; ++i) {
+        std::cout << "현재 그려진 '삼각뿔'면 : ";
+
+        for (int i = 0; i < 4; ++i) {
             if (pyramidFaceVisible[i]) {
                 std::cout << i << ", ";
             }
@@ -596,6 +607,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else
     {
+        std::cout << "현재 그려진 '육면체'면 : ";
+
         for (int i = 0; i < 6; ++i) {
             if (cubeFaceVisible[i]) {
                 std::cout << i << ", ";
