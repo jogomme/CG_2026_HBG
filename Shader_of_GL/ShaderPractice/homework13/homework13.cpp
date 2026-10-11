@@ -14,9 +14,7 @@
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-// 셰이더 컴파일 / 링크 결과 확인
 bool CheckShader(GLuint shader);
-
 bool CheckProgram(GLuint program);
 
 glm::mat4 MakeModelMatrix(float angleX, float angleY);
@@ -28,26 +26,19 @@ void MakePyramidVertices();
 void DrawPyramid();
 
 //------------------------------------------------------------------------------------------------------
-// 정점의 위치 데이터
+// 정점 위치 3개 + 색상 3개
 //------------------------------------------------------------------------------------------------------
 
-// 위치 3개 + 색상 3개 = 한 정점 6 float
 float vertices[] = {
-    // ------------------------------------------------------------
     // X축 - 빨간색
-    // ------------------------------------------------------------
     -0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
      0.8f, 0.0f, 0.0f,    1.0f, 0.0f, 0.0f,
 
-     // ------------------------------------------------------------
      // Y축 - 초록색
-     // ------------------------------------------------------------
       0.0f, -0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
       0.0f,  0.8f, 0.0f,    0.0f, 1.0f, 0.0f,
 
-      // ------------------------------------------------------------
       // Z축 - 파란색
-      // ------------------------------------------------------------
        0.0f, 0.0f, -0.8f,    0.0f, 0.0f, 1.0f,
        0.0f, 0.0f,  0.8f,    0.0f, 0.0f, 1.0f
 };
@@ -103,7 +94,7 @@ std::mt19937 gen(rd());
 std::uniform_int_distribution<int> faceDistribution(0, 5);
 
 //------------------------------------------------------------------------------------------------------
-// 사각뿔 데이터
+// 사각뿔 데이터 (13.5.2 기준)
 //------------------------------------------------------------------------------------------------------
 
 const float pyramidSize = 0.4f;
@@ -156,23 +147,17 @@ GLuint VBO;
 int main()
 //------------------------------------------------------------------------------------------------------
 {
-    //------------------------------------------------------------------------------------------
-    // 콘솔 출력 코드페이지를 UTF-8 로 설정
-    //------------------------------------------------------------------------------------------
+    // 콘솔 출력 코드페이지를 UTF-8로 설정
     SetConsoleOutputCP(CP_UTF8);
 
-    //------------------------------------------------------------------------------------------
     // GLFW 초기화
-    //------------------------------------------------------------------------------------------
     if (!glfwInit())
     {
         std::cout << "GLFW 초기화 실패\n";
         return -1;
     }
 
-    //------------------------------------------------------------------------------------------
     // OpenGL 3.3 설정
-    //------------------------------------------------------------------------------------------
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 
@@ -181,9 +166,7 @@ int main()
         GLFW_OPENGL_CORE_PROFILE
     );
 
-    //------------------------------------------------------------------------------------------
     // 창 생성
-    //------------------------------------------------------------------------------------------
     glfwWindowHint(GLFW_DEPTH_BITS, 24);
 
     GLFWwindow* window = glfwCreateWindow(
@@ -200,14 +183,10 @@ int main()
         return -1;
     }
 
-    //------------------------------------------------------------------------------------------
     // OpenGL Context 생성
-    //------------------------------------------------------------------------------------------
     glfwMakeContextCurrent(window);
 
-    //------------------------------------------------------------------------------------------
     // GLEW 초기화
-    //------------------------------------------------------------------------------------------
     glewExperimental = GL_TRUE;
 
     if (glewInit() != GLEW_OK)
@@ -218,22 +197,16 @@ int main()
         return -1;
     }
 
-    //------------------------------------------------------------------------------------------
     // 화면 크기 설정
-    //------------------------------------------------------------------------------------------
     glViewport(0, 0, wide, height);
 
     // 은면 제거를 위한 깊이 검사
     glEnable(GL_DEPTH_TEST);
 
-    //------------------------------------------------------------------------------------------
     // 키 콜백 함수
-    //------------------------------------------------------------------------------------------
     glfwSetKeyCallback(window, KeyCallback);
 
-    //------------------------------------------------------------------------------------------
     // VAO / VBO 설정
-    //------------------------------------------------------------------------------------------
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
@@ -243,7 +216,7 @@ int main()
     MakeCubeVertices();
     MakePyramidVertices();
 
-    // 좌표축 데이터와 육면체 데이터를 한 버퍼에 저장
+    // 좌표축, 육면체, 사각뿔 데이터를 한 버퍼에 저장
     glBufferData(
         GL_ARRAY_BUFFER,
         sizeof(vertices) + sizeof(cubeVertices) + sizeof(pyramidVertices),
@@ -299,9 +272,7 @@ int main()
 
     glEnableVertexAttribArray(1);
 
-    //------------------------------------------------------------------------------------------
     // Vertex Shader
-    //------------------------------------------------------------------------------------------
     const char* vertexShaderSource = R"(
     #version 330 core
 
@@ -319,9 +290,7 @@ int main()
     }
     )";
 
-    //------------------------------------------------------------------------------------------
     // Fragment Shader
-    //------------------------------------------------------------------------------------------
     const char* fragmentShaderSource = R"(
     #version 330 core
 
@@ -335,9 +304,7 @@ int main()
     }
     )";
 
-    //------------------------------------------------------------------------------------------
     // Vertex Shader 생성
-    //------------------------------------------------------------------------------------------
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
     glShaderSource(
@@ -357,9 +324,7 @@ int main()
         return -1;
     }
 
-    //------------------------------------------------------------------------------------------
     // Fragment Shader 생성
-    //------------------------------------------------------------------------------------------
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 
     glShaderSource(
@@ -380,9 +345,7 @@ int main()
         return -1;
     }
 
-    //------------------------------------------------------------------------------------------
     // Shader Program 생성
-    //------------------------------------------------------------------------------------------
     GLuint shaderProgram = glCreateProgram();
 
     glAttachShader(shaderProgram, vertexShader);
@@ -400,14 +363,10 @@ int main()
         return -1;
     }
 
-    //------------------------------------------------------------------------------------------
     // Program 사용
-    //------------------------------------------------------------------------------------------
     glUseProgram(shaderProgram);
 
-    //------------------------------------------------------------------------------------------
     // 화면 배경색 설정
-    //------------------------------------------------------------------------------------------
     glClearColor(
         1.0f,
         1.0f,
@@ -417,28 +376,29 @@ int main()
 
     GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
 
-    //------------------------------------------------------------------------------------------
     // 메인 루프
-    //------------------------------------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
     {
-        // ------------------------------------------------------------
         // 화면 지우기
-        // ------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glBindVertexArray(VAO);
 
         // ------------------------------------------------------------
-        // 좌표축 그리기: 회전하지 않음
+        // 좌표축 그리기
+        // 13.1~13.3처럼 좌표축에도 회전을 적용한다.
+        // 단위 행렬을 사용하면 Z축이 깊이 방향에 놓여 화면에서 보이지 않는다.
         // ------------------------------------------------------------
-        glm::mat4 model(1.0f);
+        glm::mat4 axisModel = MakeModelMatrix(
+            glm::radians(30.0f),
+            glm::radians(30.0f)
+        );
 
         glUniformMatrix4fv(
             modelLocation,
             1,
             GL_FALSE,
-            &model[0][0]
+            &axisModel[0][0]
         );
 
         glDrawArrays(
@@ -448,9 +408,9 @@ int main()
         );
 
         // ------------------------------------------------------------
-        // 육면체 그리기: X축 30도, Y축 30도 회전
+        // 객체 그리기: X축 30도, Y축 30도 회전
         // ------------------------------------------------------------
-        model = MakeModelMatrix(
+        glm::mat4 model = MakeModelMatrix(
             glm::radians(30.0f),
             glm::radians(30.0f)
         );
@@ -475,9 +435,7 @@ int main()
         glfwPollEvents();
     }
 
-    //------------------------------------------------------------------------------------------
     // 종료
-    //------------------------------------------------------------------------------------------
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteProgram(shaderProgram);
@@ -486,6 +444,8 @@ int main()
 
     glfwDestroyWindow(window);
     glfwTerminate();
+
+    return 0;
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -504,7 +464,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         return;
     }
 
-    // 1~6: 육면체의 해당 면 하나를 표시
+    // 1~6: 육면체의 해당 면 표시/숨기기
     if (key >= GLFW_KEY_1 && key <= GLFW_KEY_6)
     {
         if (pyramidMode)
@@ -518,7 +478,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         pyramidMode = false;
 
         // 입력한 번호에 해당하는 면 표시
-        cubeFaceVisible[key - GLFW_KEY_1] = !cubeFaceVisible[key - GLFW_KEY_1];
+        cubeFaceVisible[key - GLFW_KEY_1] =
+            !cubeFaceVisible[key - GLFW_KEY_1];
     }
     // c: 육면체에서 랜덤한 두 면 표시
     else if (key == GLFW_KEY_C)
@@ -535,33 +496,39 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         int cnt{};
 
-        for (int i = 0; i < 6; ++i) {
-            if (cubeFaceVisible[i]) {
+        for (int i = 0; i < 6; ++i)
+        {
+            if (cubeFaceVisible[i])
+            {
                 cnt++;
             }
         }
 
         int target{};
 
-        if (cnt < 5) {
+        if (cnt < 5)
+        {
             target = 2;
         }
-        else if (cnt == 5) {
+        else if (cnt == 5)
+        {
             target = 1;
         }
 
         int n{};
 
-        while (n < target) {
+        while (n < target)
+        {
             int Face = faceDistribution(gen);
 
-            if (!cubeFaceVisible[Face]) {
+            if (!cubeFaceVisible[Face])
+            {
                 cubeFaceVisible[Face] = true;
                 n++;
             }
         }
     }
-    // 7~9: 사각뿔의 삼각형 면 표시·숨기기
+    // 7~9: 사각뿔의 삼각형 면 표시/숨기기
     else if (key >= GLFW_KEY_7 && key <= GLFW_KEY_9)
     {
         // 육면체에서 사각뿔로 전환할 때 육면체 면 숨기기
@@ -578,7 +545,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         int face = key - GLFW_KEY_7;
         pyramidFaceVisible[face] = !pyramidFaceVisible[face];
     }
-    // 0: 사각뿔의 네 번째 삼각형 면 표시·숨기기
+    // 0: 사각뿔의 네 번째 삼각형 면 표시/숨기기
     else if (key == GLFW_KEY_0)
     {
         if (!pyramidMode)
@@ -589,32 +556,35 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             }
         }
 
-
         pyramidMode = true;
         pyramidFaceVisible[3] = !pyramidFaceVisible[3];
     }
 
-
     if (pyramidMode)
     {
-        std::cout << "현재 그려진 '삼각뿔'면 : ";
+        std::cout << "현재 그려진 '사각뿔' 면: ";
 
-        for (int i = 0; i < 4; ++i) {
-            if (pyramidFaceVisible[i]) {
+        for (int i = 0; i < 4; ++i)
+        {
+            if (pyramidFaceVisible[i])
+            {
                 std::cout << i << ", ";
             }
         }
     }
     else
     {
-        std::cout << "현재 그려진 '육면체'면 : ";
+        std::cout << "현재 그려진 '육면체' 면: ";
 
-        for (int i = 0; i < 6; ++i) {
-            if (cubeFaceVisible[i]) {
+        for (int i = 0; i < 6; ++i)
+        {
+            if (cubeFaceVisible[i])
+            {
                 std::cout << i << ", ";
             }
         }
     }
+
     std::cout << '\n';
 }
 
@@ -679,7 +649,7 @@ bool CheckShader(GLuint shader)
         );
 
         std::cout << "셰이더 컴파일 실패\n";
-        std::cout << log << "\n";
+        std::cout << log << '\n';
 
         return false;
     }
@@ -709,7 +679,7 @@ bool CheckProgram(GLuint program)
         );
 
         std::cout << "Program 링크 실패\n";
-        std::cout << log << "\n";
+        std::cout << log << '\n';
 
         return false;
     }
