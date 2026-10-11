@@ -1,6 +1,10 @@
 //------------------------------------------------------------------------------------------------------
 // OpenGL 3.3 실습 기본 템플릿
 //
+// 반복되는 설정은 GLCommon.h 에 모아 두었습니다. 이 파일은 과제 로직만 작성하면 됩니다.
+//   CreateGLWindow()         창 생성 + GLEW 초기화 + viewport + 콘솔 UTF-8
+//   CreateProgram( vs, fs )  셰이더 컴파일 + 링크 + 오류 로그 출력
+//
 // 링커 설정은 vcxproj 에 내장되어 있습니다. include 경로 설정도 필요 없습니다.
 //   링커   : opengl32.lib / glew32.lib / glfw3dll.lib
 //   언어   : C++20
@@ -11,21 +15,14 @@
 //   #include <GL/glfw3.h>          <- <GLFW/glfw3.h> 가 아닙니다
 //   #include <GL/glm/glm.hpp>      <- 앞에 GL/ 이 붙습니다
 //
-// 콘솔 한글 출력을 위해 main() 에서 SetConsoleOutputCP(CP_UTF8) 을 호출합니다.
-//   /utf-8 로 문자열은 UTF-8 로 나가는데 콘솔 기본 코드페이지는 949 라서 그대로 두면 깨집니다.
-//   <windows.h> 를 GL 헤더보다 먼저 include 해야 APIENTRY 재정의 경고가 없습니다.
-//
 // 빌드는 x64 만 지원합니다. glew32.lib / glfw3dll.lib 이 SDK 에 x64 로만 존재합니다.
 //------------------------------------------------------------------------------------------------------
 
-#include <windows.h>
+#include "GLCommon.h"
 
-#include <GL/glew.h>
-#include <GL/glfw3.h>
 #include <GL/glm/glm.hpp>
 #include <GL/glm/gtc/matrix_transform.hpp>
 
-#include <iostream>
 #include <cmath>
 
 //------------------------------------------------------------------------------------------------------
@@ -33,11 +30,6 @@
 //------------------------------------------------------------------------------------------------------
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
-// 셰이더 컴파일 / 링크 결과 확인
-bool CheckShader(GLuint shader);
-
-bool CheckProgram(GLuint program);
 
 glm::mat4 MakeModelMatrix(float angle);
 
@@ -75,72 +67,18 @@ int main()
 //------------------------------------------------------------------------------------------------------
 {
     //------------------------------------------------------------------------------------------
-    // 콘솔 출력 코드페이지를 UTF-8 로 설정
-    //   /utf-8 로 컴파일되므로 문자열은 UTF-8 로 나간다.
-    //   콘솔 기본 코드페이지(949)로는 깨지므로 맞춰준다.
+    // 창 생성 + GLEW 초기화 + viewport + 콘솔 UTF-8
     //------------------------------------------------------------------------------------------
-    SetConsoleOutputCP(CP_UTF8);
-
-    //------------------------------------------------------------------------------------------
-    // GLFW 초기화
-    //------------------------------------------------------------------------------------------
-    if (!glfwInit())
-    {
-        std::cout << "GLFW 초기화 실패\n";
-        return -1;
-    }
-
-    //------------------------------------------------------------------------------------------
-    // OpenGL 3.3 설정
-    //------------------------------------------------------------------------------------------
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-
-    glfwWindowHint(
-        GLFW_OPENGL_PROFILE,
-        GLFW_OPENGL_CORE_PROFILE
-    );
-
-    //------------------------------------------------------------------------------------------
-    // 창 생성
-    //------------------------------------------------------------------------------------------
-    GLFWwindow* window = glfwCreateWindow(
-        wide, height,
-        "__WINDOWTITLE__",
-        nullptr,
-        nullptr
+    GLFWwindow* window = CreateGLWindow(
+        wide,
+        height,
+        "__WINDOWTITLE__"
     );
 
     if (!window)
     {
-        std::cout << "Window 생성 실패\n";
-        glfwTerminate();
         return -1;
     }
-
-    //------------------------------------------------------------------------------------------
-    // OpenGL Context 생성
-    //------------------------------------------------------------------------------------------
-    glfwMakeContextCurrent(window);
-
-    //------------------------------------------------------------------------------------------
-    // GLEW 초기화
-    //------------------------------------------------------------------------------------------
-    glewExperimental = GL_TRUE;
-
-    if (glewInit() != GLEW_OK)
-    {
-        std::cout << "GLEW 초기화 실패\n";
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
-
-    //------------------------------------------------------------------------------------------
-    // 화면 크기 설정
-    //------------------------------------------------------------------------------------------
-    glViewport(0, 0, wide, height);
 
     //------------------------------------------------------------------------------------------
     // 키 콜백 함수
@@ -224,63 +162,15 @@ int main()
     )";
 
     //------------------------------------------------------------------------------------------
-    // Vertex Shader 생성
+    // Shader Program 생성 ( 컴파일 + 링크 )
     //------------------------------------------------------------------------------------------
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-
-    glShaderSource(
-        vertexShader,
-        1,
-        &vertexShaderSource,
-        nullptr
+    GLuint shaderProgram = CreateProgram(
+        vertexShaderSource,
+        fragmentShaderSource
     );
 
-    glCompileShader(vertexShader);
-
-    if (!CheckShader(vertexShader))
+    if (shaderProgram == 0)
     {
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
-
-    //------------------------------------------------------------------------------------------
-    // Fragment Shader 생성
-    //------------------------------------------------------------------------------------------
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    glShaderSource(
-        fragmentShader,
-        1,
-        &fragmentShaderSource,
-        nullptr
-    );
-
-    glCompileShader(fragmentShader);
-
-    if (!CheckShader(fragmentShader))
-    {
-        glDeleteShader(vertexShader);
-        glfwDestroyWindow(window);
-        glfwTerminate();
-        return -1;
-    }
-
-    //------------------------------------------------------------------------------------------
-    // Shader Program 생성
-    //------------------------------------------------------------------------------------------
-    GLuint shaderProgram = glCreateProgram();
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-
-    glLinkProgram(shaderProgram);
-
-    if (!CheckProgram(shaderProgram))
-    {
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-        glDeleteProgram(shaderProgram);
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
@@ -348,8 +238,6 @@ int main()
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
 
     glfwDestroyWindow(window);
     glfwTerminate();
@@ -366,66 +254,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
-}
-
-bool CheckShader(GLuint shader)
-{
-    int success = 0;
-
-    glGetShaderiv(
-        shader,
-        GL_COMPILE_STATUS,
-        &success
-    );
-
-    if (success == GL_FALSE)
-    {
-        char log[1024];
-
-        glGetShaderInfoLog(
-            shader,
-            sizeof(log),
-            nullptr,
-            log
-        );
-
-        std::cout << "셰이더 컴파일 실패\n";
-        std::cout << log << "\n";
-
-        return false;
-    }
-
-    return true;
-}
-
-bool CheckProgram(GLuint program)
-{
-    int success = 0;
-
-    glGetProgramiv(
-        program,
-        GL_LINK_STATUS,
-        &success
-    );
-
-    if (success == GL_FALSE)
-    {
-        char log[1024];
-
-        glGetProgramInfoLog(
-            program,
-            sizeof(log),
-            nullptr,
-            log
-        );
-
-        std::cout << "Program 링크 실패\n";
-        std::cout << log << "\n";
-
-        return false;
-    }
-
-    return true;
 }
 
 glm::mat4 MakeModelMatrix(float angle)
