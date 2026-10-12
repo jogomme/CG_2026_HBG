@@ -112,6 +112,8 @@ float angleZ = 0.0f;
 float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
+bool isH = true;
+
 GLuint VAO;
 GLuint VBO;
 
@@ -421,6 +423,19 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             sizeof(pyramidVertices),
             pyramidVertices
         );
+    }
+    else if (key == GLFW_KEY_H) {
+
+        isH = !isH;
+
+        if(isH)
+        {
+            glEnable(GL_DEPTH_TEST);
+        }
+        else
+        {
+            glDisable(GL_DEPTH_TEST);
+        }
     }
 }
 
