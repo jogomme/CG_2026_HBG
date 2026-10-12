@@ -125,7 +125,7 @@ float posSpeedYD = 0.0f;
 float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
-bool isH = true;
+bool isH = false;
 bool isW = false;
 
 bool isX = false;
@@ -729,9 +729,23 @@ void DrawObj(GLint modelLocation)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
         }
         else {
-            for (int face = 0; face < 6; ++face) {
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
-                    (void*)(face * 6 * sizeof(unsigned int)));
+            for (int face = 0; face < 6; ++face)
+            {
+                glm::mat4 faceModel = objmodel;
+
+                glUniformMatrix4fv(
+                    modelLocation,
+                    1,
+                    GL_FALSE,
+                    &faceModel[0][0]
+                );
+
+                glDrawElements(
+                    GL_TRIANGLES,
+                    6,
+                    GL_UNSIGNED_INT,
+                    (void*)(face * 6 * sizeof(unsigned int))
+                );
             }
         }
     }
