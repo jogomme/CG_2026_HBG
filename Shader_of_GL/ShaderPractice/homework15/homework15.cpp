@@ -797,13 +797,11 @@ void MakeCubeVertices()
     std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
 
     for (int face = 0; face < 6; ++face) {
-    glm::vec3 color = {
-        colorDist(gen),
-        colorDist(gen),
-        colorDist(gen)
-    };
 
     for (int vertex = 0; vertex < 4; ++vertex) {
+
+        glm::vec3 color = { colorDist(gen),colorDist(gen), colorDist(gen) };
+
         int cornerIndex = cubeFaces[face][vertex];
 
         MakeVertices(
