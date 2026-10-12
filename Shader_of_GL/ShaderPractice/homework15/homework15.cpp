@@ -112,6 +112,7 @@ float angleZ = 0.0f;
 
 float rotationSpeedX = 0.0f;
 float rotationSpeedY = 0.0f;
+float rotationSpeedZ = 0.0f;
 
 bool isTopRotating = false;
 float topAngle = 0.0f;
@@ -437,6 +438,13 @@ int main()
         angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
         angleZ = fmodf(angleZ + rotationSpeedZ * dTime, 360.0f);
 
+        if (isTopRotating) {
+            topAngle = fmodf(
+                topAngle + topRotationSpeed * dTime,
+                360.0f
+            );
+        }
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -637,30 +645,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             " Y - " << isY << '\n';
     }
     else if (key == GLFW_KEY_T) {
-
-        if (mods & GLFW_MOD_SHIFT) {
-            isShiftT = !isShiftT;
-
-            if (isShiftT) {
-                rotationSpeedZ -= 30.0f;
-            }
-            else {
-                rotationSpeedZ += 30.0f;
-            }
-        }
-        else {
-            isT = !isT;
-
-            if (isT) {
-                rotationSpeedZ += 30.0f;
-            }
-            else {
-                rotationSpeedZ -= 30.0f;
-            }
-        }
-        std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
-            " Y - " << isY << '\n';
-            }
+        isTopRotating = !isTopRotating;
+    }
     else if (key == GLFW_KEY_R) {
         pyramidMode = false;
 
@@ -671,6 +657,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         // 회전 정지
         rotationSpeedX = 0.0f;
         rotationSpeedY = 0.0f;
+        rotationSpeedZ = 0.0f;
 
         // 회전 키 토글 상태 초기화
         isX = false;
@@ -695,6 +682,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         angleX = 30.0f;
         angleY = 30.0f;
         angleZ = 0.0f;
+
+        isTopRotating = false;
+        topAngle = 0.0f;
     }
 
 }
