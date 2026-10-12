@@ -313,6 +313,18 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
+    else if (key == GLFW_KEY_C) {
+        MakeCubeVertices();
+
+        glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            0,
+            sizeof(cubeVertices),
+            cubeVertices
+        );
+    }
 }
 
 glm::mat4 MakeAxisModelMatrix()
