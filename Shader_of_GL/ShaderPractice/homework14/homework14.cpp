@@ -119,6 +119,10 @@ GLuint cubeVAO;
 GLuint cubeVBO;
 GLuint cubeEBO;
 
+GLuint pyramidVAO;
+GLuint pyramidVBO;
+GLuint pyramidEBO;
+
 int main()
 //------------------------------------------------------------------------------------------------------
 {
@@ -154,6 +158,7 @@ int main()
     MakeCubeIndices();
 
     MakePyramidVertices();
+    MakePyramidIndices();
 
     glBufferData(
         GL_ARRAY_BUFFER,
