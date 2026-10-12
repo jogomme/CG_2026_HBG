@@ -121,6 +121,7 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     MakeCubeVertices();
+    MakeCubeIndices();
 
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -152,6 +153,29 @@ int main()
     );
 
     glEnableVertexAttribArray(1);
+
+    glGenVertexArrays(1, &cubeVAO);
+    glBindVertexArray(cubeVAO);
+
+    glGenBuffers(1, &cubeVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(cubeVertices),
+        cubeVertices,
+        GL_STATIC_DRAW
+    );
+
+    glGenBuffers(1, &cubeEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
+
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(cubeIndices),
+        cubeIndices,
+        GL_STATIC_DRAW
+    );
 
     //------------------------------------------------------------------------------------------
     // Vertex Shader
