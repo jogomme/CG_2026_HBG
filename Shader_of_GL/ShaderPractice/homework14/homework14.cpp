@@ -42,7 +42,7 @@ float axisVertices[] = {
        0.0f, 0.0f,  0.8f,  0.0f, 0.0f, 1.0f
 };
 
-float h{ 0.5f };
+float h{ 0.3f };
 
 glm::vec3 cubeCorners[8] = {
     {-h, -h,  h},  // 0
@@ -367,7 +367,14 @@ void DrawObj(GLint modelLocation)
         GL_FALSE,
         &objmodel[0][0]
     );
+    glBindVertexArray(cubeVAO);
 
+    glDrawElements(
+        GL_TRIANGLES,
+        36,
+        GL_UNSIGNED_INT,
+        0
+    );
 }
 
 void MakeCubeIndices()
