@@ -71,6 +71,7 @@ int cubeFaces[6][4] = {
 float cubeVertices[6 * 4 * 6]{};
 
 unsigned int cubeIndices[6 * 2 * 3]{};
+unsigned int cubeEdgeIndices[6 * 8]{}; // 4 outline edges per face
 
 glm::vec3 pyramidCorners[5] = {
     {-h, -h,  h},  // 0: 바닥 앞쪽 왼쪽
@@ -145,6 +146,7 @@ GLuint VBO;
 GLuint cubeVAO;
 GLuint cubeVBO;
 GLuint cubeEBO;
+GLuint cubeEdgeEBO;
 
 GLuint pyramidVAO;
 GLuint pyramidVBO;
@@ -183,6 +185,20 @@ int main()
 
     MakeCubeVertices();
     MakeCubeIndices();
+
+    // Face-local vertices are ordered 0,1,2,3; boundary order is 0,1,3,2.
+    for (int face = 0; face < 6; ++face) {
+        unsigned int base = face * 4;
+        int i = face * 8;
+        cubeEdgeIndices[i + 0] = base + 0;
+        cubeEdgeIndices[i + 1] = base + 1;
+        cubeEdgeIndices[i + 2] = base + 1;
+        cubeEdgeIndices[i + 3] = base + 3;
+        cubeEdgeIndices[i + 4] = base + 3;
+        cubeEdgeIndices[i + 5] = base + 2;
+        cubeEdgeIndices[i + 6] = base + 2;
+        cubeEdgeIndices[i + 7] = base + 0;
+    }
 
     MakePyramidVertices();
     MakePyramidIndices();
@@ -242,6 +258,11 @@ int main()
         cubeIndices,
         GL_STATIC_DRAW
     );
+
+    glGenBuffers(1, &cubeEdgeEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEdgeEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubeEdgeIndices), cubeEdgeIndices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
 
     // 육면체 정점 위치 설정
     glVertexAttribPointer(
@@ -420,6 +441,10 @@ int main()
     //------------------------------------------------------------------------------------------
     // 종료
     //------------------------------------------------------------------------------------------
+    glDeleteBuffers(1, &cubeEdgeEBO);
+    glDeleteBuffers(1, &cubeEBO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteVertexArrays(1, &cubeVAO);
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
     glDeleteProgram(shaderProgram);
@@ -697,14 +722,17 @@ void DrawObj(GLint modelLocation)
     if (!pyramidMode) {
         glBindVertexArray(cubeVAO);
 
-        for (int face = 0; face < 6; ++face)
-        {
-            glDrawElements(
-                GL_TRIANGLES,
-                6,
-                GL_UNSIGNED_INT,
-                (void*)(face * 6 * sizeof(unsigned int))
-            );
+        if (isW) {
+            // Wireframe: draw face boundaries, not triangulation diagonals.
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEdgeEBO);
+            glDrawElements(GL_LINES, 6 * 8, GL_UNSIGNED_INT, 0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
+        }
+        else {
+            for (int face = 0; face < 6; ++face) {
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,
+                    (void*)(face * 6 * sizeof(unsigned int)));
+            }
         }
     }
     else {
