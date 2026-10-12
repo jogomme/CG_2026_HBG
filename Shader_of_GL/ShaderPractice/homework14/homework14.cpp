@@ -81,17 +81,17 @@ glm::vec3 pyramidCorners[5] = {
 };
 
 int pyramidFaces[4][3] = {
-    {0, 4, 1}, // 앞쪽 삼각형
-    {1, 4, 2}, // 오른쪽 삼각형
-    {2, 4, 3}, // 뒤쪽 삼각형
-    {3, 4, 0}  // 왼쪽 삼각형
+    {0, 1, 4},
+    {1, 3, 4},
+    {3, 2, 4},
+    {2, 0, 4}
 };
 
 int pyramidBottom[4] = { 0, 1, 2, 3 };
 
 float pyramidVertices[5 * 6]{};
 
-unsigned int pyramidIndices[6 * 2 * 3]{};
+unsigned int pyramidIndices[6 * 3]{};
 
 bool pyramidMode{};            // false: 육면체, true: 사각뿔
 
@@ -470,10 +470,18 @@ void MakePyramidIndices()
         pyramidIndices[index++] = c;
     }
 
-    for (int i = 0; i < 4; ++i) {
-        pyramidIndices[index++] = pyramidBottom[i];
-    }
+    int a = pyramidBottom[0];
+    int b = pyramidBottom[1];
+    int c = pyramidBottom[2];
+    int d = pyramidBottom[3];
 
+    pyramidIndices[index++] = a;
+    pyramidIndices[index++] = c;
+    pyramidIndices[index++] = b;
+
+    pyramidIndices[index++] = c;
+    pyramidIndices[index++] = d;
+    pyramidIndices[index++] = b;
 }
 
 void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color)
