@@ -697,12 +697,15 @@ void DrawObj(GLint modelLocation)
     if (!pyramidMode) {
         glBindVertexArray(cubeVAO);
 
-        glDrawElements(
-            GL_TRIANGLES,
-            36,
-            GL_UNSIGNED_INT,
-            0
-        );
+        for (int face = 0; face < 6; ++face)
+        {
+            glDrawElements(
+                GL_TRIANGLES,
+                6,
+                GL_UNSIGNED_INT,
+                (void*)(face * 6 * sizeof(unsigned int))
+            );
+        }
     }
     else {
         glBindVertexArray(pyramidVAO);
