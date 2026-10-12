@@ -112,6 +112,9 @@ float angleZ = 0.0f;
 float rotationSpeedX = 0.0f;
 float rotationSpeedY = 0.0f;
 
+float positionX = 0.0f;
+float positionY = 0.0f;
+
 float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
@@ -123,6 +126,12 @@ bool isShiftX = false;
 
 bool isY = false;
 bool isShiftY = false;
+
+bool isL = false;
+bool isR = false;
+
+bool isUp = false;
+bool isDown = false;
 
 GLuint VAO;
 GLuint VBO;
@@ -387,8 +396,8 @@ int main()
         double dTime = startTime - endTime;
         endTime = startTime;
 
-        angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
-        angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
+        angleX = fmodf(angleX + rotationSpeedX * dTime + positionX, 360.0f);
+        angleY = fmodf(angleY + rotationSpeedY * dTime + positionY, 360.0f);
         
         MakeObjectModelMatrix();
 
@@ -414,6 +423,33 @@ int main()
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    if (key == GLFW_KEY_RIGHT) {
+        
+        if (action == GLFW_PRESS) {
+            isR = true;
+        }
+        else {
+            isR = false;
+        }
+
+        if (isR) {
+            positionX += 3;
+        }
+        else {
+            positionX -= 3;
+        }
+        std::cout << isR << '\n';
+    }
+    if (key == GLFW_KEY_LEFT) {
+        positionX -= 10;
+    }
+    if (key == GLFW_KEY_UP) {
+        positionY += 10;
+    }
+    if (key == GLFW_KEY_DOWN) {
+        positionY -= 10;
+    }
+
     if (action != GLFW_PRESS)
     {
         return;
@@ -525,6 +561,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
             " Y - " << isY << '\n';
     }
+    
 }
 
 glm::mat4 MakeAxisModelMatrix()
