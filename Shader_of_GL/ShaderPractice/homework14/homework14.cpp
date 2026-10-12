@@ -403,6 +403,7 @@ int main()
         endTime = startTime;
 
         positionX += (posSpeedXL + posSpeedXR) * dTime;
+        positionY += (posSpeedYD + posSpeedYU) * dTime;
 
         angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
         angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
@@ -436,12 +437,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         if (action == GLFW_PRESS) {
             isR = true;
         }
-        else {
+        else if (action == GLFW_RELEASE) {
             isR = false;
         }
 
         if (isR) {
-            posSpeedXR = 0.05f;
+            posSpeedXR = 0.5f;
         }
         else {
             posSpeedXR = 0;
@@ -451,22 +452,46 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         if (action == GLFW_PRESS) {
             isL = true;
         }
-        else {
+        else if(action == GLFW_RELEASE){
             isL = false;
         }
 
         if (isL) {
-            posSpeedXL = -0.05f;
+            posSpeedXL = -0.5f;
         }
         else {
             posSpeedXL = 0;
         }
     }
     if (key == GLFW_KEY_UP) {
-        positionY += 10;
+        if (action == GLFW_PRESS) {
+            isUp = true;
+        }
+        else if (action == GLFW_RELEASE) {
+            isUp = false;
+        }
+
+        if (isUp) {
+            posSpeedYU = 0.5f;
+        }
+        else {
+            posSpeedYU = 0;
+        }
     }
     if (key == GLFW_KEY_DOWN) {
-        positionY -= 10;
+        if (action == GLFW_PRESS) {
+            isDown = true;
+        }
+        else if (action == GLFW_RELEASE) {
+            isDown = false;
+        }
+
+        if (isDown) {
+            posSpeedYD = -0.5f;
+        }
+        else {
+            posSpeedYD = 0;
+        }
     }
 
     if (action != GLFW_PRESS)
@@ -598,7 +623,7 @@ glm::mat4 MakeObjectModelMatrix()
 {
     glm::mat4 model(1.0f);
 
-    glm::vec3 movement = glm::vec3(axisangle * glm::vec4(positionX, positionY, 0.0f, 0.0f));
+    glm::vec3 movement = glm::vec3(axismodel * glm::vec4(positionX, positionY, 0.0f, 0.0f));
 
     model = glm::translate(model, movement);
 
