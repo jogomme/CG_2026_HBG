@@ -118,6 +118,10 @@ bool isTopRotating = false;
 float topAngle = 0.0f;
 float topRotationSpeed = 30.0f;
 
+bool isSideRotating = false;
+float sideAngle = 0.0f;
+float sideRotationSpeed = 30.0f;
+
 bool isFrontAnimating = false;
 float frontAngle = 0.0f;
 bool isOpen = false;
@@ -450,6 +454,13 @@ int main()
             );
         }
 
+        if (isSideRotating) {
+            sideAngle = fmodf(
+                sideAngle + sideRotationSpeed * dTime,
+                360.0f
+            );
+        }
+
         if (isFrontAnimating) {
             frontAngle += frontRotationSpeed * dTime;
 
@@ -660,6 +671,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_T) {
         isTopRotating = !isTopRotating;
     }
+    else if (key == GLFW_KEY_S) {
+        isSideRotating = !isSideRotating;
+    }
     else if (key == GLFW_KEY_F) {
         isFrontAnimating = !isFrontAnimating;
     }
@@ -701,6 +715,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         isTopRotating = false;
         topAngle = 0.0f;
+        isSideRotating = false;
+        sideAngle = 0.0f;
 
         isFrontAnimating = false;
         frontAngle = 0.0f;
@@ -802,6 +818,16 @@ void DrawObj(GLint modelLocation)
                         faceModel,
                         glm::vec3(0.0f, -h, 0.0f)
                     );
+                }
+
+                if (face == 2 || face == 3)
+                {
+                    const float sideX = (face == 2) ? h : -h;
+                    const float direction = (face == 2) ? 1.0f : -1.0f;
+
+                    faceModel = glm::translate(faceModel, glm::vec3(sideX, 0.0f, 0.0f));
+                    faceModel = glm::rotate(faceModel, glm::radians(sideAngle), glm::vec3(direction, 0.0f, 0.0f));
+                    faceModel = glm::translate(faceModel, glm::vec3(-sideX, 0.0f, 0.0f));
                 }
 
                 if (face == 0)
