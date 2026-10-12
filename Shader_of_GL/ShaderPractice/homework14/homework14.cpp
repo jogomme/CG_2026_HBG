@@ -402,7 +402,7 @@ int main()
         double dTime = startTime - endTime;
         endTime = startTime;
 
-        positionX += posSpeedXL + posSpeedXR;
+        positionX += (posSpeedXL + posSpeedXR) * dTime;
 
         angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
         angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
@@ -441,14 +441,26 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
 
         if (isR) {
-            posSpeedXR = 0.001f;
+            posSpeedXR = 0.05f;
         }
         else {
             posSpeedXR = 0;
         }
     }
     if (key == GLFW_KEY_LEFT) {
-        positionX -= 10;
+        if (action == GLFW_PRESS) {
+            isL = true;
+        }
+        else {
+            isL = false;
+        }
+
+        if (isL) {
+            posSpeedXL = -0.05f;
+        }
+        else {
+            posSpeedXL = 0;
+        }
     }
     if (key == GLFW_KEY_UP) {
         positionY += 10;
@@ -586,7 +598,9 @@ glm::mat4 MakeObjectModelMatrix()
 {
     glm::mat4 model(1.0f);
 
-    model = glm::translate(model, glm::vec3(positionX, positionY, 0.0f));
+    glm::vec3 movement = glm::vec3(axisangle * glm::vec4(positionX, positionY, 0.0f, 0.0f));
+
+    model = glm::translate(model, movement);
 
     model = glm::rotate(model, glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
