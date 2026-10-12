@@ -152,6 +152,20 @@ int main()
         (void*)(3 * sizeof(float))
     );
 
+    // Cube 관련
+
+    // 육면체 정점 위치 설정
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)0
+    );
+
+    glEnableVertexAttribArray(0);
+
     glEnableVertexAttribArray(1);
 
     glGenVertexArrays(1, &cubeVAO);
