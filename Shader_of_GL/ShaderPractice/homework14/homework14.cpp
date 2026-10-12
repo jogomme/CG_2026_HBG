@@ -240,6 +240,55 @@ int main()
 
     glEnableVertexAttribArray(1);
 
+    // 사각뿔
+
+    glGenVertexArrays(1, &pyramidVAO);
+    glBindVertexArray(pyramidVAO);
+
+    glGenBuffers(1, &pyramidVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, pyramidVBO);
+
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sizeof(pyramidVertices),
+        pyramidVertices,
+        GL_STATIC_DRAW
+    );
+
+    glGenBuffers(1, &pyramidEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pyramidEBO);
+
+    glBufferData(
+        GL_ELEMENT_ARRAY_BUFFER,
+        sizeof(pyramidIndices),
+        pyramidIndices,
+        GL_STATIC_DRAW
+    );
+
+    // 육면체 정점 위치 설정
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)0
+    );
+
+    glEnableVertexAttribArray(0);
+
+    // 육면체 정점 색상 설정
+    glVertexAttribPointer(
+        1,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)(3 * sizeof(float))
+    );
+
+    glEnableVertexAttribArray(1);
+
     //------------------------------------------------------------------------------------------
     // Vertex Shader
     //------------------------------------------------------------------------------------------
