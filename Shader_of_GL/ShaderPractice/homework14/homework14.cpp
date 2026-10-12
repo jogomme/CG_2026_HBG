@@ -14,7 +14,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 glm::mat4 MakeAxisModelMatrix();
 glm::mat4 MakeObjectModelMatrix();
 
-void MakeVertices(int& index);
+void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color);
 void MakeCubeVertices();
 
 void DrawAll(GLint modelLocation);
@@ -115,6 +115,8 @@ int main()
 
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+    MakeCubeVertices();
 
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -314,22 +316,21 @@ void DrawObj(GLint modelLocation)
 
 }
 
-void MakeVertices(int& index)
+void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color)
 {
-    for (int i = 0; i < 8; i++)
-    {
-        cubeVertices[i * 6 + 0] = cubeCorners[i].x;
-        cubeVertices[i * 6 + 1] = cubeCorners[i].y;
-        cubeVertices[i * 6 + 2] = cubeCorners[i].z;
+    vertices[index++] = position.x;
+    vertices[index++] = position.y;
+    vertices[index++] = position.z;
 
-        cubeVertices[i * 6 + 3] = 1.0f;
-        cubeVertices[i * 6 + 4] = 1.0f;
-        cubeVertices[i * 6 + 5] = 1.0f;
-    }
+    vertices[index++] = color.r;
+    vertices[index++] = color.g;
+    vertices[index++] = color.b;
 }
 void MakeCubeVertices()
 {
     int index{};
 
-    MakeVertices(index);
+    for (int i = 0; i < 8; ++i) {
+        MakeVertices(cubeVertices, index, cubeCorners[i], glm::vec3(1.0f, 1.0f, 1.0f));
+    }
 }
