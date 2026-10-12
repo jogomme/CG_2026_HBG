@@ -265,7 +265,6 @@ int main()
         GL_STATIC_DRAW
     );
 
-    // 육면체 정점 위치 설정
     glVertexAttribPointer(
         0,
         3,
@@ -277,7 +276,6 @@ int main()
 
     glEnableVertexAttribArray(0);
 
-    // 육면체 정점 색상 설정
     glVertexAttribPointer(
         1,
         3,
@@ -396,6 +394,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GLFW_TRUE);
     }
     else if (key == GLFW_KEY_C) {
+        pyramidMode = false;
+
         MakeCubeVertices();
 
         glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
@@ -405,6 +405,20 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             0,
             sizeof(cubeVertices),
             cubeVertices
+        );
+    }
+    else if (key == GLFW_KEY_P) {
+        pyramidMode = true;
+
+        MakePyramidVertices();
+
+        glBindBuffer(GL_ARRAY_BUFFER, pyramidVBO);
+
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            0,
+            sizeof(pyramidVertices),
+            pyramidVertices
         );
     }
 }
@@ -465,14 +479,27 @@ void DrawObj(GLint modelLocation)
         GL_FALSE,
         &objmodel[0][0]
     );
-    glBindVertexArray(cubeVAO);
 
-    glDrawElements(
-        GL_TRIANGLES,
-        36,
-        GL_UNSIGNED_INT,
-        0
-    );
+    if (!pyramidMode) {
+        glBindVertexArray(cubeVAO);
+
+        glDrawElements(
+            GL_TRIANGLES,
+            36,
+            GL_UNSIGNED_INT,
+            0
+        );
+    }
+    else {
+        glBindVertexArray(pyramidVAO);
+    
+        glDrawElements(
+            GL_TRIANGLES,
+            18,
+            GL_UNSIGNED_INT,
+            0
+        );
+    }
 }
 
 void MakeCubeIndices()
