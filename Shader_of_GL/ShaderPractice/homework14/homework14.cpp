@@ -4,7 +4,8 @@
 #include <GL/glm/gtc/matrix_transform.hpp>
 
 #include <cmath>
-
+#include <iostream>
+#include <random>
 //------------------------------------------------------------------------------------------------------
 // 함수 선언
 //------------------------------------------------------------------------------------------------------
@@ -74,6 +75,9 @@ unsigned int cubeIndices[6 * 2 * 3]{};
 
 int wide = 1600;
 int height = 1200;
+
+std::random_device rd;
+std::mt19937 gen(rd());
 
 float angleX = 30.0f;
 float angleY = 30.0f;
@@ -425,7 +429,12 @@ void MakeCubeVertices()
 {
     int index{};
 
+    std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+
     for (int i = 0; i < 8; ++i) {
-        MakeVertices(cubeVertices, index, cubeCorners[i], glm::vec3(1.0f, 1.0f, 1.0f));
+
+        glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
+
+        MakeVertices(cubeVertices, index, cubeCorners[i], color);
     }
 }
