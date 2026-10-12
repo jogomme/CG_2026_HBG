@@ -154,18 +154,6 @@ int main()
 
     // Cube 관련
 
-    // 육면체 정점 위치 설정
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
-    );
-
-    glEnableVertexAttribArray(0);
-
     glEnableVertexAttribArray(1);
 
     glGenVertexArrays(1, &cubeVAO);
@@ -190,6 +178,18 @@ int main()
         cubeIndices,
         GL_STATIC_DRAW
     );
+
+    // 육면체 정점 위치 설정
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        6 * sizeof(float),
+        (void*)0
+    );
+
+    glEnableVertexAttribArray(0);
 
     //------------------------------------------------------------------------------------------
     // Vertex Shader
