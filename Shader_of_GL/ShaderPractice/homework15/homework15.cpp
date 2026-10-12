@@ -720,32 +720,29 @@ void MakeCubeIndices()
 {
     int index = 0;
 
-    for (int i = 0; i < 6; i++)
+    for (int face = 0; face < 6; ++face)
     {
-        int a = cubeFaces[i][0];
-        int b = cubeFaces[i][1];
-        int c = cubeFaces[i][2];
-        int d = cubeFaces[i][3];
+        unsigned int base = face * 4;
 
-        if (i == 1 || i == 3 || i == 5)
+        if (face == 1 || face == 3 || face == 5)
         {
-            cubeIndices[index++] = a;
-            cubeIndices[index++] = c;
-            cubeIndices[index++] = b;
+            cubeIndices[index++] = base + 0;
+            cubeIndices[index++] = base + 2;
+            cubeIndices[index++] = base + 1;
 
-            cubeIndices[index++] = c;
-            cubeIndices[index++] = d;
-            cubeIndices[index++] = b;
+            cubeIndices[index++] = base + 2;
+            cubeIndices[index++] = base + 3;
+            cubeIndices[index++] = base + 1;
         }
         else
         {
-            cubeIndices[index++] = a;
-            cubeIndices[index++] = b;
-            cubeIndices[index++] = c;
+            cubeIndices[index++] = base + 0;
+            cubeIndices[index++] = base + 1;
+            cubeIndices[index++] = base + 2;
 
-            cubeIndices[index++] = c;
-            cubeIndices[index++] = b;
-            cubeIndices[index++] = d;
+            cubeIndices[index++] = base + 2;
+            cubeIndices[index++] = base + 1;
+            cubeIndices[index++] = base + 3;
         }
     }
 }
