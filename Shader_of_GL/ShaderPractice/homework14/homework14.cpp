@@ -408,8 +408,6 @@ int main()
         angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
         angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
         
-        MakeObjectModelMatrix();
-
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
