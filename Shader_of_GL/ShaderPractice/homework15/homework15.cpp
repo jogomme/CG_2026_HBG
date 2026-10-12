@@ -120,6 +120,7 @@ float topRotationSpeed = 30.0f;
 
 bool isFrontAnimating = false;
 float frontAngle = 0.0f;
+bool isOpen = false;
 float frontRotationSpeed = 30.0f;
 
 float positionX = 0.0f;
@@ -134,7 +135,7 @@ float posSpeedYD = 0.0f;
 float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
-bool isH = false;
+bool isH = true;
 bool isW = false;
 
 bool isX = false;
@@ -449,6 +450,14 @@ int main()
             );
         }
 
+        if (isFrontAnimating) {
+            frontAngle += frontRotationSpeed * dTime;
+
+            if (frontAngle >= 90 || frontAngle <= 0) {
+                frontRotationSpeed = -frontRotationSpeed;
+            }
+        }
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -651,6 +660,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_T) {
         isTopRotating = !isTopRotating;
     }
+    else if (key == GLFW_KEY_F) {
+        isFrontAnimating = !isFrontAnimating;
+    }
     else if (key == GLFW_KEY_R) {
         pyramidMode = false;
 
@@ -689,6 +701,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         isTopRotating = false;
         topAngle = 0.0f;
+
+        isFrontAnimating = false;
+        frontAngle = 0.0f;
+        isOpen = false;
+        frontRotationSpeed = 30.0f;
     }
 
 }
