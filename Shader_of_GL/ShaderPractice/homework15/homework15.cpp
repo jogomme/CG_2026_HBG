@@ -774,6 +774,25 @@ void DrawObj(GLint modelLocation)
             {
                 glm::mat4 faceModel = objmodel;
 
+                if (face == 4)
+                {
+                    faceModel = glm::translate(
+                        faceModel,
+                        glm::vec3(0.0f, h, 0.0f)
+                    );
+
+                    faceModel = glm::rotate(
+                        faceModel,
+                        glm::radians(topAngle),
+                        glm::vec3(0.0f, 0.0f, 1.0f)
+                    );
+
+                    faceModel = glm::translate(
+                        faceModel,
+                        glm::vec3(0.0f, -h, 0.0f)
+                    );
+                }
+
                 glUniformMatrix4fv(
                     modelLocation,
                     1,
