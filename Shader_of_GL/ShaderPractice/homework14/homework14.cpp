@@ -113,6 +113,7 @@ float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
 bool isH = true;
+bool isW = false;
 
 GLuint VAO;
 GLuint VBO;
@@ -435,6 +436,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         else
         {
             glDisable(GL_DEPTH_TEST);
+        }
+    }
+    else if (key == GLFW_KEY_W) {
+        isW = !isW;
+
+        if (isW) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); // 와이어프레임
+        }
+        else {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // 솔리드
         }
     }
 }
