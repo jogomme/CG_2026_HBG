@@ -109,11 +109,16 @@ float angleX = 30.0f;
 float angleY = 30.0f;
 float angleZ = 0.0f;
 
+float rotationSpeedX = 0.0f;
+float rotationSpeedY = 0.0f;
+
 float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
 bool isH = true;
 bool isW = false;
+bool isX = false;
+bool isY = false;
 
 GLuint VAO;
 GLuint VBO;
