@@ -14,6 +14,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 glm::mat4 MakeAxisModelMatrix();
 glm::mat4 MakeObjectModelMatrix();
 
+void DrawAll(GLint modelLocation);
+void DrawAxis(GLint modelLocation);
+void DrawObj(GLint modelLocation);
+
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
 //------------------------------------------------------------------------------------------------------
@@ -189,37 +193,7 @@ int main()
         // ------------------------------------------------------------
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // ------------------------------------------------------------
-        // 회전 각도 계산
-        // ------------------------------------------------------------
-
-        glm::mat4 axismodel = MakeAxisModelMatrix();
-        glm::mat4 objmodel = MakeObjectModelMatrix();
-
-        glUniformMatrix4fv(
-            modelLocation,
-            1,
-            GL_FALSE,
-            &axismodel[0][0]
-        );
-
-        glUniformMatrix4fv(
-            modelLocation,
-            1,
-            GL_FALSE,
-            &objmodel[0][0]
-        );
-
-        // ------------------------------------------------------------
-        // 그리기
-        // ------------------------------------------------------------
-        glBindVertexArray(VAO);
-
-        glDrawArrays(
-            GL_LINES,
-            0,
-            6
-        );
+        DrawAll(modelLocation);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -269,4 +243,42 @@ glm::mat4 MakeObjectModelMatrix()
     model = glm::rotate(model, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
+}
+
+void DrawAll(GLint modelLocation)
+{
+    DrawAxis(modelLocation);
+    DrawObj(modelLocation);
+}
+
+void DrawAxis(GLint modelLocation)
+{
+    glm::mat4 axismodel = MakeAxisModelMatrix();
+
+    glUniformMatrix4fv(
+        modelLocation,
+        1,
+        GL_FALSE,
+        &axismodel[0][0]
+    );
+
+    glBindVertexArray(VAO);
+
+    glDrawArrays(
+        GL_LINES,
+        0,
+        6
+    );
+}
+void DrawObj(GLint modelLocation)
+{
+    glm::mat4 objmodel = MakeObjectModelMatrix();
+
+    glUniformMatrix4fv(
+        modelLocation,
+        1,
+        GL_FALSE,
+        &objmodel[0][0]
+    );
+
 }
