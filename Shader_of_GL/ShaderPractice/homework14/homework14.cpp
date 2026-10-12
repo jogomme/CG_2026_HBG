@@ -21,6 +21,7 @@ void MakeCubeVertices();
 void MakeCubeIndices();
 
 void MakePyramidVertices();
+void MakePyramidIndices();
 
 void DrawAll(GLint modelLocation);
 void DrawAxis(GLint modelLocation);
@@ -90,6 +91,8 @@ int pyramidBottom[4] = { 0, 1, 2, 3 };
 
 float pyramidVertices[5 * 6]{};
 
+unsigned int pyramidIndices[6 * 2 * 3]{};
+
 bool pyramidMode{};            // false: 육면체, true: 사각뿔
 
 //------------------------------------------------------------------------------------------------------
@@ -149,6 +152,8 @@ int main()
 
     MakeCubeVertices();
     MakeCubeIndices();
+
+    MakePyramidVertices();
 
     glBufferData(
         GL_ARRAY_BUFFER,
@@ -450,6 +455,27 @@ void MakeCubeIndices()
     }
 }
 
+void MakePyramidIndices()
+{
+    int index = 0;
+
+    for (int i = 0; i < 4; i++)
+    {
+        int a = pyramidFaces[i][0];
+        int b = pyramidFaces[i][1];
+        int c = pyramidFaces[i][2];
+
+        pyramidIndices[index++] = a;
+        pyramidIndices[index++] = b;
+        pyramidIndices[index++] = c;
+    }
+
+    for (int i = 0; i < 4; ++i) {
+        pyramidIndices[index++] = pyramidBottom[i];
+    }
+
+}
+
 void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color)
 {
     vertices[index++] = position.x;
@@ -460,6 +486,7 @@ void MakeVertices(float* vertices, int& index, const glm::vec3& position, const 
     vertices[index++] = color.g;
     vertices[index++] = color.b;
 }
+
 void MakeCubeVertices()
 {
     int index{};
@@ -486,7 +513,4 @@ void MakePyramidVertices()
 
         MakeVertices(pyramidVertices, index, pyramidCorners[i], color);
     }
-    glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
-
-
 }
