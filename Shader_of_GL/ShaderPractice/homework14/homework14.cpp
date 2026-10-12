@@ -605,6 +605,33 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
             " Y - " << isY << '\n';
     }
+    else if (key == GLFW_KEY_S) {
+        // 객체 위치 초기화
+        positionX = 0.0f;
+        positionY = 0.0f;
+
+        // 회전 정지
+        rotationSpeedX = 0.0f;
+        rotationSpeedY = 0.0f;
+
+        // 회전 키 토글 상태 초기화
+        isX = false;
+        isShiftX = false;
+        isY = false;
+        isShiftY = false;
+
+        // 이동 속도 초기화
+        posSpeedXR = 0.0f;
+        posSpeedXL = 0.0f;
+        posSpeedYU = 0.0f;
+        posSpeedYD = 0.0f;
+
+        // 이동 키 상태 초기화
+        isR = false;
+        isL = false;
+        isUp = false;
+        isDown = false;
+        }
     
 }
 
