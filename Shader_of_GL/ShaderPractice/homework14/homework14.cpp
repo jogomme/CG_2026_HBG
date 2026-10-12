@@ -20,6 +20,8 @@ void MakeVertices(float* vertices, int& index, const glm::vec3& position, const 
 void MakeCubeVertices();
 void MakeCubeIndices();
 
+void MakePyramidVertices();
+
 void DrawAll(GLint modelLocation);
 void DrawAxis(GLint modelLocation);
 void DrawObj(GLint modelLocation);
@@ -76,6 +78,19 @@ glm::vec3 pyramidCorners[5] = {
     { h, -h, -h},  // 3: 바닥 뒤쪽 오른쪽
     {0.0f, h, 0.0f} // 4: 꼭대기
 };
+
+int pyramidFaces[4][3] = {
+    {0, 4, 1}, // 앞쪽 삼각형
+    {1, 4, 2}, // 오른쪽 삼각형
+    {2, 4, 3}, // 뒤쪽 삼각형
+    {3, 4, 0}  // 왼쪽 삼각형
+};
+
+int pyramidBottom[4] = { 0, 1, 2, 3 };
+
+float pyramidVertices[(4 * 3 + 4) * 6]{};
+
+bool pyramidMode{};            // false: 육면체, true: 사각뿔
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
@@ -457,4 +472,22 @@ void MakeCubeVertices()
 
         MakeVertices(cubeVertices, index, cubeCorners[i], color);
     }
+}
+
+void MakePyramidVertices()
+{
+    int index{};
+
+    std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+
+    for (int i = 0; i < 4; ++i) {
+
+        glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
+
+        MakeVertices(pyramidVertices, index, pyramidCorners[i], color);
+    }
+    glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
+
+    MakeVertices(pyramidVertices, index, pyramidBottom, color)
+
 }
