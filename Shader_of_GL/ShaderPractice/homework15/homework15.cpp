@@ -118,6 +118,10 @@ bool isTopRotating = false;
 float topAngle = 0.0f;
 float topRotationSpeed = 30.0f;
 
+bool isFrontAnimating = false;
+float frontAngle = 0.0f;
+float frontRotationSpeed = 30.0f;
+
 float positionX = 0.0f;
 float positionY = 0.0f;
 
@@ -780,6 +784,25 @@ void DrawObj(GLint modelLocation)
                     faceModel = glm::translate(
                         faceModel,
                         glm::vec3(0.0f, -h, 0.0f)
+                    );
+                }
+
+                if (face == 0)
+                {
+                    faceModel = glm::translate(
+                        faceModel,
+                        glm::vec3(0.0f, h, h)
+                    );
+
+                    faceModel = glm::rotate(
+                        faceModel,
+                        glm::radians(frontAngle),
+                        glm::vec3(1.0f, 0.0f, 0.0f)
+                    );
+
+                    faceModel = glm::translate(
+                        faceModel,
+                        glm::vec3(0.0f, -h, -h)
                     );
                 }
 
