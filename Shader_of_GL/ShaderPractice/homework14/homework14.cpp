@@ -88,7 +88,7 @@ int pyramidFaces[4][3] = {
 
 int pyramidBottom[4] = { 0, 1, 2, 3 };
 
-float pyramidVertices[(4 * 3 + 4) * 6]{};
+float pyramidVertices[5 * 6]{};
 
 bool pyramidMode{};            // false: 육면체, true: 사각뿔
 
@@ -480,7 +480,7 @@ void MakePyramidVertices()
 
     std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
 
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 5; ++i) {
 
         glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
 
@@ -488,6 +488,5 @@ void MakePyramidVertices()
     }
     glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
 
-    MakeVertices(pyramidVertices, index, pyramidBottom, color)
 
 }
