@@ -40,7 +40,7 @@ int wide = 1600;
 int height = 1200;
 
 float angleX = 30.0f;
-float angleY = 0.0f;
+float angleY = 30.0f;
 float angleZ = 0.0f;
 
 
@@ -243,13 +243,9 @@ glm::mat4 MakeModelMatrix()
 {
     glm::mat4 model(1.0f);
 
-    angleX = glm::radians(angleX);
-    angleY = glm::radians(angleY);
-    angleZ = glm::radians(angleZ);
-
-    model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, angleZ, glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
 }
