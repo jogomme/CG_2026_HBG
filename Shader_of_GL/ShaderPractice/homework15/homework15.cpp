@@ -541,7 +541,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         );
     }
     else if (key == GLFW_KEY_P) {
-        pyramidMode = true;
+        pyramidMode = !pyramidMode;
 
         MakePyramidVertices();
 
@@ -628,7 +628,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
             " Y - " << isY << '\n';
     }
-    else if (key == GLFW_KEY_S) {
+    else if (key == GLFW_KEY_R) {
+        pyramidMode = false;
+
         // 객체 위치 초기화
         positionX = 0.0f;
         positionY = 0.0f;
@@ -654,6 +656,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isL = false;
         isUp = false;
         isDown = false;
+
+        angleX = 30.0f;
+        angleY = 30.0f;
+        angleZ = 0.0f;
     }
 
 }
