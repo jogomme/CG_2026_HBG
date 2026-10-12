@@ -384,8 +384,8 @@ int main()
         // 회전
         // ------------------------------------------------------------
         double startTime = glfwGetTime();
-        double dTime = endTime - startTime;
-        double endTime = dTime;
+        double dTime = startTime - endTime;
+        endTime = dTime;
 
 
         // ------------------------------------------------------------
