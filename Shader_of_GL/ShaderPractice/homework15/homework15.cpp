@@ -148,6 +148,9 @@ bool isShiftX = false;
 bool isY = false;
 bool isShiftY = false;
 
+bool isZ = false;
+bool isShiftZ = false;
+
 bool isT = false;
 bool isShiftT = false;
 
@@ -464,8 +467,13 @@ int main()
         if (isFrontAnimating) {
             frontAngle += frontRotationSpeed * dTime;
 
-            if (frontAngle >= 90 || frontAngle <= 0) {
-                frontRotationSpeed = -frontRotationSpeed;
+            if (frontAngle >= 90.0f) {
+                frontAngle = 90.0f;
+                frontRotationSpeed = -abs(frontRotationSpeed);
+            }
+            else if (frontAngle <= 0.0f) {
+                frontAngle = 0.0f;
+                frontRotationSpeed = abs(frontRotationSpeed);
             }
         }
 
@@ -668,6 +676,30 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
             " Y - " << isY << '\n';
     }
+    else if (key == GLFW_KEY_Z) {
+
+        if (mods & GLFW_MOD_SHIFT) {
+            isShiftZ = !isShiftZ;
+
+            if (isShiftZ) {
+                rotationSpeedZ -= 30.0f;
+            }
+            else {
+                rotationSpeedZ += 30.0f;
+            }
+        }
+        else {
+            isZ = !isZ;
+
+            if (isZ) {
+                rotationSpeedZ += 30.0f;
+            }
+            else {
+                rotationSpeedZ -= 30.0f;
+            }
+        }
+        
+            }
     else if (key == GLFW_KEY_T) {
         isTopRotating = !isTopRotating;
     }
@@ -839,7 +871,7 @@ void DrawObj(GLint modelLocation)
 
                     faceModel = glm::rotate(
                         faceModel,
-                        glm::radians(frontAngle),
+                        glm::radians(-frontAngle),
                         glm::vec3(1.0f, 0.0f, 0.0f)
                     );
 
