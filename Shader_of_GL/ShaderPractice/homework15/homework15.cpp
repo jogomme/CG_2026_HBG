@@ -68,7 +68,7 @@ int cubeFaces[6][4] = {
     {4, 5, 0, 1}  // 아랫면
 };
 
-float cubeVertices[8 * 6]{};
+float cubeVertices[6 * 4 * 6]{};
 
 unsigned int cubeIndices[6 * 2 * 3]{};
 
@@ -796,12 +796,24 @@ void MakeCubeVertices()
 
     std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
 
-    for (int i = 0; i < 8; ++i) {
+    for (int face = 0; face < 6; ++face) {
+    glm::vec3 color = {
+        colorDist(gen),
+        colorDist(gen),
+        colorDist(gen)
+    };
 
-        glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
+    for (int vertex = 0; vertex < 4; ++vertex) {
+        int cornerIndex = cubeFaces[face][vertex];
 
-        MakeVertices(cubeVertices, index, cubeCorners[i], color);
+        MakeVertices(
+            cubeVertices,
+            index,
+            cubeCorners[cornerIndex],
+            color
+        );
     }
+}
 }
 
 void MakePyramidVertices()
