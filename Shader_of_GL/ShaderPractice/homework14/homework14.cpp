@@ -14,6 +14,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 glm::mat4 MakeAxisModelMatrix();
 glm::mat4 MakeObjectModelMatrix();
 
+void MakeVertices(int& index);
+void MakeCubeVertices();
+
 void DrawAll(GLint modelLocation);
 void DrawAxis(GLint modelLocation);
 void DrawObj(GLint modelLocation);
@@ -77,6 +80,10 @@ glm::mat4 axismodel = MakeAxisModelMatrix();
 
 GLuint VAO;
 GLuint VBO;
+
+GLuint cubeVAO;
+GLuint cubeVBO;
+GLuint cubeEBO;
 
 int main()
 //------------------------------------------------------------------------------------------------------
@@ -305,4 +312,24 @@ void DrawObj(GLint modelLocation)
         &objmodel[0][0]
     );
 
+}
+
+void MakeVertices(int& index)
+{
+    for (int i = 0; i < 8; i++)
+    {
+        cubeVertices[i * 6 + 0] = cubeCorners[i].x;
+        cubeVertices[i * 6 + 1] = cubeCorners[i].y;
+        cubeVertices[i * 6 + 2] = cubeCorners[i].z;
+
+        cubeVertices[i * 6 + 3] = 1.0f;
+        cubeVertices[i * 6 + 4] = 1.0f;
+        cubeVertices[i * 6 + 5] = 1.0f;
+    }
+}
+void MakeCubeVertices()
+{
+    int index{};
+
+    MakeVertices(index);
 }
