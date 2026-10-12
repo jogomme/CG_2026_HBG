@@ -368,6 +368,8 @@ int main()
 
     GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
 
+    double endTime = glfwGetTime();
+
     //------------------------------------------------------------------------------------------
     // 메인 루프
     //------------------------------------------------------------------------------------------
@@ -382,9 +384,9 @@ int main()
         // 회전
         // ------------------------------------------------------------
         double startTime = glfwGetTime();
-        double endTime = glfwGetTime();
-
         double dTime = endTime - startTime;
+        double endTime = dTime;
+
 
         // ------------------------------------------------------------
         // 그리기
