@@ -49,6 +49,7 @@ float angleY = 30.0f;
 float angleZ = 0.0f;
 
 float axisangle = 30.0f;
+glm::mat4 axismodel = MakeAxisModelMatrix();
 
 GLuint VAO;
 GLuint VBO;
@@ -253,7 +254,6 @@ void DrawAll(GLint modelLocation)
 
 void DrawAxis(GLint modelLocation)
 {
-    glm::mat4 axismodel = MakeAxisModelMatrix();
 
     glUniformMatrix4fv(
         modelLocation,
