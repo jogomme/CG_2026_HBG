@@ -117,8 +117,12 @@ glm::mat4 axismodel = MakeAxisModelMatrix();
 
 bool isH = true;
 bool isW = false;
+
 bool isX = false;
+bool isShiftX = false;
+
 bool isY = false;
+bool isShiftY = false;
 
 GLuint VAO;
 GLuint VBO;
@@ -452,6 +456,30 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         else {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL); // 솔리드
         }
+    }
+    else if (key == GLFW_KEY_X) {
+
+        if (mods & GLFW_MOD_SHIFT) {
+            isShiftX = !isShiftX;
+
+            if (isShiftX) {
+                rotationSpeedX -= 30.0f;
+            }
+            else {
+                rotationSpeedX += 30.0f;
+            }
+        }
+        else {
+            isX = !isX;
+
+            if (isX) {
+                rotationSpeedX += 30.0f;
+            }
+            else {
+                rotationSpeedX -= 30.0f;
+            }
+        }
+
     }
 }
 
