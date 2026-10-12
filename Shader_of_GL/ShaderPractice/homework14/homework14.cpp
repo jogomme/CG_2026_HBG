@@ -11,7 +11,7 @@
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
-glm::mat4 MakeModelMatrix(float angle);
+glm::mat4 MakeModelMatrix();
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -40,8 +40,8 @@ int wide = 1600;
 int height = 1200;
 
 float angleX = 30.0f;
-float angleY = 30.0f;
-float angleZ = 30.0f;
+float angleY = 0.0f;
+float angleZ = 0.0f;
 
 
 GLuint VAO;
@@ -190,9 +190,8 @@ int main()
         // ------------------------------------------------------------
         // 회전 각도 계산
         // ------------------------------------------------------------
-        float angle = static_cast<float>(glfwGetTime()) * glm::radians(90.0f);
 
-        glm::mat4 model = MakeModelMatrix(angle);
+        glm::mat4 model = MakeModelMatrix();
 
         glUniformMatrix4fv(
             modelLocation,
@@ -240,9 +239,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
-glm::mat4 MakeModelMatrix(float angle)
+glm::mat4 MakeModelMatrix()
 {
     glm::mat4 model(1.0f);
+
+    angleX = glm::radians(angleX);
+    angleY = glm::radians(angleY);
+    angleZ = glm::radians(angleZ);
 
     model = glm::rotate(model, angleX, glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, angleY, glm::vec3(0.0f, 1.0f, 0.0f));
