@@ -385,8 +385,12 @@ int main()
         // ------------------------------------------------------------
         double startTime = glfwGetTime();
         double dTime = startTime - endTime;
-        endTime = dTime;
+        endTime = startTime;
 
+        angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
+        angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
+        
+        MakeObjectModelMatrix();
 
         // ------------------------------------------------------------
         // 그리기
@@ -492,7 +496,34 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                 rotationSpeedX -= 30.0f;
             }
         }
+        std::cout << "현재 rotateX 확인 : Shift X - " << isShiftX << 
+            " X - " << isX <<  
+            '\n';
+    }
+    else if (key == GLFW_KEY_Y) {
 
+        if (mods & GLFW_MOD_SHIFT) {
+            isShiftY = !isShiftY;
+
+            if (isShiftY) {
+                rotationSpeedY -= 30.0f;
+            }
+            else {
+                rotationSpeedY += 30.0f;
+            }
+        }
+        else {
+            isY = !isY;
+
+            if (isY) {
+                rotationSpeedY += 30.0f;
+            }
+            else {
+                rotationSpeedY -= 30.0f;
+            }
+        }
+        std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
+            " Y - " << isY << '\n';
     }
 }
 
