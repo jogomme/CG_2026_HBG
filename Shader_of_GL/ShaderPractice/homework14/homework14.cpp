@@ -115,6 +115,12 @@ float rotationSpeedY = 0.0f;
 float positionX = 0.0f;
 float positionY = 0.0f;
 
+float posSpeedXR = 0.0f;
+float posSpeedXL = 0.0f;
+
+float posSpeedYU = 0.0f;
+float posSpeedYD = 0.0f;
+
 float axisangle = 30.0f;
 glm::mat4 axismodel = MakeAxisModelMatrix();
 
@@ -396,8 +402,10 @@ int main()
         double dTime = startTime - endTime;
         endTime = startTime;
 
-        angleX = fmodf(angleX + rotationSpeedX * dTime + positionX, 360.0f);
-        angleY = fmodf(angleY + rotationSpeedY * dTime + positionY, 360.0f);
+        positionX += posSpeedXL + posSpeedXR;
+
+        angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
+        angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
         
         MakeObjectModelMatrix();
 
@@ -433,12 +441,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
 
         if (isR) {
-            positionX += 3;
+            posSpeedXR = 0.001f;
         }
         else {
-            positionX -= 3;
+            posSpeedXR = 0;
         }
-        std::cout << isR << '\n';
     }
     if (key == GLFW_KEY_LEFT) {
         positionX -= 10;
@@ -578,6 +585,8 @@ glm::mat4 MakeAxisModelMatrix()
 glm::mat4 MakeObjectModelMatrix()
 {
     glm::mat4 model(1.0f);
+
+    model = glm::translate(model, glm::vec3(positionX, positionY, 0.0f));
 
     model = glm::rotate(model, glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
