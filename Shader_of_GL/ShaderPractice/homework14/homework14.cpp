@@ -202,9 +202,9 @@ int main()
         glBindVertexArray(VAO);
 
         glDrawArrays(
-            GL_TRIANGLES,
+            GL_LINES,
             0,
-            3
+            6
         );
 
         glfwSwapBuffers(window);
