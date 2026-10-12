@@ -15,7 +15,9 @@ glm::mat4 MakeAxisModelMatrix();
 glm::mat4 MakeObjectModelMatrix();
 
 void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color);
+
 void MakeCubeVertices();
+void MakeCubeIndices();
 
 void DrawAll(GLint modelLocation);
 void DrawAxis(GLint modelLocation);
@@ -62,7 +64,9 @@ int cubeFaces[6][4] = {
     {4, 5, 0, 1}  // 아랫면
 };
 
-float cubeVertices[6 * 4 * 6]{};
+float cubeVertices[8 * 6]{};
+
+unsigned int cubeIndices[6 * 2 * 3]{};
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
@@ -314,6 +318,40 @@ void DrawObj(GLint modelLocation)
         &objmodel[0][0]
     );
 
+}
+
+void MakeCubeIndices()
+{
+    int index = 0;
+
+    for (int i = 0; i < 6; i++)
+    {
+        int a = cubeFaces[i][0];
+        int b = cubeFaces[i][1];
+        int c = cubeFaces[i][2];
+        int d = cubeFaces[i][3];
+
+        if (i == 1 || i == 3 || i == 5)
+        {
+            cubeIndices[index++] = a;
+            cubeIndices[index++] = c;
+            cubeIndices[index++] = b;
+
+            cubeIndices[index++] = c;
+            cubeIndices[index++] = d;
+            cubeIndices[index++] = b;
+        }
+        else
+        {
+            cubeIndices[index++] = a;
+            cubeIndices[index++] = b;
+            cubeIndices[index++] = c;
+
+            cubeIndices[index++] = c;
+            cubeIndices[index++] = b;
+            cubeIndices[index++] = d;
+        }
+    }
 }
 
 void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color)
