@@ -112,6 +112,7 @@ float angleZ = 0.0f;
 
 float rotationSpeedX = 0.0f;
 float rotationSpeedY = 0.0f;
+float rotationSpeedZ = 0.0f;
 
 float positionX = 0.0f;
 float positionY = 0.0f;
@@ -133,6 +134,9 @@ bool isShiftX = false;
 
 bool isY = false;
 bool isShiftY = false;
+
+bool isT = false;
+bool isShiftT = false;
 
 bool isL = false;
 bool isR = false;
@@ -428,6 +432,7 @@ int main()
 
         angleX = fmodf(angleX + rotationSpeedX * dTime, 360.0f);
         angleY = fmodf(angleY + rotationSpeedY * dTime, 360.0f);
+        angleZ = fmodf(angleZ + rotationSpeedZ * dTime, 360.0f);
 
         // ------------------------------------------------------------
         // 그리기
@@ -628,6 +633,31 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
             " Y - " << isY << '\n';
     }
+    else if (key == GLFW_KEY_T) {
+
+        if (mods & GLFW_MOD_SHIFT) {
+            isShiftT = !isShiftT;
+
+            if (isShiftT) {
+                rotationSpeedZ -= 30.0f;
+            }
+            else {
+                rotationSpeedZ += 30.0f;
+            }
+        }
+        else {
+            isT = !isT;
+
+            if (isT) {
+                rotationSpeedZ += 30.0f;
+            }
+            else {
+                rotationSpeedZ -= 30.0f;
+            }
+        }
+        std::cout << "현재 rotateY 확인 : Shift Y - " << isShiftY <<
+            " Y - " << isY << '\n';
+            }
     else if (key == GLFW_KEY_R) {
         pyramidMode = false;
 
@@ -644,6 +674,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isShiftX = false;
         isY = false;
         isShiftY = false;
+        isT = false;
+        isShiftT = false;
 
         // 이동 속도 초기화
         posSpeedXR = 0.0f;
