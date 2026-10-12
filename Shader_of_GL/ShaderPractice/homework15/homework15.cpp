@@ -112,7 +112,10 @@ float angleZ = 0.0f;
 
 float rotationSpeedX = 0.0f;
 float rotationSpeedY = 0.0f;
-float rotationSpeedZ = 0.0f;
+
+bool isTopRotating = false;
+float topAngle = 0.0f;
+float topRotationSpeed = 30.0f;
 
 float positionX = 0.0f;
 float positionY = 0.0f;
