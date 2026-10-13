@@ -110,6 +110,8 @@ float angleX = 30.0f;
 float angleY = 30.0f;
 float angleZ = 0.0f;
 
+float edgeAngle{};
+
 float rotationSpeedX = 0.0f;
 float rotationSpeedY = 0.0f;
 float rotationSpeedZ = 0.0f;
@@ -164,6 +166,8 @@ bool isB = false;
 
 float backScale = 1.0f;
 float ScaleSpeed = 0.5f;
+
+bool is1 = false;
 
 glm::vec3 pivot{};
 int firstidx{};
@@ -500,6 +504,15 @@ int main()
 
         }
 
+        if (is1) {
+            edgeAngle = edgeAngle + 30.0f * dTime;
+
+            if (edgeAngle >= 360.0f) {
+                edgeAngle = 0.0f;
+                is1 = false;
+            }
+        }
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -786,6 +799,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_1) {
 
+        is1 = !is1;
+
         int count = 0;
         int shared[2];
 
@@ -806,14 +821,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             for (int i = 0; i < 4; ++i) {
                 for (int j = 0; j < 4; ++j) {
                     if (cubeFaces[firstidx][i] == cubeFaces[secondidx][j]) {
-                        shared[count++] = cubeFaces[0][i];
+                        shared[count++] = cubeFaces[firstidx][i];
                     }
                 }
             }
 
             if (count >= 2) {
-                glm::vec3 a = cubeCorners[shared[firstidx]];
-                glm::vec3 b = cubeCorners[shared[secondidx]];
+                glm::vec3 a = cubeCorners[shared[0]];
+                glm::vec3 b = cubeCorners[shared[1]];
 
                 if (a.x == b.x && a.z == b.z) {
                     check = true;
@@ -821,7 +836,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             }
         }
 
-        pivot = (cubeCorners[shared[firstidx]] + cubeCorners[shared[secondidx]]) * 0.5f;
+        pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
 
     }
     else if (key == GLFW_KEY_B) {
@@ -903,6 +918,20 @@ void DrawObj(GLint modelLocation)
             for (int face = 0; face < 6; ++face)
             {
                 glm::mat4 faceModel = objmodel;
+
+                if (face == firstidx || face == secondidx) {
+                    if (is1) {
+                        faceModel = glm::translate(faceModel, pivot);
+
+                        faceModel = glm::rotate(
+                            faceModel,
+                            glm::radians(edgeAngle),
+                            glm::vec3(0.0f, 1.0f, 0.0f)
+                        );
+
+                        faceModel = glm::translate(faceModel, -pivot);
+                    }
+                }
 
                 if (face == 4)
                 {
