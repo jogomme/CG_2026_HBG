@@ -539,7 +539,7 @@ int main()
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    std::uniform_int_distribution<int> faceDist(0, 3);
+    std::uniform_int_distribution<int> faceDist(0, 5);
 
     if (key == GLFW_KEY_RIGHT) {
 
@@ -796,6 +796,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isB = false;
         backScale = 1.0f;
         ScaleSpeed = 0.5f;
+
+        is1 = false;
+        edgeAngle = 0.0f;
     }
     else if (key == GLFW_KEY_1) {
 
@@ -842,6 +845,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
             pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
         }   
+    }
+    else if (key == GLFW_KEY_2) {
+
     }
     else if (key == GLFW_KEY_B) {
         isB = !isB;
