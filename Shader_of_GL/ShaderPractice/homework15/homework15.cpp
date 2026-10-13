@@ -179,6 +179,10 @@ int swapSecond = -1;
 // 4 key: four side faces orbit around the vertical center axis.
 bool is4 = false;
 float fourAngle = 0.0f;
+
+// 5 key: top, bottom, front and back faces orbit the central X axis.
+bool is5 = false;
+float fiveAngle = 0.0f;
 float swapDirection = 1.0f;
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
@@ -531,6 +535,14 @@ int main()
             }
         }
 
+        if (is5) {
+            fiveAngle += 120.0f * dTime;
+            if (fiveAngle >= 360.0f) {
+                fiveAngle = 0.0f;
+                is5 = false;
+            }
+        }
+
         if (is4) {
             fourAngle += 120.0f * dTime;
             if (fourAngle >= 360.0f) {
@@ -842,6 +854,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         edgeAngle = 0.0f;
         is4 = false;
         fourAngle = 0.0f;
+        is5 = false;
+        fiveAngle = 0.0f;
         is2 = false;
         swapAngle = 0.0f;
         swapFirst = -1;
@@ -928,6 +942,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         if (!pyramidMode && !is1 && !is2 && !is4) {
             fourAngle = 0.0f;
             is4 = true;
+        }
+    }
+    else if (key == GLFW_KEY_5) {
+        if (!pyramidMode && !is1 && !is2 && !is4 && !is5) {
+            fiveAngle = 0.0f;
+            is5 = true;
         }
     }
     else if (key == GLFW_KEY_B) {
@@ -1019,6 +1039,11 @@ void DrawObj(GLint modelLocation)
                 if (is4 && face < 4) {
                     faceModel = glm::rotate(faceModel, glm::radians(fourAngle),
                                             glm::vec3(0.0f, 1.0f, 0.0f));
+                }
+
+                if (is5 && (face == 0 || face == 1 || face == 4 || face == 5)) {
+                    faceModel = glm::rotate(faceModel, glm::radians(fiveAngle),
+                                            glm::vec3(1.0f, 0.0f, 0.0f));
                 }
 
                 faceModel = faceModel * facePose[face];
