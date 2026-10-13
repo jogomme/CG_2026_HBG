@@ -881,7 +881,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             is2 = true;
         }
     }
-    }
     else if (key == GLFW_KEY_B) {
         isB = !isB;
     }
