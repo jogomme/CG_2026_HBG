@@ -175,6 +175,10 @@ float swapAngle = 0.0f;
 float swapSpeed = 120.0f;
 int swapFirst = -1;
 int swapSecond = -1;
+
+// 4 key: four side faces orbit around the vertical center axis.
+bool is4 = false;
+float fourAngle = 0.0f;
 float swapDirection = 1.0f;
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
@@ -527,6 +531,14 @@ int main()
             }
         }
 
+        if (is4) {
+            fourAngle += 120.0f * dTime;
+            if (fourAngle >= 360.0f) {
+                fourAngle = 0.0f;
+                is4 = false;
+            }
+        }
+
         if (is2) {
             swapAngle += swapSpeed * dTime;
             if (swapAngle >= 90.0f) {
@@ -828,6 +840,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         is1 = false;
         edgeAngle = 0.0f;
+        is4 = false;
+        fourAngle = 0.0f;
         is2 = false;
         swapAngle = 0.0f;
         swapFirst = -1;
@@ -908,6 +922,12 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             swapDirection = glm::dot(positiveTurn, secondCenter) > 0.0f ? 1.0f : -1.0f;
             swapAngle = 0.0f;
             is2 = true;
+        }
+    }
+    else if (key == GLFW_KEY_4) {
+        if (!pyramidMode && !is1 && !is2 && !is4) {
+            fourAngle = 0.0f;
+            is4 = true;
         }
     }
     else if (key == GLFW_KEY_B) {
@@ -993,6 +1013,11 @@ void DrawObj(GLint modelLocation)
                 if (is2 && (face == swapFirst || face == swapSecond)) {
                     const float direction = (face == swapFirst) ? swapDirection : -swapDirection;
                     faceModel = glm::rotate(faceModel, glm::radians(direction * swapAngle),
+                                            glm::vec3(0.0f, 1.0f, 0.0f));
+                }
+
+                if (is4 && face < 4) {
+                    faceModel = glm::rotate(faceModel, glm::radians(fourAngle),
                                             glm::vec3(0.0f, 1.0f, 0.0f));
                 }
 
