@@ -169,6 +169,13 @@ float ScaleSpeed = 0.5f;
 
 bool is1 = false;
 
+// 2 key: two adjacent side faces swap positions around the cube's Y axis.
+bool is2 = false;
+float swapAngle = 0.0f;
+float swapSpeed = 120.0f;
+int swapFirst = -1;
+int swapSecond = -1;
+
 glm::vec3 pivot{};
 int firstidx{};
 int secondidx{};
@@ -513,6 +520,14 @@ int main()
             }
         }
 
+        if (is2) {
+            swapAngle += swapSpeed * dTime;
+            if (swapAngle >= 90.0f) {
+                swapAngle = 90.0f;
+                is2 = false;
+            }
+        }
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -799,6 +814,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         is1 = false;
         edgeAngle = 0.0f;
+        is2 = false;
+        swapAngle = 0.0f;
+        swapFirst = -1;
+        swapSecond = -1;
     }
     else if (key == GLFW_KEY_1) {
 
@@ -846,8 +865,22 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
         }   
     }
-    else if (key == GLFW_KEY_2) {
+    else if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+        if (!is2) {
+            // Only side faces (0..3); choose two sharing a vertical edge.
+            do {
+                swapFirst = faceDist(gen);
+                swapSecond = faceDist(gen);
+            } while (swapFirst == swapSecond ||
+                     (swapFirst == 0 && swapSecond == 1) ||
+                     (swapFirst == 1 && swapSecond == 0) ||
+                     (swapFirst == 2 && swapSecond == 3) ||
+                     (swapFirst == 3 && swapSecond == 2));
 
+            swapAngle = 0.0f;
+            is2 = true;
+        }
+    }
     }
     else if (key == GLFW_KEY_B) {
         isB = !isB;
