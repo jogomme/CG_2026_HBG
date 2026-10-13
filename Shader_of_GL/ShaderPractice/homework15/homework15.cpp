@@ -592,7 +592,7 @@ int main()
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    std::uniform_int_distribution<int> faceDist(0, 5);
+    std::uniform_int_distribution<int> faceDist(0, 3);
 
     if (key == GLFW_KEY_RIGHT) {
 
@@ -867,9 +867,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_1) {
 
-        is1 = !is1;
-
         if (is1) {
+            is1 = false; // Keep the existing press-again-to-stop behavior.
+        }
+        else if (!pyramidMode && !is2 && !is4 && !is5) {
+            is1 = true;
 
             edgeAngle = 0;
 
@@ -912,7 +914,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }   
     }
     else if (key == GLFW_KEY_2) {
-        if (!is2 && !is1 && !pyramidMode) {
+        if (!is2 && !is1 && !is4 && !is5 && !pyramidMode) {
             // Choose two currently adjacent side faces.
             std::uniform_int_distribution<int> sideDist(0, 3);
             glm::vec3 firstCenter, secondCenter;
@@ -939,7 +941,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
     else if (key == GLFW_KEY_4) {
-        if (!pyramidMode && !is1 && !is2 && !is4) {
+        if (!pyramidMode && !is1 && !is2 && !is4 && !is5) {
             fourAngle = 0.0f;
             is4 = true;
         }
@@ -1019,13 +1021,10 @@ void DrawObj(GLint modelLocation)
     if (!pyramidMode) {
         glBindVertexArray(cubeVAO);
 
-        if (isW) {
-            // Wireframe: draw face boundaries, not triangulation diagonals.
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEdgeEBO);
-            glDrawElements(GL_LINES, 6 * 8, GL_UNSIGNED_INT, 0);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
-        }
-        else {
+        // Draw each face separately in both filled and wireframe modes.
+        // Otherwise wireframe ignores the per-face model matrices.
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, isW ? cubeEdgeEBO : cubeEBO);
+        {
             for (int face = 0; face < 6; ++face)
             {
                 glm::mat4 faceModel = objmodel;
@@ -1132,13 +1131,14 @@ void DrawObj(GLint modelLocation)
                 );
 
                 glDrawElements(
-                    GL_TRIANGLES,
-                    6,
+                    isW ? GL_LINES : GL_TRIANGLES,
+                    isW ? 8 : 6,
                     GL_UNSIGNED_INT,
-                    (void*)(face * 6 * sizeof(unsigned int))
+                    (void*)(face * (isW ? 8 : 6) * sizeof(unsigned int))
                 );
             }
         }
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
     }
     else {
         glBindVertexArray(pyramidVAO);
