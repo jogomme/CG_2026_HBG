@@ -90,7 +90,8 @@ int pyramidFaces[4][3] = {
 
 int pyramidBottom[4] = { 0, 1, 2, 3 };
 
-float pyramidVertices[5 * 6]{};
+// 4 triangles (3 vertices each) + bottom quad (4 vertices), with separate face colors.
+float pyramidVertices[16 * 6]{};
 
 unsigned int pyramidIndices[6 * 3]{};
 
@@ -1185,31 +1186,18 @@ void MakeCubeIndices()
 
 void MakePyramidIndices()
 {
-    int index = 0;
-
-    for (int i = 0; i < 4; i++)
-    {
-        int a = pyramidFaces[i][0];
-        int b = pyramidFaces[i][1];
-        int c = pyramidFaces[i][2];
-
-        pyramidIndices[index++] = a;
-        pyramidIndices[index++] = b;
-        pyramidIndices[index++] = c;
+    // The four side triangles each have three unique vertices.
+    for (unsigned int i = 0; i < 12; ++i) {
+        pyramidIndices[i] = i;
     }
 
-    int a = pyramidBottom[0];
-    int b = pyramidBottom[1];
-    int c = pyramidBottom[2];
-    int d = pyramidBottom[3];
-
-    pyramidIndices[index++] = a;
-    pyramidIndices[index++] = c;
-    pyramidIndices[index++] = b;
-
-    pyramidIndices[index++] = c;
-    pyramidIndices[index++] = d;
-    pyramidIndices[index++] = b;
+    // The bottom quad uses the final four vertices (12..15).
+    pyramidIndices[12] = 12;
+    pyramidIndices[13] = 14;
+    pyramidIndices[14] = 13;
+    pyramidIndices[15] = 14;
+    pyramidIndices[16] = 15;
+    pyramidIndices[17] = 13;
 }
 
 void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color)
@@ -1225,38 +1213,35 @@ void MakeVertices(float* vertices, int& index, const glm::vec3& position, const 
 
 void MakeCubeVertices()
 {
-    int index{};
-
-    std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+    int index = 0;
+    std::uniform_real_distribution<float> colorDist(0.2f, 1.0f);
 
     for (int face = 0; face < 6; ++face) {
-
-    for (int vertex = 0; vertex < 4; ++vertex) {
-
-        glm::vec3 color = { colorDist(gen),colorDist(gen), colorDist(gen) };
-
-        int cornerIndex = cubeFaces[face][vertex];
-
-        MakeVertices(
-            cubeVertices,
-            index,
-            cubeCorners[cornerIndex],
-            color
-        );
+        // One flat color per face rather than a different color per vertex.
+        const glm::vec3 color(colorDist(gen), colorDist(gen), colorDist(gen));
+        for (int vertex = 0; vertex < 4; ++vertex) {
+            MakeVertices(cubeVertices, index,
+                         cubeCorners[cubeFaces[face][vertex]], color);
+        }
     }
-}
 }
 
 void MakePyramidVertices()
 {
-    int index{};
+    int index = 0;
+    std::uniform_real_distribution<float> colorDist(0.2f, 1.0f);
 
-    std::uniform_real_distribution<float> colorDist(0.0f, 1.0f);
+    for (int face = 0; face < 4; ++face) {
+        const glm::vec3 color(colorDist(gen), colorDist(gen), colorDist(gen));
+        for (int vertex = 0; vertex < 3; ++vertex) {
+            MakeVertices(pyramidVertices, index,
+                         pyramidCorners[pyramidFaces[face][vertex]], color);
+        }
+    }
 
-    for (int i = 0; i < 5; ++i) {
-
-        glm::vec3 color = { colorDist(gen), colorDist(gen), colorDist(gen) };
-
-        MakeVertices(pyramidVertices, index, pyramidCorners[i], color);
+    const glm::vec3 bottomColor(colorDist(gen), colorDist(gen), colorDist(gen));
+    for (int vertex = 0; vertex < 4; ++vertex) {
+        MakeVertices(pyramidVertices, index,
+                     pyramidCorners[pyramidBottom[vertex]], bottomColor);
     }
 }
