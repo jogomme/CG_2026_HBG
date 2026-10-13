@@ -160,6 +160,11 @@ bool isR = false;
 bool isUp = false;
 bool isDown = false;
 
+bool isB = false;
+
+float backScale = 1.0f;
+float ScaleSpeed = 0.5f;
+
 GLuint VAO;
 GLuint VBO;
 
@@ -477,6 +482,20 @@ int main()
             }
         }
 
+        if (isB) {
+            backScale += ScaleSpeed * dTime;
+
+            if (backScale >= 1.0f) {
+                backScale = 1.0f;
+                ScaleSpeed = -abs(ScaleSpeed);
+            }
+            else if (backScale <= 0.0f) {
+                backScale = 0.0f;
+                ScaleSpeed = abs(ScaleSpeed);
+            }
+
+        }
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -754,8 +773,14 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         frontAngle = 0.0f;
         isOpen = false;
         frontRotationSpeed = 30.0f;
-    }
 
+        isB = false;
+        backScale = 1.0f;
+        ScaleSpeed = 0.5f;
+    }
+    else if (key == GLFW_KEY_B) {
+        isB = !isB;
+    }
 }
 
 glm::mat4 MakeAxisModelMatrix()
@@ -878,6 +903,20 @@ void DrawObj(GLint modelLocation)
                     faceModel = glm::translate(
                         faceModel,
                         glm::vec3(0.0f, -h, -h)
+                    );
+                }
+
+                if (face == 1) {
+                    faceModel = glm::translate(
+                        faceModel, glm::vec3(0.0f, 0.0f, -h)
+                    );
+
+                    faceModel = glm::scale(
+                        faceModel, glm::vec3(backScale)
+                    );
+
+                    faceModel = glm::translate(
+                        faceModel, glm::vec3(0.0f, 0.0f, h)
                     );
                 }
 
