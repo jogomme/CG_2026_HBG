@@ -175,6 +175,13 @@ float swapAngle = 0.0f;
 float swapSpeed = 120.0f;
 int swapFirst = -1;
 int swapSecond = -1;
+float swapDirection = 1.0f;
+
+// Completed swaps remain visible. Each face retains its accumulated placement.
+glm::mat4 facePose[6] = {
+    glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f),
+    glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f)
+};
 
 glm::vec3 pivot{};
 int firstidx{};
@@ -523,7 +530,14 @@ int main()
         if (is2) {
             swapAngle += swapSpeed * dTime;
             if (swapAngle >= 90.0f) {
-                swapAngle = 90.0f;
+                // Preserve the exchanged face positions after the animation ends.
+                facePose[swapFirst] = glm::rotate(
+                    glm::mat4(1.0f), glm::radians(90.0f * swapDirection),
+                    glm::vec3(0.0f, 1.0f, 0.0f)) * facePose[swapFirst];
+                facePose[swapSecond] = glm::rotate(
+                    glm::mat4(1.0f), glm::radians(-90.0f * swapDirection),
+                    glm::vec3(0.0f, 1.0f, 0.0f)) * facePose[swapSecond];
+                swapAngle = 0.0f;
                 is2 = false;
             }
         }
@@ -818,6 +832,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         swapAngle = 0.0f;
         swapFirst = -1;
         swapSecond = -1;
+        swapDirection = 1.0f;
+        for (int face = 0; face < 6; ++face) {
+            facePose[face] = glm::mat4(1.0f);
+        }
     }
     else if (key == GLFW_KEY_1) {
 
@@ -865,18 +883,29 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
         }   
     }
-    else if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
-        if (!is2) {
-            // Only side faces (0..3); choose two sharing a vertical edge.
+    else if (key == GLFW_KEY_2) {
+        if (!is2 && !is1 && !pyramidMode) {
+            // Choose two currently adjacent side faces.
+            std::uniform_int_distribution<int> sideDist(0, 3);
+            glm::vec3 firstCenter, secondCenter;
             do {
-                swapFirst = faceDist(gen);
-                swapSecond = faceDist(gen);
+                swapFirst = sideDist(gen);
+                swapSecond = sideDist(gen);
+                if (swapFirst == swapSecond) {
+                    continue;
+                }
+                const glm::vec3 firstBase = (cubeCorners[cubeFaces[swapFirst][0]] +
+                    cubeCorners[cubeFaces[swapFirst][3]]) * 0.5f;
+                const glm::vec3 secondBase = (cubeCorners[cubeFaces[swapSecond][0]] +
+                    cubeCorners[cubeFaces[swapSecond][3]]) * 0.5f;
+                firstCenter = glm::vec3(facePose[swapFirst] * glm::vec4(firstBase, 1.0f));
+                secondCenter = glm::vec3(facePose[swapSecond] * glm::vec4(secondBase, 1.0f));
             } while (swapFirst == swapSecond ||
-                     (swapFirst == 0 && swapSecond == 1) ||
-                     (swapFirst == 1 && swapSecond == 0) ||
-                     (swapFirst == 2 && swapSecond == 3) ||
-                     (swapFirst == 3 && swapSecond == 2));
+                     std::abs(glm::dot(firstCenter, secondCenter)) > 0.01f);
 
+            // Positive Y rotation sends (x,z) to (z,-x).
+            const glm::vec3 positiveTurn(firstCenter.z, 0.0f, -firstCenter.x);
+            swapDirection = glm::dot(positiveTurn, secondCenter) > 0.0f ? 1.0f : -1.0f;
             swapAngle = 0.0f;
             is2 = true;
         }
@@ -960,6 +989,14 @@ void DrawObj(GLint modelLocation)
             for (int face = 0; face < 6; ++face)
             {
                 glm::mat4 faceModel = objmodel;
+
+                if (is2 && (face == swapFirst || face == swapSecond)) {
+                    const float direction = (face == swapFirst) ? swapDirection : -swapDirection;
+                    faceModel = glm::rotate(faceModel, glm::radians(direction * swapAngle),
+                                            glm::vec3(0.0f, 1.0f, 0.0f));
+                }
+
+                faceModel = faceModel * facePose[face];
 
                 if (face == firstidx || face == secondidx) {
                     if (is1) {
