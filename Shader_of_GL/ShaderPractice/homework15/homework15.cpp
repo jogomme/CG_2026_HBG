@@ -184,6 +184,8 @@ float fourAngle = 0.0f;
 // 5 key: top, bottom, front and back faces orbit the central X axis.
 bool is5 = false;
 float fiveAngle = 0.0f;
+int fiveSideA = 0;
+int fiveSideB = 1;
 float swapDirection = 1.0f;
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
@@ -857,6 +859,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         fourAngle = 0.0f;
         is5 = false;
         fiveAngle = 0.0f;
+        fiveSideA = 0;
+        fiveSideB = 1;
         is2 = false;
         swapAngle = 0.0f;
         swapFirst = -1;
@@ -867,52 +871,33 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
     else if (key == GLFW_KEY_1) {
-
         if (is1) {
-            is1 = false; // Keep the existing press-again-to-stop behavior.
+            is1 = false; // Pressing 1 again stops the rotation.
         }
         else if (!pyramidMode && !is2 && !is4 && !is5) {
-            is1 = true;
-
-            edgeAngle = 0;
-
-            int count = 0;
-            int shared[2];
-
-            bool check = false;
-
-            while (check == false) {
-
-                count = 0;
-
+            glm::vec3 a, b;
+            // The faces may have swapped before, so compare their current
+            // positions instead of only comparing their original corner IDs.
+            do {
                 firstidx = faceDist(gen);
                 secondidx = faceDist(gen);
-
-                while (firstidx == secondidx) {
-                    firstidx = faceDist(gen);
-                    secondidx = faceDist(gen);
+                if (firstidx == secondidx) {
+                    continue;
                 }
+                const glm::vec3 baseA = (cubeCorners[cubeFaces[firstidx][0]] +
+                                         cubeCorners[cubeFaces[firstidx][3]]) * 0.5f;
+                const glm::vec3 baseB = (cubeCorners[cubeFaces[secondidx][0]] +
+                                         cubeCorners[cubeFaces[secondidx][3]]) * 0.5f;
+                a = glm::vec3(facePose[firstidx] * glm::vec4(baseA, 1.0f));
+                b = glm::vec3(facePose[secondidx] * glm::vec4(baseB, 1.0f));
+            } while (firstidx == secondidx ||
+                     std::abs(glm::dot(a, b)) > 0.01f);
 
-                for (int i = 0; i < 4; ++i) {
-                    for (int j = 0; j < 4; ++j) {
-                        if (cubeFaces[firstidx][i] == cubeFaces[secondidx][j]) {
-                            shared[count++] = cubeFaces[firstidx][i];
-                        }
-                    }
-                }
-
-                if (count >= 2) {
-                    glm::vec3 a = cubeCorners[shared[0]];
-                    glm::vec3 b = cubeCorners[shared[1]];
-
-                    if (a.x == b.x && a.z == b.z) {
-                        check = true;
-                    }
-                }
-            }
-
-            pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
-        }   
+            // Two adjacent side-face centers add up to their shared vertical edge.
+            pivot = a + b;
+            edgeAngle = 0.0f;
+            is1 = true;
+        }
     }
     else if (key == GLFW_KEY_2) {
         if (!is2 && !is1 && !is4 && !is5 && !pyramidMode) {
@@ -949,8 +934,21 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_5) {
         if (!pyramidMode && !is1 && !is2 && !is4 && !is5) {
+            // Pick the two side faces occupying the front and back slots,
+            // even if key 2 previously exchanged their positions.
+            int chosen = 0;
+            for (int face = 0; face < 4; ++face) {
+                const glm::vec3 base = (cubeCorners[cubeFaces[face][0]] +
+                                        cubeCorners[cubeFaces[face][3]]) * 0.5f;
+                const glm::vec3 center = glm::vec3(facePose[face] * glm::vec4(base, 1.0f));
+                if (std::abs(center.x) < h * 0.5f) {
+                    if (chosen == 0) fiveSideA = face;
+                    else fiveSideB = face;
+                    ++chosen;
+                }
+            }
             fiveAngle = 0.0f;
-            is5 = true;
+            is5 = (chosen == 2);
         }
     }
     else if (key == GLFW_KEY_B) {
@@ -1041,26 +1039,19 @@ void DrawObj(GLint modelLocation)
                                             glm::vec3(0.0f, 1.0f, 0.0f));
                 }
 
-                if (is5 && (face == 0 || face == 1 || face == 4 || face == 5)) {
+                if (is5 && (face == fiveSideA || face == fiveSideB || face == 4 || face == 5)) {
                     faceModel = glm::rotate(faceModel, glm::radians(fiveAngle),
                                             glm::vec3(1.0f, 0.0f, 0.0f));
                 }
 
-                faceModel = faceModel * facePose[face];
-
-                if (face == firstidx || face == secondidx) {
-                    if (is1) {
-                        faceModel = glm::translate(faceModel, pivot);
-
-                        faceModel = glm::rotate(
-                            faceModel,
-                            glm::radians(edgeAngle),
-                            glm::vec3(0.0f, 1.0f, 0.0f)
-                        );
-
-                        faceModel = glm::translate(faceModel, -pivot);
-                    }
+                if (is1 && (face == firstidx || face == secondidx)) {
+                    faceModel = glm::translate(faceModel, pivot);
+                    faceModel = glm::rotate(faceModel, glm::radians(edgeAngle),
+                                            glm::vec3(0.0f, 1.0f, 0.0f));
+                    faceModel = glm::translate(faceModel, -pivot);
                 }
+
+                faceModel = faceModel * facePose[face];
 
                 if (face == 4)
                 {
