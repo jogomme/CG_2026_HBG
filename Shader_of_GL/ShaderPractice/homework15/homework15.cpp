@@ -505,7 +505,7 @@ int main()
         }
 
         if (is1) {
-            edgeAngle = edgeAngle + 30.0f * dTime;
+            edgeAngle = edgeAngle + 120.0f * dTime;
 
             if (edgeAngle >= 360.0f) {
                 edgeAngle = 0.0f;
@@ -539,7 +539,7 @@ int main()
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    std::uniform_int_distribution<int> faceDist(0, 5);
+    std::uniform_int_distribution<int> faceDist(0, 3);
 
     if (key == GLFW_KEY_RIGHT) {
 
@@ -801,43 +801,47 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         is1 = !is1;
 
-        int count = 0;
-        int shared[2];
+        if (is1) {
 
-        bool check = false;
+            edgeAngle = 0;
 
-        while (check == false) {
+            int count = 0;
+            int shared[2];
 
-            count = 0;
+            bool check = false;
 
-            firstidx = faceDist(gen);
-            secondidx = faceDist(gen);
+            while (check == false) {
 
-            while (firstidx == secondidx) {
+                count = 0;
+
                 firstidx = faceDist(gen);
                 secondidx = faceDist(gen);
-            }
 
-            for (int i = 0; i < 4; ++i) {
-                for (int j = 0; j < 4; ++j) {
-                    if (cubeFaces[firstidx][i] == cubeFaces[secondidx][j]) {
-                        shared[count++] = cubeFaces[firstidx][i];
+                while (firstidx == secondidx) {
+                    firstidx = faceDist(gen);
+                    secondidx = faceDist(gen);
+                }
+
+                for (int i = 0; i < 4; ++i) {
+                    for (int j = 0; j < 4; ++j) {
+                        if (cubeFaces[firstidx][i] == cubeFaces[secondidx][j]) {
+                            shared[count++] = cubeFaces[firstidx][i];
+                        }
+                    }
+                }
+
+                if (count >= 2) {
+                    glm::vec3 a = cubeCorners[shared[0]];
+                    glm::vec3 b = cubeCorners[shared[1]];
+
+                    if (a.x == b.x && a.z == b.z) {
+                        check = true;
                     }
                 }
             }
 
-            if (count >= 2) {
-                glm::vec3 a = cubeCorners[shared[0]];
-                glm::vec3 b = cubeCorners[shared[1]];
-
-                if (a.x == b.x && a.z == b.z) {
-                    check = true;
-                }
-            }
-        }
-
-        pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
-
+            pivot = (cubeCorners[shared[0]] + cubeCorners[shared[1]]) * 0.5f;
+        }   
     }
     else if (key == GLFW_KEY_B) {
         isB = !isB;
