@@ -165,6 +165,10 @@ bool isB = false;
 float backScale = 1.0f;
 float ScaleSpeed = 0.5f;
 
+glm::vec3 pivot{};
+int firstidx{};
+int secondidx{};
+
 GLuint VAO;
 GLuint VBO;
 
@@ -522,6 +526,8 @@ int main()
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    std::uniform_int_distribution<int> faceDist(0, 5);
+
     if (key == GLFW_KEY_RIGHT) {
 
         if (action == GLFW_PRESS) {
@@ -777,6 +783,46 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isB = false;
         backScale = 1.0f;
         ScaleSpeed = 0.5f;
+    }
+    else if (key == GLFW_KEY_1) {
+
+        int count = 0;
+        int shared[2];
+
+        bool check = false;
+
+        while (check == false) {
+
+            count = 0;
+
+            firstidx = faceDist(gen);
+            secondidx = faceDist(gen);
+
+            while (firstidx == secondidx) {
+                firstidx = faceDist(gen);
+                secondidx = faceDist(gen);
+            }
+
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 4; ++j) {
+                    if (cubeFaces[firstidx][i] == cubeFaces[secondidx][j]) {
+                        shared[count++] = cubeFaces[0][i];
+                    }
+                }
+            }
+
+            if (count >= 2) {
+                glm::vec3 a = cubeCorners[shared[firstidx]];
+                glm::vec3 b = cubeCorners[shared[secondidx]];
+
+                if (a.x == b.x && a.z == b.z) {
+                    check = true;
+                }
+            }
+        }
+
+        pivot = (cubeCorners[shared[firstidx]] + cubeCorners[shared[secondidx]]) * 0.5f;
+
     }
     else if (key == GLFW_KEY_B) {
         isB = !isB;
