@@ -1133,6 +1133,8 @@ void DrawObj(GLint modelLocation)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
     }
     else {
+        glBindVertexArray(pyramidVAO);
+
         for (int face = 0; face < 4; ++face)
         {
             if (face == 0) {
