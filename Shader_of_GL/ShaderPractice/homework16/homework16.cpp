@@ -1133,13 +1133,35 @@ void DrawObj(GLint modelLocation)
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
     }
     else {
-        glBindVertexArray(pyramidVAO);
+        for (int face = 0; face < 4; ++face)
+        {
+            if (face == 0) {
 
+            }
+            else if (face == 1) {
+
+            }
+            else if (face == 2) {
+
+            }
+            else if (face == 3) {
+
+            }
+
+            glDrawElements(
+                GL_TRIANGLES,
+                3,
+                GL_UNSIGNED_INT,
+                (void*)(face * 3 * sizeof(unsigned int))
+            );
+        }
+
+        // 바닥면
         glDrawElements(
             GL_TRIANGLES,
-            18,
+            6,
             GL_UNSIGNED_INT,
-            0
+            (void*)(12 * sizeof(unsigned int))
         );
     }
 }
