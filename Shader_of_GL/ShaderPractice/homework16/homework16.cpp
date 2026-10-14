@@ -188,6 +188,9 @@ int fiveSideA = 0;
 int fiveSideB = 1;
 float swapDirection = 1.0f;
 
+bool is6 = false;
+float PfaceAngle[4]{ 0.0f };
+
 // Completed swaps remain visible. Each face retains its accumulated placement.
 glm::mat4 facePose[6] = {
     glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f),
@@ -952,7 +955,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isB = !isB;
     }
     else if (key == GLFW_KEY_6) {
-        std::uniform_int_distribution<int> sideDist(0, 4);
+        
 
         
 
@@ -1147,7 +1150,11 @@ void DrawObj(GLint modelLocation)
             glm::mat4 faceModel = objmodel;
 
             if (face == 0) {
-
+                if (is6) {
+                    faceModel = glm::translate(faceModel, glm::vec3(-h, h, h));
+                    faceModel = glm::rotate(faceModel, 
+                        glm::radians(30.0f), glm::vec3(0, 0, 1));
+                }
             }
             else if (face == 1) {
 
