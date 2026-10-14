@@ -835,8 +835,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         isUp = false;
         isDown = false;
 
-        angleX = 30.0f;
-        angleY = 30.0f;
+        angleX = 0.0f;
+        angleY = 0.0f;
         angleZ = 0.0f;
 
         isTopRotating = false;
@@ -979,13 +979,12 @@ glm::mat4 MakeObjectModelMatrix()
 
     model = glm::translate(model, movement);
 
+    model *= axismodel;
+
     model = glm::rotate(model, glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    model = glm::rotate(model, glm::radians(axisangle), glm::vec3(1.0f, 0.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(axisangle), glm::vec3(0.0f, 1.0f, 0.0f));
-    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
 }
