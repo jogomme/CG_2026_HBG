@@ -107,8 +107,8 @@ int height = 1200;
 std::random_device rd;
 std::mt19937 gen(rd());
 
-float angleX = 30.0f;
-float angleY = 30.0f;
+float angleX = 0.0f;
+float angleY = 0.0f;
 float angleZ = 0.0f;
 
 float edgeAngle{};
@@ -978,6 +978,10 @@ glm::mat4 MakeObjectModelMatrix()
     model = glm::rotate(model, glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    model = glm::rotate(model, glm::radians(axisangle), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(axisangle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
 }

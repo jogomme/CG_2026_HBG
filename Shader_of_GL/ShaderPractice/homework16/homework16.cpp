@@ -107,8 +107,8 @@ int height = 1200;
 std::random_device rd;
 std::mt19937 gen(rd());
 
-float angleX = 30.0f;
-float angleY = 30.0f;
+float angleX = 0.0f;
+float angleY = 0.0f;
 float angleZ = 0.0f;
 
 float edgeAngle{};
@@ -872,12 +872,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_1) {
         if (is1) {
-            is1 = false; // Pressing 1 again stops the rotation.
+            is1 = false; 
         }
         else if (!pyramidMode && !is2 && !is4 && !is5) {
             glm::vec3 a, b;
-            // The faces may have swapped before, so compare their current
-            // positions instead of only comparing their original corner IDs.
+
             do {
                 firstidx = faceDist(gen);
                 secondidx = faceDist(gen);
@@ -934,8 +933,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_5) {
         if (!pyramidMode && !is1 && !is2 && !is4 && !is5) {
-            // Pick the two side faces occupying the front and back slots,
-            // even if key 2 previously exchanged their positions.
             int chosen = 0;
             for (int face = 0; face < 4; ++face) {
                 const glm::vec3 base = (cubeCorners[cubeFaces[face][0]] +
@@ -954,6 +951,13 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_B) {
         isB = !isB;
     }
+    else if (key == GLFW_KEY_6) {
+        std::uniform_int_distribution<int> sideDist(0, 4);
+
+        
+
+    }
+
 }
 
 glm::mat4 MakeAxisModelMatrix()
@@ -978,6 +982,10 @@ glm::mat4 MakeObjectModelMatrix()
     model = glm::rotate(model, glm::radians(angleX), glm::vec3(1.0f, 0.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleY), glm::vec3(0.0f, 1.0f, 0.0f));
     model = glm::rotate(model, glm::radians(angleZ), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    model = glm::rotate(model, glm::radians(axisangle), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(axisangle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
 }
@@ -1137,6 +1145,8 @@ void DrawObj(GLint modelLocation)
 
         for (int face = 0; face < 4; ++face)
         {
+            glm::mat4 faceModel = objmodel;
+
             if (face == 0) {
 
             }
