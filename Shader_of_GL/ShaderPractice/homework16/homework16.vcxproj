@@ -89,4 +89,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Common\Shader.cpp" />
+    <ClInclude Include="..\Common\Shader.h" />
+    <ClCompile Include="..\Common\Camera.cpp" />
+    <ClInclude Include="..\Common\Camera.h" />
+    <ClCompile Include="..\Common\GLUtils.cpp" />
+    <ClInclude Include="..\Common\GLUtils.h" />
+  </ItemGroup>
 </Project>
