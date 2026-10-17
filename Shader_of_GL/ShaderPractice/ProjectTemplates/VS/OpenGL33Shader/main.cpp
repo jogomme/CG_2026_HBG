@@ -5,7 +5,7 @@
 //   CreateGLWindow()         창 생성 + GLEW 초기화 + viewport + 콘솔 UTF-8
 //   CreateProgram( vs, fs )  셰이더 컴파일 + 링크 + 오류 로그 출력
 //
-// 링커 설정은 vcxproj 에 내장되어 있습니다. include 경로 설정도 필요 없습니다.
+// 프로젝트는 ../Common/Common.props를 참조합니다. 외부 위치에서는 OpenGLCommonProps를 지정하세요.
 //   링커   : opengl32.lib / glew32.lib / glfw3dll.lib
 //   언어   : C++20
 //   옵션   : /utf-8   ( 한글 주석이 CP949 로 해석되어 줄이 병합되는 문제 방지 )
@@ -18,7 +18,8 @@
 // 빌드는 x64 만 지원합니다. glew32.lib / glfw3dll.lib 이 SDK 에 x64 로만 존재합니다.
 //------------------------------------------------------------------------------------------------------
 
-#include "GLCommon.h"
+#include "Shader.h"
+#include "GLUtils.h"
 
 #include <GL/glm/glm.hpp>
 #include <GL/glm/gtc/matrix_transform.hpp>
@@ -102,28 +103,7 @@ int main()
     );
 
     // 위치
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
-    );
-
-    glEnableVertexAttribArray(0);
-
-    // 색상
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)(3 * sizeof(float))
-    );
-
-    glEnableVertexAttribArray(1);
+    common::configurePositionColorAttributes();
 
     //------------------------------------------------------------------------------------------
     // Vertex Shader
@@ -164,13 +144,15 @@ int main()
     //------------------------------------------------------------------------------------------
     // Shader Program 생성 ( 컴파일 + 링크 )
     //------------------------------------------------------------------------------------------
-    GLuint shaderProgram = CreateProgram(
+    common::Shader shader(
         vertexShaderSource,
         fragmentShaderSource
     );
 
-    if (shaderProgram == 0)
+    if (!shader.valid())
     {
+        glDeleteBuffers(1, &VBO);
+        glDeleteVertexArrays(1, &VAO);
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
@@ -179,7 +161,7 @@ int main()
     //------------------------------------------------------------------------------------------
     // Program 사용
     //------------------------------------------------------------------------------------------
-    glUseProgram(shaderProgram);
+    shader.use();
 
     //------------------------------------------------------------------------------------------
     // 화면 배경색 설정
@@ -191,7 +173,7 @@ int main()
         1.0f
     );
 
-    GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
+    GLint modelLocation = shader.uniformLocation("model");
 
     //------------------------------------------------------------------------------------------
     // 메인 루프
@@ -237,7 +219,7 @@ int main()
     //------------------------------------------------------------------------------------------
     glDeleteBuffers(1, &VBO);
     glDeleteVertexArrays(1, &VAO);
-    glDeleteProgram(shaderProgram);
+    shader.reset();
 
     glfwDestroyWindow(window);
     glfwTerminate();

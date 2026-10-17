@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Import once after project-specific settings, before Microsoft.Cpp.targets.
+       Paths are anchored to this file, independent of the consuming solution. -->
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Shader.cpp"><Link>Common\Shader.cpp</Link></ClCompile>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Shader.h"><Link>Common\Shader.h</Link></ClInclude>
+    <ClCompile Include="$(MSBuildThisFileDirectory)Camera.cpp"><Link>Common\Camera.cpp</Link></ClCompile>
+    <ClInclude Include="$(MSBuildThisFileDirectory)Camera.h"><Link>Common\Camera.h</Link></ClInclude>
+    <ClCompile Include="$(MSBuildThisFileDirectory)GLUtils.cpp"><Link>Common\GLUtils.cpp</Link></ClCompile>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GLUtils.h"><Link>Common\GLUtils.h</Link></ClInclude>
+    <ClInclude Include="$(MSBuildThisFileDirectory)GLCommon.h"><Link>Common\GLCommon.h</Link></ClInclude>
+  </ItemGroup>
+</Project>

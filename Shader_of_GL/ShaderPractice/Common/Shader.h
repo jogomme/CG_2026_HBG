@@ -1,5 +1,5 @@
 #pragma once
-#include "../GLCommon.h"
+#include "GLCommon.h"
 #include <GL/glm/glm.hpp>
 namespace common {
 // Reset/destroy while the owning OpenGL context is current.
