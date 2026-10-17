@@ -193,6 +193,8 @@ float PfaceSpeed[4]{ 60.0f,60.0f,60.0f,60.0f };
 float MaxOpenDegree[4]{};
 
 bool is7 = false;
+int currentPface = 0;
+
 bool is8 = false;
 bool is9 = false;
 
@@ -596,6 +598,34 @@ int main()
                     PfaceAngle[i] = MaxOpenDegree[i];
             }
         }
+
+        if (pyramidAnimationMode == 7 && pendingPyramidMode == 0) {
+            if (is7) {
+                // 현재 면이 90도에 도달하면 다음 면 열기
+                if (currentPface < 4 &&
+                    PfaceAngle[currentPface] >= 90.0f) {
+
+                    ++currentPface;
+
+                    if (currentPface < 4) {
+                        MaxOpenDegree[currentPface] = 90.0f;
+                    }
+                }
+            }
+            else {
+                // 현재 면이 닫히면 이전 면 닫기
+                if (currentPface >= 0 &&
+                    PfaceAngle[currentPface] <= 0.0f) {
+
+                    --currentPface;
+
+                    if (currentPface >= 0) {
+                        MaxOpenDegree[currentPface] = 0.0f;
+                    }
+                }
+            }
+        }
+
 
         // 다른 회전 방식으로 바꿀 때는 기존 면을 완전히 닫은 후 전환
         if (pendingPyramidMode != 0) {
@@ -1030,7 +1060,27 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
     else if (key == GLFW_KEY_7) {
+        if (!pyramidMode) return;
 
+        if (pyramidAnimationMode == 7 && pendingPyramidMode == 0) {
+            is7 = !is7;
+
+            if (is7) {
+                currentPface = 0;
+                MaxOpenDegree[0] = 90.0f;
+            }
+            else {
+                currentPface = 3;
+                MaxOpenDegree[3] = 0.0f;
+            }
+        }
+        else {
+            pendingPyramidMode = 7;
+
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = 0.0f;
+            }
+        }
     }
     else if (key == GLFW_KEY_8) {
 
