@@ -418,12 +418,14 @@ int main()
     layout (location = 1) in vec3 aColor;
 
     uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
 
     out vec3 ourColor;
 
     void main()
     {
-        gl_Position = model * vec4(aPos, 1.0);
+        gl_Position = projection * view * model * vec4(aPos, 1.0);
         ourColor = aColor;
     }
     )";
@@ -476,6 +478,16 @@ int main()
     );
 
     GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
+    GLint viewLocation = glGetUniformLocation(shaderProgram, "view");
+    GLint projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+
+    // +Z 방향에서 원점을 바라보는 카메라
+    glm::mat4 view = glm::lookAt(
+        glm::vec3(0.0f, 0.7f, 2.5f),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
 
     double endTime = glfwGetTime();
 
@@ -484,6 +496,24 @@ int main()
     //------------------------------------------------------------------------------------------
     while (!glfwWindowShouldClose(window))
     {
+        // 창 크기가 바뀌어도 화면 비율을 유지하도록 투영 행렬 갱신
+        int framebufferWidth = 0;
+        int framebufferHeight = 0;
+        glfwGetFramebufferSize(window, &framebufferWidth, &framebufferHeight);
+        if (framebufferWidth == 0 || framebufferHeight == 0) {
+            glfwPollEvents();
+            continue;
+        }
+        glViewport(0, 0, framebufferWidth, framebufferHeight);
+
+        glm::mat4 projection = glm::perspective(
+            glm::radians(45.0f),
+            static_cast<float>(framebufferWidth) / static_cast<float>(framebufferHeight),
+            0.1f,
+            100.0f
+        );
+        glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
+
         // ------------------------------------------------------------
         // 화면 지우기
         // ------------------------------------------------------------
