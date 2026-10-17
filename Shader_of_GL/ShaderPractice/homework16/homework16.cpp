@@ -127,7 +127,6 @@ float sideRotationSpeed = 30.0f;
 
 bool isFrontAnimating = false;
 float frontAngle = 0.0f;
-bool isOpen = false;
 float frontRotationSpeed = 30.0f;
 
 float positionX = 0.0f;
@@ -190,6 +189,8 @@ float swapDirection = 1.0f;
 
 bool is6 = false;
 float PfaceAngle[4]{ 0.0f };
+float PfaceSpeed[4]{ 30.0f };
+bool isOpen = false;
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
 glm::mat4 facePose[6] = {
@@ -570,6 +571,10 @@ int main()
                 swapAngle = 0.0f;
                 is2 = false;
             }
+        }
+
+        if (is6) {
+
         }
 
         // ------------------------------------------------------------
@@ -956,7 +961,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_6) {
         
-
+        is6 = !is6;
         
 
     }
@@ -1151,9 +1156,10 @@ void DrawObj(GLint modelLocation)
 
             if (face == 0) {
                 if (is6) {
-                    faceModel = glm::translate(faceModel, glm::vec3(-h, h, h));
+                    faceModel = glm::translate(faceModel, glm::vec3(0, -h, h));
                     faceModel = glm::rotate(faceModel, 
-                        glm::radians(30.0f), glm::vec3(0, 0, 1));
+                        glm::radians(30.0f), glm::vec3(1, 0, 0));
+                    faceModel = glm::translate(faceModel, glm::vec3(0, h, -h));
                 }
             }
             else if (face == 1) {
@@ -1165,6 +1171,13 @@ void DrawObj(GLint modelLocation)
             else if (face == 3) {
 
             }
+
+            glUniformMatrix4fv(
+                modelLocation,
+                1,
+                GL_FALSE,
+                &faceModel[0][0]
+            );
 
             glDrawElements(
                 GL_TRIANGLES,
