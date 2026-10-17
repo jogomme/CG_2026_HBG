@@ -188,9 +188,9 @@ int fiveSideB = 1;
 float swapDirection = 1.0f;
 
 bool is6 = false;
-float PfaceAngle[4]{ 0.0f };
-float PfaceSpeed[4]{ 30.0f };
-float MaxOpenDegree[4]{ 0 };
+float PfaceAngle[4]{};
+float PfaceSpeed[4]{ 60.0f,60.0f,60.0f,60.0f };
+float MaxOpenDegree[4]{};
 
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
@@ -576,15 +576,17 @@ int main()
 
         if (is6) {
             for (int i = 0; i < 4; ++i) {
-                PfaceAngle[i] += PfaceSpeed[i] * dTime;
+                if (PfaceAngle[i] < MaxOpenDegree[i]) {
+                    PfaceAngle[i] += PfaceSpeed[i] * dTime;
 
-                if (PfaceAngle[i] >= 180.0f) {
-                    PfaceAngle[i] = 180.0f;
-                    PfaceSpeed[i] = -abs(PfaceSpeed[i]);
+                    if (PfaceAngle[i] > MaxOpenDegree[i])
+                        PfaceAngle[i] = MaxOpenDegree[i];
                 }
-                else if (PfaceAngle[i] <= 0.0f) {
-                    PfaceAngle[i] = 0.0f;
-                    PfaceSpeed[i] = abs(PfaceSpeed[i]);
+                else if (PfaceAngle[i] > MaxOpenDegree[i]) {
+                    PfaceAngle[i] -= PfaceSpeed[i] * dTime;
+
+                    if (PfaceAngle[i] < MaxOpenDegree[i])
+                        PfaceAngle[i] = MaxOpenDegree[i];
                 }
             }
         }
@@ -974,7 +976,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         
         is6 = !is6;
         for (int i = 0; i < 4; ++i) {
-            MaxOpenDegree[i] = 270;
+            MaxOpenDegree[i] = 240;
         }
 
     }
@@ -1168,21 +1170,28 @@ void DrawObj(GLint modelLocation)
             glm::mat4 faceModel = objmodel;
 
             if (face == 0) {
-                if (is6) {
-                    faceModel = glm::translate(faceModel, glm::vec3(0, -h, h));
-                    faceModel = glm::rotate(faceModel, 
-                        PfaceAngle[face], glm::vec3(1, 0, 0));
-                    faceModel = glm::translate(faceModel, glm::vec3(0, h, -h));
-                }
+                faceModel = glm::translate(faceModel, glm::vec3(0, -h, h));
+                faceModel = glm::rotate(faceModel, 
+                    glm::radians(PfaceAngle[face]), glm::vec3(1, 0, 0));
+                faceModel = glm::translate(faceModel, glm::vec3(0, h, -h));
             }
             else if (face == 1) {
-
+                faceModel = glm::translate(faceModel, glm::vec3(h, -h, 0));
+                faceModel = glm::rotate(faceModel,
+                    glm::radians(PfaceAngle[face]), glm::vec3(0, 0, 1));
+                faceModel = glm::translate(faceModel, glm::vec3(-h, h, 0));
             }
             else if (face == 2) {
-
+                faceModel = glm::translate(faceModel, glm::vec3(-h, -h, 0));
+                faceModel = glm::rotate(faceModel,
+                    glm::radians(PfaceAngle[face]), glm::vec3(0, 0, -1));
+                faceModel = glm::translate(faceModel, glm::vec3(h, h, 0));
             }
             else if (face == 3) {
-
+                faceModel = glm::translate(faceModel, glm::vec3(0, -h, -h));
+                faceModel = glm::rotate(faceModel,
+                    glm::radians(PfaceAngle[face]), glm::vec3(-1, 0, 0));
+                faceModel = glm::translate(faceModel, glm::vec3(0, h, h));
             }
 
             glUniformMatrix4fv(
