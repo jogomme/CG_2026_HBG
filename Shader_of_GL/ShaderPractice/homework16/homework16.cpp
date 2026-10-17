@@ -196,6 +196,10 @@ bool is7 = false;
 bool is8 = false;
 bool is9 = false;
 
+// 현재 회전 방식과 닫힌 뒤 전환할 회전 방식
+int pyramidAnimationMode = 6;
+int pendingPyramidMode = 0;
+
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
 glm::mat4 facePose[6] = {
@@ -593,6 +597,28 @@ int main()
             }
         }
 
+        // 다른 회전 방식으로 바꿀 때는 기존 면을 완전히 닫은 후 전환
+        if (pendingPyramidMode != 0) {
+            bool allClosed = true;
+            for (int i = 0; i < 4; ++i) {
+                if (PfaceAngle[i] != 0.0f) {
+                    allClosed = false;
+                    break;
+                }
+            }
+
+            if (allClosed) {
+                pyramidAnimationMode = pendingPyramidMode;
+                pendingPyramidMode = 0;
+                is6 = (pyramidAnimationMode == 6);
+                is9 = (pyramidAnimationMode == 9);
+
+                for (int i = 0; i < 4; ++i) {
+                    MaxOpenDegree[i] = is6 ? 233.13f : 45.0f;
+                }
+            }
+        }
+
         // ------------------------------------------------------------
         // 그리기
         // ------------------------------------------------------------
@@ -892,6 +918,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         for (int face = 0; face < 6; ++face) {
             facePose[face] = glm::mat4(1.0f);
         }
+
+        // 사각뿔의 회전 상태도 함께 초기화
+        is6 = false;
+        is9 = false;
+        pyramidAnimationMode = 6;
+        pendingPyramidMode = 0;
+        for (int i = 0; i < 4; ++i) {
+            PfaceAngle[i] = 0.0f;
+            MaxOpenDegree[i] = 0.0f;
+        }
     }
     else if (key == GLFW_KEY_1) {
         if (is1) {
@@ -974,10 +1010,23 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_B) {
         isB = !isB;
     }
-    else if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
-        is6 = !is6;
-        for (int i = 0; i < 4; ++i) {
-            MaxOpenDegree[i] = is6 ? 233.13 : 0.0f;
+    else if (key == GLFW_KEY_6) {
+        if (!pyramidMode) return;
+
+        if (pyramidAnimationMode == 6 && pendingPyramidMode == 0) {
+            is6 = !is6;
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = is6 ? 233.13f : 0.0f;
+            }
+        }
+        else {
+            // 다른 방식의 회전 중이면 먼저 닫고 6번으로 전환
+            pendingPyramidMode = 6;
+            is6 = false;
+            is9 = false;
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = 0.0f;
+            }
         }
     }
     else if (key == GLFW_KEY_7) {
@@ -987,11 +1036,22 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
     }
     else if (key == GLFW_KEY_9) {
-        is9 = !is9;
-        is6 = false;
+        if (!pyramidMode) return;
 
-        for (int i = 0; i < 4; ++i) {
-            MaxOpenDegree[i] = is9 ? 45.0f : 0.0f;
+        if (pyramidAnimationMode == 9 && pendingPyramidMode == 0) {
+            is9 = !is9;
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = is9 ? 45.0f : 0.0f;
+            }
+        }
+        else {
+            // 다른 방식의 회전 중이면 먼저 닫고 9번으로 전환
+            pendingPyramidMode = 9;
+            is6 = false;
+            is9 = false;
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = 0.0f;
+            }
         }
     }
 
@@ -1197,38 +1257,21 @@ void DrawObj(GLint modelLocation)
         {
             glm::mat4 faceModel = objmodel;
 
-            // 1. 회전 기준점을 원점으로 이동하는 변환 구성
-            if (is9) {
-                faceModel = glm::translate(faceModel, glm::vec3(0, h, 0));
-            }
-            else {
-                faceModel = glm::translate(faceModel, pivots[face]);
-            }
+            // 6번은 아래 모서리, 9번은 꼭짓점을 회전 기준으로 사용
+            const glm::vec3 pivotPoint = (pyramidAnimationMode == 9)
+                ? glm::vec3(0.0f, h, 0.0f)
+                : pivots[face];
 
+            // 9번은 꼭짓점을 고정한 채 바깥으로 펼치도록 반대 방향 회전
+            const float direction = (pyramidAnimationMode == 9) ? -1.0f : 1.0f;
 
-            if (is9) {
-                faceModel = glm::rotate(
-                    faceModel,
-                    glm::radians(-PfaceAngle[face]),
-                    axes[face]
-                );
-            }
-            else {
-                // 2. 해당 면의 아래 모서리 방향으로 회전
-                faceModel = glm::rotate(
-                    faceModel,
-                    glm::radians(PfaceAngle[face]),
-                    axes[face]
-                );
-            }
-
-            // 3. 기준점 이동을 되돌림
-            if (is9) {
-                faceModel = glm::translate(faceModel, glm::vec3(0,-h,0));
-            }
-            else {
-                faceModel = glm::translate(faceModel, -pivots[face]);
-            }
+            faceModel = glm::translate(faceModel, pivotPoint);
+            faceModel = glm::rotate(
+                faceModel,
+                glm::radians(direction * PfaceAngle[face]),
+                axes[face]
+            );
+            faceModel = glm::translate(faceModel, -pivotPoint);
 
             // 4. 각 면의 변환 행렬을 셰이더에 전달
             glUniformMatrix4fv(
