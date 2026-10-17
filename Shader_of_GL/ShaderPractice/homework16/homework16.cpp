@@ -196,6 +196,8 @@ bool is7 = false;
 int currentPface = 0;
 
 bool is8 = false;
+int selectedFace = -1;
+
 bool is9 = false;
 
 // 현재 회전 방식과 닫힌 뒤 전환할 회전 방식
@@ -673,6 +675,9 @@ int main()
                 is6 = (pyramidAnimationMode == 6);
                 is7 = (pyramidAnimationMode == 7);
                 is9 = (pyramidAnimationMode == 9);
+                is8 = (pyramidAnimationMode == 8);
+
+                std::uniform_int_distribution<int> dist(0, 1);
 
                 // 모드별로 목표 각도를 설정
                 switch (pyramidAnimationMode) {
@@ -685,6 +690,17 @@ int main()
                     for (int i = 0; i < 4; ++i)
                         MaxOpenDegree[i] = 0.0f;
                     MaxOpenDegree[0] = 90.0f;
+                    break;
+                case 8 :
+
+                    selectedFace = dist(gen);
+
+                    for (int i = 0; i < 4; ++i) {
+                        MaxOpenDegree[i] = 0.0f;
+                    }
+
+                    MaxOpenDegree[selectedFace] = 180.0f;
+                    MaxOpenDegree[selectedFace + 2] = 180.0f;
                     break;
                 case 9:
                     for (int i = 0; i < 4; ++i)
@@ -1147,6 +1163,37 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
     else if (key == GLFW_KEY_8) {
+        if (!pyramidMode) return;
+
+        is8 = !is8;
+
+        if (pyramidAnimationMode == 8 && pendingPyramidMode == 0) {
+            is8 = !is8;
+
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = 0.0f;
+            }
+
+            std::uniform_int_distribution<int> Facedist(0, 1);
+            if (is8) {
+                selectedFace = Facedist(gen);
+                MaxOpenDegree[selectedFace] = 180.0f;
+                MaxOpenDegree[selectedFace + 2] = 180.0f;
+            }
+        }
+        else {
+            // 기존 애니메이션을 닫은 후 8번으로 전환
+            pendingPyramidMode = 8;
+
+            is6 = false;
+            is7 = false;
+            is8 = false;
+            is9 = false;
+
+            for (int i = 0; i < 4; ++i) {
+                MaxOpenDegree[i] = 0.0f;
+            }
+        }
 
     }
     else if (key == GLFW_KEY_9) {
@@ -1386,7 +1433,7 @@ void DrawObj(GLint modelLocation)
             case 8:
                 // 꼭짓점을 기준으로 회전하며, 자리 교체 방향은 8번 구현 시 결정
                 pivotPoint = glm::vec3(0.0f, h, 0.0f);
-                rotationAxis = axes[face];
+                rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
                 break;
 
             case 9:
