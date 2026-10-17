@@ -190,7 +190,8 @@ float swapDirection = 1.0f;
 bool is6 = false;
 float PfaceAngle[4]{ 0.0f };
 float PfaceSpeed[4]{ 30.0f };
-bool isOpen = false;
+float MaxOpenDegree[4]{ 0 };
+
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
 glm::mat4 facePose[6] = {
@@ -574,7 +575,18 @@ int main()
         }
 
         if (is6) {
+            for (int i = 0; i < 4; ++i) {
+                PfaceAngle[i] += PfaceSpeed[i] * dTime;
 
+                if (PfaceAngle[i] >= 180.0f) {
+                    PfaceAngle[i] = 180.0f;
+                    PfaceSpeed[i] = -abs(PfaceSpeed[i]);
+                }
+                else if (PfaceAngle[i] <= 0.0f) {
+                    PfaceAngle[i] = 0.0f;
+                    PfaceSpeed[i] = abs(PfaceSpeed[i]);
+                }
+            }
         }
 
         // ------------------------------------------------------------
@@ -854,7 +866,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         isFrontAnimating = false;
         frontAngle = 0.0f;
-        isOpen = false;
         frontRotationSpeed = 30.0f;
 
         isB = false;
@@ -962,7 +973,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_6) {
         
         is6 = !is6;
-        
+        for (int i = 0; i < 4; ++i) {
+            MaxOpenDegree[i] = 270;
+        }
 
     }
 
@@ -1158,7 +1171,7 @@ void DrawObj(GLint modelLocation)
                 if (is6) {
                     faceModel = glm::translate(faceModel, glm::vec3(0, -h, h));
                     faceModel = glm::rotate(faceModel, 
-                        glm::radians(30.0f), glm::vec3(1, 0, 0));
+                        PfaceAngle[face], glm::vec3(1, 0, 0));
                     faceModel = glm::translate(faceModel, glm::vec3(0, h, -h));
                 }
             }
