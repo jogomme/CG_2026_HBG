@@ -192,6 +192,10 @@ float PfaceAngle[4]{};
 float PfaceSpeed[4]{ 60.0f,60.0f,60.0f,60.0f };
 float MaxOpenDegree[4]{};
 
+bool is7 = false;
+bool is8 = false;
+bool is9 = false;
+
 
 // Completed swaps remain visible. Each face retains its accumulated placement.
 glm::mat4 facePose[6] = {
@@ -574,20 +578,18 @@ int main()
             }
         }
 
-        if (is6) {
-            for (int i = 0; i < 4; ++i) {
-                if (PfaceAngle[i] < MaxOpenDegree[i]) {
-                    PfaceAngle[i] += PfaceSpeed[i] * dTime;
+        for (int i = 0; i < 4; ++i) {
+            if (PfaceAngle[i] < MaxOpenDegree[i]) {
+                PfaceAngle[i] += PfaceSpeed[i] * dTime;
 
-                    if (PfaceAngle[i] > MaxOpenDegree[i])
-                        PfaceAngle[i] = MaxOpenDegree[i];
-                }
-                else if (PfaceAngle[i] > MaxOpenDegree[i]) {
-                    PfaceAngle[i] -= PfaceSpeed[i] * dTime;
+                if (PfaceAngle[i] > MaxOpenDegree[i])
+                    PfaceAngle[i] = MaxOpenDegree[i];
+            }
+            else if (PfaceAngle[i] > MaxOpenDegree[i]) {
+                PfaceAngle[i] -= PfaceSpeed[i] * dTime;
 
-                    if (PfaceAngle[i] < MaxOpenDegree[i])
-                        PfaceAngle[i] = MaxOpenDegree[i];
-                }
+                if (PfaceAngle[i] < MaxOpenDegree[i])
+                    PfaceAngle[i] = MaxOpenDegree[i];
             }
         }
 
@@ -972,13 +974,20 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_B) {
         isB = !isB;
     }
-    else if (key == GLFW_KEY_6) {
-        
+    else if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
         is6 = !is6;
         for (int i = 0; i < 4; ++i) {
-            MaxOpenDegree[i] = 240;
+            MaxOpenDegree[i] = is6 ? 233.13 : 0.0f;
         }
+    }
+    else if (key == GLFW_KEY_7) {
 
+    }
+    else if (key == GLFW_KEY_8) {
+
+    }
+    else if (key == GLFW_KEY_9) {
+        is9 = !is9;
     }
 
 }
@@ -1165,35 +1174,38 @@ void DrawObj(GLint modelLocation)
     else {
         glBindVertexArray(pyramidVAO);
 
+        glm::vec3 pivots[4] = {
+            {0, -h,  h},  // 0번: 앞면 (+Z)
+            {h, -h,  0},  // 1번: 오른쪽 면 (+X)
+            {0, -h, -h},  // 2번: 뒷면 (-Z)
+            {-h, -h, 0}   // 3번: 왼쪽 면 (-X)
+        };
+
+        glm::vec3 axes[4] = {
+            { 1, 0,  0},  // 0번: +X축
+            { 0, 0, -1},  // 1번: -Z축
+            {-1, 0,  0},  // 2번: -X축
+            { 0, 0,  1}   // 3번: +Z축
+        };
+
         for (int face = 0; face < 4; ++face)
         {
             glm::mat4 faceModel = objmodel;
 
-            if (face == 0) {
-                faceModel = glm::translate(faceModel, glm::vec3(0, -h, h));
-                faceModel = glm::rotate(faceModel, 
-                    glm::radians(PfaceAngle[face]), glm::vec3(1, 0, 0));
-                faceModel = glm::translate(faceModel, glm::vec3(0, h, -h));
-            }
-            else if (face == 1) {
-                faceModel = glm::translate(faceModel, glm::vec3(h, -h, 0));
-                faceModel = glm::rotate(faceModel,
-                    glm::radians(PfaceAngle[face]), glm::vec3(0, 0, 1));
-                faceModel = glm::translate(faceModel, glm::vec3(-h, h, 0));
-            }
-            else if (face == 2) {
-                faceModel = glm::translate(faceModel, glm::vec3(-h, -h, 0));
-                faceModel = glm::rotate(faceModel,
-                    glm::radians(PfaceAngle[face]), glm::vec3(0, 0, -1));
-                faceModel = glm::translate(faceModel, glm::vec3(h, h, 0));
-            }
-            else if (face == 3) {
-                faceModel = glm::translate(faceModel, glm::vec3(0, -h, -h));
-                faceModel = glm::rotate(faceModel,
-                    glm::radians(PfaceAngle[face]), glm::vec3(-1, 0, 0));
-                faceModel = glm::translate(faceModel, glm::vec3(0, h, h));
-            }
+            // 1. 회전 기준점을 원점으로 이동하는 변환 구성
+            faceModel = glm::translate(faceModel, pivots[face]);
 
+            // 2. 해당 면의 아래 모서리 방향으로 회전
+            faceModel = glm::rotate(
+                faceModel,
+                glm::radians(PfaceAngle[face]),
+                axes[face]
+            );
+
+            // 3. 기준점 이동을 되돌림
+            faceModel = glm::translate(faceModel, -pivots[face]);
+
+            // 4. 각 면의 변환 행렬을 셰이더에 전달
             glUniformMatrix4fv(
                 modelLocation,
                 1,
@@ -1201,6 +1213,7 @@ void DrawObj(GLint modelLocation)
                 &faceModel[0][0]
             );
 
+            // 5. 옆면 그리기
             glDrawElements(
                 GL_TRIANGLES,
                 3,
@@ -1209,7 +1222,14 @@ void DrawObj(GLint modelLocation)
             );
         }
 
-        // 바닥면
+        // 바닥면에는 옆면의 회전 행렬을 적용하지 않음
+        glUniformMatrix4fv(
+            modelLocation,
+            1,
+            GL_FALSE,
+            &objmodel[0][0]
+        );
+
         glDrawElements(
             GL_TRIANGLES,
             6,
