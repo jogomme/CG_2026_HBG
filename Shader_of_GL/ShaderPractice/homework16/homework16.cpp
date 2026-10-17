@@ -641,10 +641,27 @@ int main()
                 pyramidAnimationMode = pendingPyramidMode;
                 pendingPyramidMode = 0;
                 is6 = (pyramidAnimationMode == 6);
+                is7 = (pyramidAnimationMode == 7);
                 is9 = (pyramidAnimationMode == 9);
 
-                for (int i = 0; i < 4; ++i) {
-                    MaxOpenDegree[i] = is6 ? 233.13f : 45.0f;
+                // 모드별로 목표 각도를 설정
+                switch (pyramidAnimationMode) {
+                case 6:
+                    for (int i = 0; i < 4; ++i)
+                        MaxOpenDegree[i] = 233.13f;
+                    break;
+                case 7:
+                    currentPface = 0;
+                    for (int i = 0; i < 4; ++i)
+                        MaxOpenDegree[i] = 0.0f;
+                    MaxOpenDegree[0] = 90.0f;
+                    break;
+                case 9:
+                    for (int i = 0; i < 4; ++i)
+                        MaxOpenDegree[i] = 45.0f;
+                    break;
+                default:
+                    break;
                 }
             }
         }
@@ -951,7 +968,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
         // 사각뿔의 회전 상태도 함께 초기화
         is6 = false;
+        is7 = false;
         is9 = false;
+        currentPface = 0;
         pyramidAnimationMode = 6;
         pendingPyramidMode = 0;
         for (int i = 0; i < 4; ++i) {
@@ -1066,16 +1085,31 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
             is7 = !is7;
 
             if (is7) {
-                currentPface = 0;
-                MaxOpenDegree[0] = 90.0f;
+                // 아직 90도에 도달하지 않은 첫 면부터 다시 열기
+                currentPface = 4;
+                for (int i = 0; i < 4; ++i) {
+                    if (PfaceAngle[i] < 90.0f) {
+                        currentPface = i;
+                        MaxOpenDegree[i] = 90.0f;
+                        break;
+                    }
+                }
             }
             else {
-                currentPface = 3;
-                MaxOpenDegree[3] = 0.0f;
+                // 실제로 열린 마지막 면부터 역순으로 닫기
+                currentPface = -1;
+                for (int i = 3; i >= 0; --i) {
+                    if (PfaceAngle[i] > 0.0f) {
+                        currentPface = i;
+                        MaxOpenDegree[i] = 0.0f;
+                        break;
+                    }
+                }
             }
         }
         else {
             pendingPyramidMode = 7;
+            is7 = false;
 
             for (int i = 0; i < 4; ++i) {
                 MaxOpenDegree[i] = 0.0f;
