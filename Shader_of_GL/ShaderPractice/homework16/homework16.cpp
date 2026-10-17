@@ -1165,8 +1165,6 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_8) {
         if (!pyramidMode) return;
 
-        is8 = !is8;
-
         if (pyramidAnimationMode == 8 && pendingPyramidMode == 0) {
             is8 = !is8;
 
