@@ -11,4 +11,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Common"><UniqueIdentifier>{C993E728-9E6B-46D0-87F3-E9BB54373B80}</UniqueIdentifier></Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(OpenGLCommonDirectory)Shader.cpp"><Filter>Common</Filter></ClCompile>
+    <ClInclude Include="$(OpenGLCommonDirectory)Shader.h"><Filter>Common</Filter></ClInclude>
+    <ClCompile Include="$(OpenGLCommonDirectory)Camera.cpp"><Filter>Common</Filter></ClCompile>
+    <ClInclude Include="$(OpenGLCommonDirectory)Camera.h"><Filter>Common</Filter></ClInclude>
+    <ClCompile Include="$(OpenGLCommonDirectory)GLUtils.cpp"><Filter>Common</Filter></ClCompile>
+    <ClInclude Include="$(OpenGLCommonDirectory)GLUtils.h"><Filter>Common</Filter></ClInclude>
+    <ClInclude Include="$(OpenGLCommonDirectory)GLCommon.h"><Filter>Common</Filter></ClInclude>
+  </ItemGroup>
 </Project>
