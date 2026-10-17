@@ -988,6 +988,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
     else if (key == GLFW_KEY_9) {
         is9 = !is9;
+        is6 = false;
+
+        for (int i = 0; i < 4; ++i) {
+            MaxOpenDegree[i] = is9 ? 45.0f : 0.0f;
+        }
     }
 
 }
@@ -1193,17 +1198,37 @@ void DrawObj(GLint modelLocation)
             glm::mat4 faceModel = objmodel;
 
             // 1. 회전 기준점을 원점으로 이동하는 변환 구성
-            faceModel = glm::translate(faceModel, pivots[face]);
+            if (is9) {
+                faceModel = glm::translate(faceModel, glm::vec3(0, h, 0));
+            }
+            else {
+                faceModel = glm::translate(faceModel, pivots[face]);
+            }
 
-            // 2. 해당 면의 아래 모서리 방향으로 회전
-            faceModel = glm::rotate(
-                faceModel,
-                glm::radians(PfaceAngle[face]),
-                axes[face]
-            );
+
+            if (is9) {
+                faceModel = glm::rotate(
+                    faceModel,
+                    glm::radians(-PfaceAngle[face]),
+                    axes[face]
+                );
+            }
+            else {
+                // 2. 해당 면의 아래 모서리 방향으로 회전
+                faceModel = glm::rotate(
+                    faceModel,
+                    glm::radians(PfaceAngle[face]),
+                    axes[face]
+                );
+            }
 
             // 3. 기준점 이동을 되돌림
-            faceModel = glm::translate(faceModel, -pivots[face]);
+            if (is9) {
+                faceModel = glm::translate(faceModel, glm::vec3(0,-h,0));
+            }
+            else {
+                faceModel = glm::translate(faceModel, -pivots[face]);
+            }
 
             // 4. 각 면의 변환 행렬을 셰이더에 전달
             glUniformMatrix4fv(
