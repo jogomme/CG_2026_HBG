@@ -483,7 +483,7 @@ int main()
 
     // +Z 방향에서 원점을 바라보는 카메라
     glm::mat4 view = glm::lookAt(
-        glm::vec3(0.0f, 0.7f, 2.5f),
+        glm::vec3(0.0f, 0.0f, 2.5f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
