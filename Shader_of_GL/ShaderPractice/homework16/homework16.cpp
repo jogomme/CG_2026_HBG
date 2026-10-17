@@ -1257,19 +1257,39 @@ void DrawObj(GLint modelLocation)
         {
             glm::mat4 faceModel = objmodel;
 
-            // 6번은 아래 모서리, 9번은 꼭짓점을 회전 기준으로 사용
-            const glm::vec3 pivotPoint = (pyramidAnimationMode == 9)
-                ? glm::vec3(0.0f, h, 0.0f)
-                : pivots[face];
+            // 회전 방식별 기준점과 회전축 설정
+            glm::vec3 pivotPoint = pivots[face];
+            glm::vec3 rotationAxis = axes[face];
 
-            // 9번은 꼭짓점을 고정한 채 바깥으로 펼치도록 반대 방향 회전
-            const float direction = (pyramidAnimationMode == 9) ? -1.0f : 1.0f;
+            switch (pyramidAnimationMode) {
+            case 6:
+            case 7:
+                // 아래 모서리를 기준으로 회전
+                pivotPoint = pivots[face];
+                rotationAxis = axes[face];
+                break;
+
+            case 8:
+                // 꼭짓점을 기준으로 회전하며, 자리 교체 방향은 8번 구현 시 결정
+                pivotPoint = glm::vec3(0.0f, h, 0.0f);
+                rotationAxis = axes[face];
+                break;
+
+            case 9:
+                // 꼭짓점을 기준으로 바깥쪽으로 회전
+                pivotPoint = glm::vec3(0.0f, h, 0.0f);
+                rotationAxis = -axes[face];
+                break;
+
+            default:
+                break;
+            }
 
             faceModel = glm::translate(faceModel, pivotPoint);
             faceModel = glm::rotate(
                 faceModel,
-                glm::radians(direction * PfaceAngle[face]),
-                axes[face]
+                glm::radians(PfaceAngle[face]),
+                rotationAxis
             );
             faceModel = glm::translate(faceModel, -pivotPoint);
 
