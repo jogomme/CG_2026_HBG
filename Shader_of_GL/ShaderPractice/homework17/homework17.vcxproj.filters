@@ -23,4 +23,7 @@
     <ClInclude Include="$(OpenGLCommonDirectory)GLUtils.h"><Filter>Common</Filter></ClInclude>
     <ClInclude Include="$(OpenGLCommonDirectory)GLCommon.h"><Filter>Common</Filter></ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(OpenGLCommonDirectory)ShaderSources.h"><Filter>Common</Filter></ClInclude>
+  </ItemGroup>
 </Project>

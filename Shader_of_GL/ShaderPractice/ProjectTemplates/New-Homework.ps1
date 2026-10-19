@@ -1,4 +1,4 @@
-<# Creates an assignment from the existing Visual Studio template; shares Common sources. #>
+<# 기존 Visual Studio 템플릿으로 과제 프로젝트를 생성하고 Common 소스를 공유합니다. #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)][string]$Name,
@@ -14,7 +14,7 @@ if (Test-Path -LiteralPath $targetDir) { throw "Directory already exists: $targe
 if (-not $Title) { $Title = $Name }
 $enc = [Text.UTF8Encoding]::new($false)
 $guid = '{' + [guid]::NewGuid().ToString().ToUpper() + '}'
-# Read and validate all inputs before creating the project.
+# 프로젝트를 생성하기 전에 입력 파일을 모두 읽고 검사합니다.
 $project = [IO.File]::ReadAllText((Join-Path $templateDir 'OpenGL33Shader.vcxproj')).Replace('$safeprojectname$', $Name).Replace('$guid1$', $guid)
 $filters = [IO.File]::ReadAllText((Join-Path $templateDir 'OpenGL33Shader.vcxproj.filters')).Replace('$safeprojectname$', $Name)
 $escapedTitle = $Title.Replace('\', '\\').Replace('"', '\"').Replace("`r", '\r').Replace("`n", '\n')

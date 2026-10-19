@@ -1,5 +1,5 @@
-// Common owns reusable helpers; this file owns the assignment scene and input.
-// Create the project directly under ShaderPractice to use ../Common/Common.props.
+// 재사용하는 공통 기능은 Common에 두고, 과제별 장면과 입력은 이 파일에서 구현합니다.
+// ../Common/Common.props를 참조하도록 프로젝트를 ShaderPractice 바로 아래에 생성합니다.
 #include "GLCommon.h"
 #include "Shader.h"
 #include "ShaderSources.h"
@@ -11,7 +11,7 @@
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 glm::mat4 MakeModelMatrix(float angle);
 
-// Assignment data: xyz position followed by rgb color for each vertex.
+// 과제별 정점 데이터: 각 정점은 위치 xyz와 색상 rgb 순서로 구성합니다.
 const float vertices[] = {
     -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
      0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
@@ -20,13 +20,13 @@ const float vertices[] = {
 
 int main()
 {
-    // 1. Create the window and current OpenGL context, then initialize GLEW.
+    // 1. 창을 만들고 OpenGL 컨텍스트를 활성화한 뒤 GLEW를 초기화합니다.
     GLFWwindow* window = CreateGLWindow(1600, 1200, "__WINDOWTITLE__");
     if (!window) return -1;
     glfwSetKeyCallback(window, KeyCallback);
 
-    // 2. Compile/link the common defaults. For custom shaders, pass your own
-    // vertex/fragment GLSL strings to this same Shader constructor.
+    // 2. 공통 기본 셰이더를 컴파일하고 링크합니다. 직접 작성한 셰이더를 사용하려면
+    // 같은 Shader 생성자에 정점/프래그먼트 GLSL 소스 문자열을 전달합니다.
     int result = 0;
     {
         common::Shader shader(common::shader_sources::positionColorVertex,
@@ -34,7 +34,7 @@ int main()
         if (!shader.valid()) {
             result = -1;
         } else {
-            // 3. Upload assignment geometry and describe its xyz/rgb layout.
+            // 3. 과제 도형의 정점 데이터를 GPU에 올리고 위치 xyz/색상 rgb 배치를 설정합니다.
             GLuint vao = 0;
             GLuint vbo = 0;
             glGenVertexArrays(1, &vao);
@@ -53,7 +53,7 @@ int main()
             glEnable(GL_DEPTH_TEST);
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            // 4. Input -> assignment update -> matrix uniforms -> draw -> present.
+            // 4. 입력 처리 → 과제 상태 갱신 → 행렬 유니폼 설정 → 그리기 → 화면 출력 순서로 반복합니다.
             while (!glfwWindowShouldClose(window)) {
                 glfwPollEvents();
                 if (glfwWindowShouldClose(window)) break;
@@ -64,7 +64,7 @@ int main()
                 glViewport(0, 0, width, height);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-                // Assignment animation and transformations stay here.
+                // 과제별 애니메이션과 변환은 이곳에서 구현합니다.
                 const float angle = static_cast<float>(glfwGetTime()) * glm::radians(90.0f);
                 shader.setMatrix(modelLocation, MakeModelMatrix(angle));
                 shader.setMatrix(viewLocation, camera.view());
@@ -74,11 +74,11 @@ int main()
                 glfwSwapBuffers(window);
             }
 
-            // 5. Release assignment geometry while the context is still current.
+            // 5. OpenGL 컨텍스트가 활성화된 상태에서 과제 도형의 GPU 자원을 해제합니다.
             glDeleteBuffers(1, &vbo);
             glDeleteVertexArrays(1, &vao);
         }
-    } // Shader destructor releases the program before the context is destroyed.
+    } // 컨텍스트를 종료하기 전에 Shader 소멸자가 셰이더 프로그램을 해제합니다.
     glfwDestroyWindow(window);
     glfwTerminate();
     return result;
@@ -87,7 +87,7 @@ int main()
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (action != GLFW_PRESS) return;
-    // Add assignment-specific key commands here.
+    // 과제별 키보드 명령은 이곳에 추가합니다.
     if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_Q)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
