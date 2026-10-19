@@ -1,4 +1,6 @@
-#include "GLCommon.h"
+#include "Common/Shader.h"
+#include "Common/Camera.h"
+#include "Common/GLUtils.h"
 
 #include <GL/glm/glm.hpp>
 #include <GL/glm/gtc/matrix_transform.hpp>
@@ -286,30 +288,7 @@ int main()
     );
 
     // 위치
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
-    );
-
-    glEnableVertexAttribArray(0);
-
-    // 색상
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)(3 * sizeof(float))
-    );
-
-    // Cube 관련
-
-    glEnableVertexAttribArray(1);
+    common::configurePositionColorAttributes();
 
     glGenVertexArrays(1, &cubeVAO);
     glBindVertexArray(cubeVAO);
@@ -340,28 +319,7 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeEBO);
 
     // 육면체 정점 위치 설정
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
-    );
-
-    glEnableVertexAttribArray(0);
-
-    // 육면체 정점 색상 설정
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)(3 * sizeof(float))
-    );
-
-    glEnableVertexAttribArray(1);
+    common::configurePositionColorAttributes();
 
     // 사각뿔
 
@@ -388,27 +346,7 @@ int main()
         GL_STATIC_DRAW
     );
 
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)0
-    );
-
-    glEnableVertexAttribArray(0);
-
-    glVertexAttribPointer(
-        1,
-        3,
-        GL_FLOAT,
-        GL_FALSE,
-        6 * sizeof(float),
-        (void*)(3 * sizeof(float))
-    );
-
-    glEnableVertexAttribArray(1);
+    common::configurePositionColorAttributes();
 
     //------------------------------------------------------------------------------------------
     // Vertex Shader
@@ -451,13 +389,26 @@ int main()
     //------------------------------------------------------------------------------------------
     // Shader Program 생성 ( 컴파일 + 링크 )
     //------------------------------------------------------------------------------------------
-    GLuint shaderProgram = CreateProgram(
+    auto releaseGeometry = [] {
+        glDeleteBuffers(1, &pyramidEBO);
+        glDeleteBuffers(1, &pyramidVBO);
+        glDeleteVertexArrays(1, &pyramidVAO);
+    glDeleteBuffers(1, &cubeEdgeEBO);
+    glDeleteBuffers(1, &cubeEBO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &VAO);
+    };
+
+    common::Shader shader(
         vertexShaderSource,
         fragmentShaderSource
     );
 
-    if (shaderProgram == 0)
+    if (!shader.valid())
     {
+        releaseGeometry();
         glfwDestroyWindow(window);
         glfwTerminate();
         return -1;
@@ -466,7 +417,7 @@ int main()
     //------------------------------------------------------------------------------------------
     // Program 사용
     //------------------------------------------------------------------------------------------
-    glUseProgram(shaderProgram);
+    shader.use();
     glEnable(GL_DEPTH_TEST);
 
     //------------------------------------------------------------------------------------------
@@ -479,17 +430,17 @@ int main()
         1.0f
     );
 
-    GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
-    GLint viewLocation = glGetUniformLocation(shaderProgram, "view");
-    GLint projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+    GLint modelLocation = shader.uniformLocation("model");
+    GLint viewLocation = shader.uniformLocation("view");
+    GLint projectionLocation = shader.uniformLocation("projection");
 
     // +Z 방향에서 원점을 바라보는 카메라
-    glm::mat4 view = glm::lookAt(
+    common::Camera camera(
         glm::vec3(0.0f, 0.0f, 2.5f),
         glm::vec3(0.0f, 0.0f, 0.0f),
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
-    glUniformMatrix4fv(viewLocation, 1, GL_FALSE, &view[0][0]);
+    shader.setMatrix(viewLocation, camera.view());
 
     double endTime = glfwGetTime();
 
@@ -508,13 +459,7 @@ int main()
         }
         glViewport(0, 0, framebufferWidth, framebufferHeight);
 
-        glm::mat4 projection = glm::perspective(
-            glm::radians(45.0f),
-            static_cast<float>(framebufferWidth) / static_cast<float>(framebufferHeight),
-            0.1f,
-            100.0f
-        );
-        glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
+        shader.setMatrix(projectionLocation, camera.projection(framebufferWidth, framebufferHeight));
 
         // ------------------------------------------------------------
         // 화면 지우기
@@ -724,13 +669,8 @@ int main()
     //------------------------------------------------------------------------------------------
     // 종료
     //------------------------------------------------------------------------------------------
-    glDeleteBuffers(1, &cubeEdgeEBO);
-    glDeleteBuffers(1, &cubeEBO);
-    glDeleteBuffers(1, &cubeVBO);
-    glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteProgram(shaderProgram);
+    releaseGeometry();
+    shader.reset();
 
     glfwDestroyWindow(window);
     glfwTerminate();

@@ -11,8 +11,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-<<<<<<< Updated upstream
-=======
   <ItemGroup>
     <Filter Include="Common"><UniqueIdentifier>{C993E728-9E6B-46D0-87F3-E9BB54373B80}</UniqueIdentifier></Filter>
   </ItemGroup>
@@ -28,5 +26,4 @@
   <ItemGroup>
     <ClInclude Include="$(OpenGLCommonDirectory)ShaderSources.h"><Filter>Common</Filter></ClInclude>
   </ItemGroup>
->>>>>>> Stashed changes
 </Project>
