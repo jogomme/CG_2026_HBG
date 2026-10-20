@@ -26,4 +26,8 @@
   <ItemGroup>
     <ClInclude Include="$(OpenGLCommonDirectory)ShaderSources.h"><Filter>Common</Filter></ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Scene.h" />
+    <ClInclude Include="Geometry.h" />
+  </ItemGroup>
 </Project>
