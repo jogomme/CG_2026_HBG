@@ -40,7 +40,7 @@ float axisVertices[] = {
        0.0f, 0.0f,  0.8f,  0.0f, 0.0f, 1.0f
 };
 
-float h{ 0.3f };
+float h{ 0.1f };
 
 glm::vec3 cubeCorners[8] = {
     {-h, -h,  h},  // 0
@@ -134,6 +134,7 @@ int main()
             glGenBuffers(1, &axisVBO);
             glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(axisVertices), axisVertices, GL_STATIC_DRAW);
+            common::configurePositionColorAttributes();
 
             MakeCubeVertices();
             glGenVertexArrays(1, &objVAO);
@@ -185,6 +186,9 @@ int main()
             // 5. OpenGL 컨텍스트가 활성화된 상태에서 과제 도형의 GPU 자원을 해제합니다.
             glDeleteBuffers(1, &axisVBO);
             glDeleteVertexArrays(1, &axisVAO);
+
+            glDeleteBuffers(1, &objVBO);
+            glDeleteVertexArrays(1, &objVAO);
         }
     } // 컨텍스트를 종료하기 전에 Shader 소멸자가 셰이더 프로그램을 해제합니다.
     glfwDestroyWindow(window);
