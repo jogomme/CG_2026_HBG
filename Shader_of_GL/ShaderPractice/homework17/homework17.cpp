@@ -13,7 +13,7 @@
 //------------------------------------------------------------------------------------------------------
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-glm::mat4 MakeModelMatrix(float angle);
+glm::mat4 MakeModelMatrix();
 glm::mat4 MakeAxisModelMatrix();
 
 void DrawAll(GLint modelLocation);
@@ -83,6 +83,9 @@ bool isC = false;
 
 bool isS = false;
 
+common::Shader shader(common::shader_sources::positionColorVertex,
+    common::shader_sources::positionColorFragment);
+
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
 //------------------------------------------------------------------------------------------------------
@@ -92,7 +95,18 @@ int height = 1200;
 float axisAngle = 30.0f;
 glm::mat4 axisModel = MakeAxisModelMatrix();
 
+GLuint axisVAO;
+GLuint axisVBO;
 
+float positionX[2]{};
+float positionY[2]{};
+
+float angleX[2]{};
+float angleY[2]{};
+float angleZ[2]{};
+
+GLuint objVAO;
+GLuint objVBO;
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -104,17 +118,15 @@ int main()
 
     int result = 0;
     {
-        common::Shader shader(common::shader_sources::positionColorVertex,
-                              common::shader_sources::positionColorFragment);
+
         if (!shader.valid()) {
             result = -1;
         } else {
-            GLuint vao = 0;
-            GLuint vbo = 0;
-            glGenVertexArrays(1, &vao);
-            glBindVertexArray(vao);
-            glGenBuffers(1, &vbo);
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+            glGenVertexArrays(1, &axisVAO);
+            glBindVertexArray(axisVAO);
+            glGenBuffers(1, &axisVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(axisVertices), axisVertices, GL_STATIC_DRAW);
             common::configurePositionColorAttributes();
 
@@ -141,15 +153,15 @@ int main()
                 shader.setMatrix(projectionLocation, camera.projection(width, height));
                 shader.setMatrix(modelLocation, axisModel);
                
-                glBindVertexArray(vao);
+                glBindVertexArray(axisVAO);
                 
                 DrawAll(modelLocation);
                 glfwSwapBuffers(window);
             }
 
             // 5. OpenGL 컨텍스트가 활성화된 상태에서 과제 도형의 GPU 자원을 해제합니다.
-            glDeleteBuffers(1, &vbo);
-            glDeleteVertexArrays(1, &vao);
+            glDeleteBuffers(1, &axisVBO);
+            glDeleteVertexArrays(1, &axisVAO);
         }
     } // 컨텍스트를 종료하기 전에 Shader 소멸자가 셰이더 프로그램을 해제합니다.
     glfwDestroyWindow(window);
@@ -169,13 +181,15 @@ glm::mat4 MakeModelMatrix(float angle)
 {
     glm::mat4 model(1.0f);
 
-    model = glm::rotate(
-        model,
-        glm::radians(30.0f),
-        glm::vec3(1.0f, 0.0f, 0.0f)
-    );
+    glm::vec3 move = glm::vec3(axisModel * glm::vec4(positionX[0], positionY[0], 0.0f, 0.0f));
 
-    model = glm::rotate(model,glm::radians(30.0f),glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::translate(model, move);
+
+    model *= axisModel;
+
+    model = glm::rotate(model, glm::radians(angleX[0]), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(angleY[0]), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(angleZ[0]), glm::vec3(0.0f, 0.0f, 1.0f));
 
     return model;
 }
@@ -198,11 +212,18 @@ void DrawAll(GLint modelLocation)
 
 void DrawAxis(GLint modelLocation)
 {
+    glBindVertexArray(axisVAO);
     glDrawArrays(GL_LINES, 0, 6);
 }
 
 void DrawObj(GLint modelLocation)
 {
-    glDrawArrays(GL_LINES, 0, 6);
+    glm::mat4 model = MakeModelMatrix();
+
+    shader.setMatrix(modelLocation, model);
+
+    glBindVertexArray(objVAO);
+
+    glDrawArrays(GL_LINES, 0, 24);
 }
 
