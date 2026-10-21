@@ -16,9 +16,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 glm::mat4 MakeModelMatrix(float angle);
 glm::mat4 MakeAxisModelMatrix();
 
-void DrawAll();
-void DrawAxis();
-void DrawObj();
+void DrawAll(GLint modelLocation);
+void DrawAxis(GLint modelLocation);
+void DrawObj(GLint modelLocation);
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -36,6 +36,26 @@ float axisVertices[] = {
        0.0f, 0.0f, -0.8f,  0.0f, 0.0f, 1.0f,
        0.0f, 0.0f,  0.8f,  0.0f, 0.0f, 1.0f
 };
+
+float h{ 0.3f };
+
+glm::vec3 cubeCorners[8] = {
+    {-h, -h,  h},  // 0
+    { h, -h,  h},  // 1
+    {-h,  h,  h},  // 2
+    { h,  h,  h},  // 3
+    {-h, -h, -h},  // 4
+    { h, -h, -h},  // 5
+    {-h,  h, -h},  // 6
+    { h,  h, -h}   // 7
+};
+
+int cubeEdges[12][2] = {
+    {0, 1}, {1, 3}, {3, 2}, {2, 0}, // 앞면
+    {4, 5}, {5, 7}, {7, 6}, {6, 4}, // 뒷면
+    {0, 4}, {1, 5}, {2, 6}, {3, 7}  // 앞뒤 연결
+};
+
 
 //------------------------------------------------------------------------------------------------------
 // 플래그들
@@ -69,8 +89,10 @@ bool isS = false;
 int width =  1600;
 int height = 1200;
 
-glm::mat4 axisModel = MakeAxisModelMatrix();
 float axisAngle = 30.0f;
+glm::mat4 axisModel = MakeAxisModelMatrix();
+
+
 
 //------------------------------------------------------------------------------------------------------
 int main()
@@ -115,12 +137,13 @@ int main()
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 // 과제별 애니메이션과 변환은 이곳에서 구현합니다.
-               
+                shader.setMatrix(viewLocation, camera.view());
+                shader.setMatrix(projectionLocation, camera.projection(width, height));
                 shader.setMatrix(modelLocation, axisModel);
                
                 glBindVertexArray(vao);
                 
-                DrawAll();
+                DrawAll(modelLocation);
                 glfwSwapBuffers(window);
             }
 
@@ -168,18 +191,18 @@ glm::mat4 MakeAxisModelMatrix()
     return model;
 }
 
-void DrawAll()
+void DrawAll(GLint modelLocation)
 {
-    DrawAxis();
+    DrawAxis(modelLocation);
 }
 
-void DrawAxis()
+void DrawAxis(GLint modelLocation)
 {
     glDrawArrays(GL_LINES, 0, 6);
 }
 
-void DrawObj()
+void DrawObj(GLint modelLocation)
 {
-
+    glDrawArrays(GL_LINES, 0, 6);
 }
 
