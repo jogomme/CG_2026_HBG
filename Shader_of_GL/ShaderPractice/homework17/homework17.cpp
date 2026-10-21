@@ -16,6 +16,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 glm::mat4 MakeModelMatrix();
 glm::mat4 MakeAxisModelMatrix();
 
+void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color);
+void MakeCubeVertices();
+
 void DrawAll(GLint modelLocation, common::Shader& shader);
 void DrawAxis(GLint modelLocation, common::Shader& shader);
 void DrawObj(GLint modelLocation, common::Shader& shader);
@@ -55,6 +58,8 @@ int cubeEdges[12][2] = {
     {4, 5}, {5, 7}, {7, 6}, {6, 4}, // 뒷면
     {0, 4}, {1, 5}, {2, 6}, {3, 7}  // 앞뒤 연결
 };
+
+float cubeVertices[24 * 6]{};
 
 
 //------------------------------------------------------------------------------------------------------
@@ -129,7 +134,24 @@ int main()
             glGenBuffers(1, &axisVBO);
             glBindBuffer(GL_ARRAY_BUFFER, axisVBO);
             glBufferData(GL_ARRAY_BUFFER, sizeof(axisVertices), axisVertices, GL_STATIC_DRAW);
+
+            MakeCubeVertices();
+            glGenVertexArrays(1, &objVAO);
+            glBindVertexArray(objVAO);
+
+            glGenBuffers(1, &objVBO);
+            glBindBuffer(GL_ARRAY_BUFFER, objVBO);
+
+            glBufferData(
+                GL_ARRAY_BUFFER,
+                sizeof(cubeVertices),
+                cubeVertices,
+                GL_STATIC_DRAW
+            );
+
+
             common::configurePositionColorAttributes();
+
 
             shader.use();
             const GLint modelLocation = shader.uniformLocation("model");
@@ -214,6 +236,8 @@ void DrawAll(GLint modelLocation, common::Shader& shader)
 
 void DrawAxis(GLint modelLocation, common::Shader& shader)
 {
+    shader.setMatrix(modelLocation, axisModel);
+
     glBindVertexArray(axisVAO);
     glDrawArrays(GL_LINES, 0, 6);
 }
@@ -229,3 +253,31 @@ void DrawObj(GLint modelLocation, common::Shader& shader)
     glDrawArrays(GL_LINES, 0, 24);
 }
 
+void MakeCubeVertices()
+{
+    int index = 0;
+
+    for (int i = 0; i < 12; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            const glm::vec3 color(0, 0, 0);
+
+            int corner = cubeEdges[i][j];
+
+            MakeVertices(cubeVertices, index, cubeCorners[corner], color);
+
+        }
+    }
+}
+
+void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color)
+{
+    vertices[index++] = position.x;
+    vertices[index++] = position.y;
+    vertices[index++] = position.z;
+
+    vertices[index++] = color.r;
+    vertices[index++] = color.g;
+    vertices[index++] = color.b;
+}
