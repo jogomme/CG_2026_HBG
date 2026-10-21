@@ -110,7 +110,7 @@ int main()
                 shader.setMatrix(viewLocation, camera.view());
                 shader.setMatrix(projectionLocation, camera.projection(width, height));
                 glBindVertexArray(vao);
-                glDrawArrays(GL_TRIANGLES, 0, 3);
+                glDrawArrays(GL_LINES, 0, 6);
                 glfwSwapBuffers(window);
             }
 
