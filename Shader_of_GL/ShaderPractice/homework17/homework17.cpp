@@ -13,11 +13,18 @@
 //------------------------------------------------------------------------------------------------------
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+
 glm::mat4 MakeModelMatrix();
 glm::mat4 MakeAxisModelMatrix();
 
+
 void MakeVertices(float* vertices, int& index, const glm::vec3& position, const glm::vec3& color);
+
 void MakeCubeVertices();
+
+void MakeConeVertices();
+void MakeConeCorners();
+void MakeConeEdges();
 
 void DrawAll(GLint modelLocation, common::Shader& shader);
 void DrawAxis(GLint modelLocation, common::Shader& shader);
@@ -42,6 +49,7 @@ float axisVertices[] = {
 
 float h{ 0.1f };
 
+
 glm::vec3 cubeCorners[8] = {
     {-h, -h,  h},  // 0
     { h, -h,  h},  // 1
@@ -61,6 +69,27 @@ int cubeEdges[12][2] = {
 
 float cubeVertices[24 * 6]{};
 
+glm::vec3 pyramidCorners[5] = {
+    {-h, -h,  h},  // 0: 바닥 앞쪽 왼쪽
+    { h, -h,  h},  // 1: 바닥 앞쪽 오른쪽
+    {-h, -h, -h},  // 2: 바닥 뒤쪽 왼쪽
+    { h, -h, -h},  // 3: 바닥 뒤쪽 오른쪽
+    {0.0f, h, 0.0f} // 4: 꼭대기
+};
+
+int pyramidEdges[8][2] = {
+    // 밑면 모서리 4개
+    {0, 1}, {1, 3}, {3, 2}, {2, 0},
+
+    // 꼭대기로 연결되는 모서리 4개
+    {0, 4}, {1, 4}, {2, 4}, {3, 4}
+};
+
+float pyramidVertices[16 * 6]{};
+
+const int coneSegments = 12;
+
+glm::vec3 coneCorners[coneSegments + 1];
 
 //------------------------------------------------------------------------------------------------------
 // 플래그들
@@ -102,8 +131,10 @@ glm::mat4 axisModel = MakeAxisModelMatrix();
 GLuint axisVAO;
 GLuint axisVBO;
 
-float positionX[2]{};
-float positionY[2]{};
+float positionX[2]{ 0.3f, 0.0f };
+float positionY[2]{ };
+float positionZ[2]{ };
+
 
 float angleX[2]{};
 float angleY[2]{};
@@ -208,7 +239,7 @@ glm::mat4 MakeModelMatrix()
 {
     glm::mat4 model(1.0f);
 
-    glm::vec3 move = glm::vec3(axisModel * glm::vec4(positionX[0], positionY[0], 0.0f, 0.0f));
+    glm::vec3 move = glm::vec3(axisModel * glm::vec4(positionX[0], positionY[0], positionZ[0], 0.0f));
 
     model = glm::translate(model, move);
 
@@ -272,6 +303,56 @@ void MakeCubeVertices()
             MakeVertices(cubeVertices, index, cubeCorners[corner], color);
 
         }
+    }
+}
+
+void MakeConeVertices()
+{
+    int index = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            const glm::vec3 color(0, 0, 0);
+
+            int corner = pyramidEdges[i][j];
+
+            MakeVertices(pyramidVertices, index, pyramidCorners[corner], color);
+
+        }
+    }
+}
+
+void MakeConeCorners()
+{
+    for (int i = 0; i < coneSegments; i++)
+    {
+        float angle = glm::radians(360.0f * i / coneSegments);
+
+        coneCorners[i] = glm::vec3(
+            h * cos(angle),
+            -h,
+            h * sin(angle)
+        );
+    }
+
+    coneCorners[coneSegments] = glm::vec3(0.0f, h, 0.0f);
+}
+
+int coneEdges[coneSegments * 2][2];
+
+void MakeConeEdges()
+{
+    for (int i = 0; i < coneSegments; i++)
+    {
+        // 밑면의 이웃한 점 연결
+        coneEdges[i][0] = i;
+        coneEdges[i][1] = (i + 1) % coneSegments;
+
+        // 밑면에서 꼭대기까지 연결
+        coneEdges[coneSegments + i][0] = i;
+        coneEdges[coneSegments + i][1] = coneSegments;
     }
 }
 
