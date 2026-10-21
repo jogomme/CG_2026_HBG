@@ -1,5 +1,3 @@
-// 재사용하는 공통 기능은 Common에 두고, 과제별 장면과 입력은 이 파일에서 구현합니다.
-// ../Common/Common.props를 참조하도록 프로젝트를 ShaderPractice 바로 아래에 생성합니다.
 #include "GLCommon.h"
 #include "Shader.h"
 #include "ShaderSources.h"
@@ -8,25 +6,70 @@
 
 #include <GL/glm/gtc/matrix_transform.hpp>
 
+
+
+//------------------------------------------------------------------------------------------------------
+// 함수 선언
+//------------------------------------------------------------------------------------------------------
+
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 glm::mat4 MakeModelMatrix(float angle);
 
-// 과제별 정점 데이터: 각 정점은 위치 xyz와 색상 rgb 순서로 구성합니다.
-const float vertices[] = {
-    -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
-     0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f
+//------------------------------------------------------------------------------------------------------
+// 정점의 위치 데이터
+//------------------------------------------------------------------------------------------------------
+float axisVertices[] = {
+    // X축 - 빨간색
+    -0.8f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
+     0.8f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f,
+
+     // Y축 - 초록색
+      0.0f, -0.8f, 0.0f,  0.0f, 1.0f, 0.0f,
+      0.0f,  0.8f, 0.0f,  0.0f, 1.0f, 0.0f,
+
+      // Z축 - 파란색
+       0.0f, 0.0f, -0.8f,  0.0f, 0.0f, 1.0f,
+       0.0f, 0.0f,  0.8f,  0.0f, 0.0f, 1.0f
 };
+
+//------------------------------------------------------------------------------------------------------
+// 플래그들
+//------------------------------------------------------------------------------------------------------
+
+bool is1 = false;
+bool is2 = false;
+bool is3 = false;
+
+bool isX = false;
+bool isY = false;
+
+bool isR = false;
+bool isA = false;
+bool isB = false;
+
+bool isD = false;
+bool isE = false;
+
+bool isT = false;
+bool isU = false;
+bool isV = false;
+
+bool isC = false;
+
+bool isS = false;
+
+//------------------------------------------------------------------------------------------------------
+// 전역 변수
+//------------------------------------------------------------------------------------------------------
+int width =  1600;
+int height = 1200;
 
 int main()
 {
-    // 1. 창을 만들고 OpenGL 컨텍스트를 활성화한 뒤 GLEW를 초기화합니다.
     GLFWwindow* window = CreateGLWindow(1600, 1200, "__WINDOWTITLE__");
     if (!window) return -1;
     glfwSetKeyCallback(window, KeyCallback);
 
-    // 2. 공통 기본 셰이더를 컴파일하고 링크합니다. 직접 작성한 셰이더를 사용하려면
-    // 같은 Shader 생성자에 정점/프래그먼트 GLSL 소스 문자열을 전달합니다.
     int result = 0;
     {
         common::Shader shader(common::shader_sources::positionColorVertex,
@@ -34,14 +77,13 @@ int main()
         if (!shader.valid()) {
             result = -1;
         } else {
-            // 3. 과제 도형의 정점 데이터를 GPU에 올리고 위치 xyz/색상 rgb 배치를 설정합니다.
             GLuint vao = 0;
             GLuint vbo = 0;
             glGenVertexArrays(1, &vao);
             glBindVertexArray(vao);
             glGenBuffers(1, &vbo);
             glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(axisVertices), axisVertices, GL_STATIC_DRAW);
             common::configurePositionColorAttributes();
 
             shader.use();
@@ -53,12 +95,10 @@ int main()
             glEnable(GL_DEPTH_TEST);
             glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-            // 4. 입력 처리 → 과제 상태 갱신 → 행렬 유니폼 설정 → 그리기 → 화면 출력 순서로 반복합니다.
             while (!glfwWindowShouldClose(window)) {
                 glfwPollEvents();
                 if (glfwWindowShouldClose(window)) break;
-                int width = 0;
-                int height = 0;
+
                 glfwGetFramebufferSize(window, &width, &height);
                 if (width <= 0 || height <= 0) continue;
                 glViewport(0, 0, width, height);
