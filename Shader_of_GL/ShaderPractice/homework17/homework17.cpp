@@ -14,6 +14,11 @@
 
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 glm::mat4 MakeModelMatrix(float angle);
+glm::mat4 MakeAxisModelMatrix();
+
+void DrawAll();
+void DrawAxis();
+void DrawObj();
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -64,7 +69,12 @@ bool isS = false;
 int width =  1600;
 int height = 1200;
 
+glm::mat4 axisModel = MakeAxisModelMatrix();
+float axisAngle = 30.0f;
+
+//------------------------------------------------------------------------------------------------------
 int main()
+//------------------------------------------------------------------------------------------------------
 {
     GLFWwindow* window = CreateGLWindow(1600, 1200, "__WINDOWTITLE__");
     if (!window) return -1;
@@ -105,12 +115,12 @@ int main()
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
                 // 과제별 애니메이션과 변환은 이곳에서 구현합니다.
-                const float angle = static_cast<float>(glfwGetTime()) * glm::radians(90.0f);
-                shader.setMatrix(modelLocation, MakeModelMatrix(angle));
-                shader.setMatrix(viewLocation, camera.view());
-                shader.setMatrix(projectionLocation, camera.projection(width, height));
+               
+                shader.setMatrix(modelLocation, axisModel);
+               
                 glBindVertexArray(vao);
-                glDrawArrays(GL_LINES, 0, 6);
+                
+                DrawAll();
                 glfwSwapBuffers(window);
             }
 
@@ -134,5 +144,42 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 glm::mat4 MakeModelMatrix(float angle)
 {
-    return glm::rotate(glm::mat4(1.0f), angle, glm::vec3(0.0f, 0.0f, 1.0f));
+    glm::mat4 model(1.0f);
+
+    model = glm::rotate(
+        model,
+        glm::radians(30.0f),
+        glm::vec3(1.0f, 0.0f, 0.0f)
+    );
+
+    model = glm::rotate(model,glm::radians(30.0f),glm::vec3(0.0f, 1.0f, 0.0f));
+
+    return model;
 }
+
+glm::mat4 MakeAxisModelMatrix()
+{
+    glm::mat4 model(1.0f);
+
+    model = glm::rotate(model, glm::radians(axisAngle), glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(axisAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+    return model;
+}
+
+void DrawAll()
+{
+    DrawAxis();
+}
+
+void DrawAxis()
+{
+    glDrawArrays(GL_LINES, 0, 6);
+}
+
+void DrawObj()
+{
+
+}
+
