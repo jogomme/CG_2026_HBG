@@ -16,9 +16,9 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 glm::mat4 MakeModelMatrix();
 glm::mat4 MakeAxisModelMatrix();
 
-void DrawAll(GLint modelLocation);
-void DrawAxis(GLint modelLocation);
-void DrawObj(GLint modelLocation);
+void DrawAll(GLint modelLocation, common::Shader& shader);
+void DrawAxis(GLint modelLocation, common::Shader& shader);
+void DrawObj(GLint modelLocation, common::Shader& shader);
 
 //------------------------------------------------------------------------------------------------------
 // 정점의 위치 데이터
@@ -83,8 +83,7 @@ bool isC = false;
 
 bool isS = false;
 
-common::Shader shader(common::shader_sources::positionColorVertex,
-    common::shader_sources::positionColorFragment);
+
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수
@@ -118,6 +117,8 @@ int main()
 
     int result = 0;
     {
+        common::Shader shader(common::shader_sources::positionColorVertex,
+            common::shader_sources::positionColorFragment);
 
         if (!shader.valid()) {
             result = -1;
@@ -155,7 +156,7 @@ int main()
                
                 glBindVertexArray(axisVAO);
                 
-                DrawAll(modelLocation);
+                DrawAll(modelLocation, shader);
                 glfwSwapBuffers(window);
             }
 
@@ -177,7 +178,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-glm::mat4 MakeModelMatrix(float angle)
+glm::mat4 MakeModelMatrix()
 {
     glm::mat4 model(1.0f);
 
@@ -205,18 +206,19 @@ glm::mat4 MakeAxisModelMatrix()
     return model;
 }
 
-void DrawAll(GLint modelLocation)
+void DrawAll(GLint modelLocation, common::Shader& shader)
 {
-    DrawAxis(modelLocation);
+    DrawAxis(modelLocation, shader);
+    DrawObj(modelLocation, shader);
 }
 
-void DrawAxis(GLint modelLocation)
+void DrawAxis(GLint modelLocation, common::Shader& shader)
 {
     glBindVertexArray(axisVAO);
     glDrawArrays(GL_LINES, 0, 6);
 }
 
-void DrawObj(GLint modelLocation)
+void DrawObj(GLint modelLocation, common::Shader& shader)
 {
     glm::mat4 model = MakeModelMatrix();
 
