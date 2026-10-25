@@ -85,6 +85,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="homework17.cpp" />
+    <ClInclude Include="..\Common\PracticeScene.h" />
   </ItemGroup>
   <PropertyGroup>
     <OpenGLCommonProps Condition="'$(OpenGLCommonProps)'==''">$(ProjectDir)..\Common\Common.props</OpenGLCommonProps>
