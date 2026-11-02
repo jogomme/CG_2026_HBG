@@ -5,6 +5,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 void UpdateScene(float dt);
 void DrawAll(common::Shader& shader, int width, int height);
 glm::mat4 rotationModel(glm::mat4 model);
+glm::mat4 Revolution(glm::mat4 model);
 
 glm::vec3 ballpos{};
 
@@ -57,6 +58,7 @@ void DrawAll(common::Shader& shader, int width, int height)
     );
     
     model = rotationModel(model);
+    model = Revolution(model);
 
     practice::DrawObj(
         practice::cube,
@@ -65,6 +67,22 @@ void DrawAll(common::Shader& shader, int width, int height)
         modelLocation,
         shader
     );
+}
+
+glm::mat4 Revolution(glm::mat4 model)
+{
+    static float angleY = 0;
+    // 1. 위치 이동
+
+    // 2. 자신의 Y축을 중심으로 회전
+    model = glm::rotate(
+        model,
+        glm::radians(angleY),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    model = glm::translate(model, glm::vec3(3,0,0));
+
+    return model;
 }
 
 glm::mat4 rotationModel(glm::mat4 model)
@@ -80,10 +98,7 @@ glm::mat4 rotationModel(glm::mat4 model)
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
-    // 3. 크기 변경
-    model = glm::scale(model, glm::vec3(0.3f));
-
-    angleY += 1;
+    angleY -= 1;
 
     return model;
 }
