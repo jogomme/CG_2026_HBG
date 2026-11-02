@@ -4,6 +4,9 @@
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void UpdateScene(float dt);
 void DrawAll(common::Shader& shader, int width, int height);
+glm::mat4 rotationModel(glm::mat4 model);
+
+glm::vec3 ballpos{};
 
 // 프로그램 시작
 int main()
@@ -41,8 +44,7 @@ void DrawAll(common::Shader& shader, int width, int height)
         glm::vec3(0.0f, 1.0f, 0.0f)
     );
 
-    glm::mat4 projection =
-        practice::MakeProjection(width, height, true, 4.0f);
+    glm::mat4 projection = practice::MakeProjection(width, height, true, 4.0f);
 
     shader.setMatrix(shader.uniformLocation("view"), view);
     shader.setMatrix(shader.uniformLocation("projection"), projection);
@@ -50,9 +52,11 @@ void DrawAll(common::Shader& shader, int width, int height)
     GLint modelLocation = shader.uniformLocation("model");
 
     glm::mat4 model = practice::MakeModelMatrix(
-        glm::vec3(0.0f),  // 위치
+        ballpos,
         glm::vec3(1.0f)   // 크기
     );
+    
+    model = rotationModel(model);
 
     practice::DrawObj(
         practice::cube,
@@ -61,4 +65,25 @@ void DrawAll(common::Shader& shader, int width, int height)
         modelLocation,
         shader
     );
+}
+
+glm::mat4 rotationModel(glm::mat4 model)
+{
+    static float angleY = 0;
+    // 1. 위치 이동
+    model = glm::translate(model, ballpos);
+
+    // 2. 자신의 Y축을 중심으로 회전
+    model = glm::rotate(
+        model,
+        glm::radians(angleY),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+
+    // 3. 크기 변경
+    model = glm::scale(model, glm::vec3(0.3f));
+
+    angleY += 1;
+
+    return model;
 }
