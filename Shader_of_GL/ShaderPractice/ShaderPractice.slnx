@@ -25,13 +25,13 @@
   <Project Path="homework7/homework7.vcxproj" Id="e1ae6061-e7d2-4704-a765-50c8027efa5a" />
   <Project Path="homework8/homework8.vcxproj" Id="23ca1959-27c1-40c4-adb4-fa487414a31d" />
   <Project Path="homework9/homework9.vcxproj" Id="de85f154-7ad4-4def-b0f2-e03867243d73" />
-  <Project Path="homework18/homework18.vcxproj">
+  <Project Path="homework18/homework18.vcxproj" Id="016d433a-9ed4-480f-9643-b4312455fd41">
     <Platform Project="x64" />
   </Project>
-  <Project Path="homework19/homework19.vcxproj">
+  <Project Path="homework19/homework19.vcxproj" Id="ff36df0b-f1d0-4771-aee6-9441e9b8adce">
     <Platform Project="x64" />
   </Project>
-  <Project Path="homework20/homework20.vcxproj">
+  <Project Path="homework20/homework20.vcxproj" Id="73cccc8e-7e35-40cc-8d10-b4752a323b4d">
     <Platform Project="x64" />
   </Project>
 </Solution>
