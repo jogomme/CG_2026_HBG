@@ -1,30 +1,4 @@
-﻿// 읽는 순서: 아래의 main에서 시작 → 창을 준비 → UpdateScene과 DrawAll을 반복합니다.
-// UpdateScene은 물체를 조금 움직이고, DrawAll은 움직인 모습을 화면에 그립니다.
-// KeyCallback은 키보드의 버튼을 눌렀을 때 실행되는 함수입니다.
-//
-// 좌표는 물체의 주소입니다. x는 좌우, y는 위아래, z는 앞뒤 방향입니다.
-// glm::vec3는 숫자 3개를 묶은 상자입니다. 위치(x, y, z)나 색(빨강, 초록, 파랑)을 담습니다.
-// glm::mat4는 이동·회전·크기 변경을 모아 둔 '변신 설명서'인 행렬입니다.
-// glm::mat4(1)은 아직 아무것도 바꾸지 않는 설명서입니다.
-// translate는 옮기기, rotate는 돌리기, scale은 크기 바꾸기입니다.
-// GLM의 이 함수들은 기존 행렬 오른쪽에 새 변환을 곱합니다.
-// 그래서 점에 적용할 때는 나중에 붙인 변환부터 먼저 작용합니다. 코드 순서를 바꾸면 모습도 달라집니다.
-// radians는 우리가 쓰는 도(degree)를 회전 함수가 받는 각도 단위인 라디안으로 바꿉니다.
-// sin과 cos는 원 위의 위치나 부드러운 왕복 움직임을 계산할 때 쓰는 함수입니다.
-//
-// deltaTime은 이번 화면과 지난 화면 사이의 시간(초)입니다.
-// '초당 속도 × deltaTime'만큼 움직이면 화면을 그리는 횟수가 달라도 속도를 맞출 수 있습니다.
-// fmod는 나머지를 구합니다. 각도를 360으로 나누면 한 바퀴를 넘은 부분부터 다시 셉니다.
-// clamp는 숫자가 정해진 최솟값과 최댓값 밖으로 나가지 못하게 하는 울타리입니다.
-// bool은 켜짐(true)/꺼짐(false)을 담습니다. !는 그 상태를 반대로 뒤집습니다.
-// 배열의 번호는 0부터 시작합니다. 예를 들어 물체 2개는 [0], [1]에 들어 있습니다.
-//
-// Common/PracticeScene.h는 여러 과제가 함께 쓰는 준비 도구입니다.
-// DrawObj는 '도형, 변신 설명서, 색, 셰이더의 행렬 칸, 셰이더'를 받아 그립니다.
-// 셰이더는 그래픽 카드에서 점의 위치와 화면의 색을 계산하는 작은 프로그램입니다.
-// common::과 practice::는 어떤 도구 묶음에 속한 이름인지 알려주는 표시입니다.
-
-#include "Common/PracticeScene.h"
+﻿#include "Common/PracticeScene.h"
 
 //------------------------------------------------------------------------------------------------------
 // 함수 선언
@@ -190,6 +164,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     else if (key == GLFW_KEY_3)
     {
         is3 = !is3;
+        // 카메라 각도
     }
 }
 
@@ -202,7 +177,7 @@ void DrawAll(common::Shader& shader, int width, int height)
 {
     // 셰이더 안에서 model 행렬을 넣을 칸의 번호를 알아냅니다.
     GLint modelLocation = shader.uniformLocation("model");
-    glm::mat4 view = glm::lookAt(glm::vec3(0, 4.5f, 11), glm::vec3(0), glm::vec3(0, 1, 0));
+    glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 5), glm::vec3(0), glm::vec3(0, 1, 0));
     shader.setMatrix(shader.uniformLocation("view"), view);
     shader.setMatrix(
         shader.uniformLocation("projection"),
