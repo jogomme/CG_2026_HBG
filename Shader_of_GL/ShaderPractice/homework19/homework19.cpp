@@ -32,6 +32,7 @@
 //------------------------------------------------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void UpdateScene(float deltaTime);
+void UpdateKeyboard(float deltaTime);
 void DrawAll(common::Shader& shader, int width, int height);
 void ResetScene();
 void ChangeColors();
@@ -53,6 +54,9 @@ glm::mat4 MakeViewMatrix();
 //------------------------------------------------------------------------------------------------------
 // 전역 변수와 플래그
 //------------------------------------------------------------------------------------------------------
+// 키를 누르면 true, 떼면 false가 됩니다. 키보드의 반복 입력 속도에 기대지 않습니다.
+// 이전 과제의 isR/isL처럼 '누르고 있는 상태'를 기억하는 배열입니다.
+bool keyDown[GLFW_KEY_LAST + 1]{};
 float positionX = 0;
 float positionZ = 0;
 // 탱크 아래 몸체의 높이입니다.
@@ -87,8 +91,8 @@ bool isG = false;
 // P 키: 깃대 회전을 켤지 기억합니다.
 bool isP = false;
 glm::vec3 objColor[10] = {
-    {0.25f, 0.32f, 0.38f}, {0.32f, 0.38f, 0.43f}, {0.35f, 0.55f, 0.32f}, 
-    {0.55f, 0.8f, 0.25f}, {0.25f, 0.65f, 0.65f}, {0.55f, 0.6f, 0.2f}, 
+    {0.25f, 0.32f, 0.38f}, {0.32f, 0.38f, 0.43f}, {0.35f, 0.55f, 0.32f},
+    {0.55f, 0.8f, 0.25f}, {0.25f, 0.65f, 0.65f}, {0.55f, 0.6f, 0.2f},
     {0.2f, 0.45f, 0.35f}, {1, 0.65f, 0.15f}, {0.9f, 0.3f, 0.2f}, {0.35f, 0.75f, 0.9f}
 };
 std::mt19937 gen(std::random_device{}());
@@ -111,6 +115,8 @@ void ChangeColors()
 //------------------------------------------------------------------------------------------------------
 void ResetScene()
 {
+    // 초기화할 때 기억한 키도 놓아 줍니다. 다음에 다시 누르기 전까지는 멈춥니다.
+    std::fill(std::begin(keyDown), std::end(keyDown), false);
     positionZ = 0;
     positionX = 0;
     lowerHeight = 0.4f;
@@ -130,8 +136,8 @@ void ResetScene()
     isT = false;
     isD = false;
     const glm::vec3 initial[10] = {
-        {0.25f, 0.32f, 0.38f}, {0.32f, 0.38f, 0.43f}, {0.35f, 0.55f, 0.32f}, 
-        {0.55f, 0.8f, 0.25f}, {0.25f, 0.65f, 0.65f}, {0.55f, 0.6f, 0.2f}, 
+        {0.25f, 0.32f, 0.38f}, {0.32f, 0.38f, 0.43f}, {0.35f, 0.55f, 0.32f},
+        {0.55f, 0.8f, 0.25f}, {0.25f, 0.65f, 0.65f}, {0.55f, 0.6f, 0.2f},
         {0.2f, 0.45f, 0.35f}, {1, 0.65f, 0.15f}, {0.9f, 0.3f, 0.2f}, {0.35f, 0.75f, 0.9f}
     };
     for (int i = 0; i < 10; ++i)
@@ -143,8 +149,46 @@ void ResetScene()
 //------------------------------------------------------------------------------------------------------
 // 시간이 흐른 만큼 저장된 위치와 각도를 고칩니다. 여기서는 화면을 그리지 않습니다.
 //------------------------------------------------------------------------------------------------------
+// 누르고 있는 동안 '초당 속도 × 지난 시간'만큼 움직입니다.
+// 예: 1초에 0.6만큼 가면 0.5초 동안에는 0.3만큼 갑니다.
+void UpdateKeyboard(float deltaTime)
+{
+    float movement = 1.2f * deltaTime;
+    bool shift = keyDown[GLFW_KEY_LEFT_SHIFT] || keyDown[GLFW_KEY_RIGHT_SHIFT];
+    float cameraMovement = (shift ? -1.0f : 1.0f) * 1.6f * deltaTime;
+    if (keyDown[GLFW_KEY_LEFT])
+    {
+        positionX -= movement;
+    }
+    if (keyDown[GLFW_KEY_RIGHT])
+    {
+        positionX += movement;
+    }
+    if (keyDown[GLFW_KEY_UP])
+    {
+        positionZ -= movement;
+    }
+    if (keyDown[GLFW_KEY_DOWN])
+    {
+        positionZ += movement;
+    }
+    if (keyDown[GLFW_KEY_Z])
+    {
+        cameraPosition.z += cameraMovement;
+    }
+    if (keyDown[GLFW_KEY_X])
+    {
+        cameraPosition.x += cameraMovement;
+    }
+    // 회전 중인 부품도 바닥 안에 남을 수 있도록 중심 위치에 여유를 둡니다.
+    positionX = std::clamp(positionX, -2.5f, 2.5f);
+    positionZ = std::clamp(positionZ, -2.5f, 2.5f);
+}
+
 void UpdateScene(float deltaTime)
 {
+    UpdateKeyboard(deltaTime);
+
     if (isD)
     {
         heightAngle = std::fmod(heightAngle + 90 * deltaTime, 360.0f);
@@ -188,40 +232,24 @@ void UpdateScene(float deltaTime)
 //------------------------------------------------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    // 키를 뗀 소식은 건너뜁니다. 처음 누름과 길게 누름만 아래에서 처리합니다.
-    if (action != GLFW_PRESS && action != GLFW_REPEAT)
+    // 키를 뗐다는 소식도 먼저 기억해야 계속 움직이는 일이 생기지 않습니다.
+    if (key >= 0 && key <= GLFW_KEY_LAST)
+    {
+        keyDown[key] = (action != GLFW_RELEASE);
+    }
+
+    // 종류 바꾸기나 시작/정지 버튼은 처음 누른 순간에만 한 번 실행합니다.
+    // 길게 눌러 생기는 GLFW_REPEAT는 이동 계산에 쓰지 않습니다.
+    if (action != GLFW_PRESS)
     {
         return;
     }
+
     // Shift를 누르면 -1, 아니면 +1입니다. 같은 계산의 방향만 뒤집습니다.
     float direction = (mods & GLFW_MOD_SHIFT) ? -1.0f : 1.0f;
     if (key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE)
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-    else if (key == GLFW_KEY_LEFT)
-    {
-        positionX -= 0.15f;
-    }
-    else if (key == GLFW_KEY_RIGHT)
-    {
-        positionX += 0.15f;
-    }
-    else if (key == GLFW_KEY_UP)
-    {
-        positionZ -= 0.15f;
-    }
-    else if (key == GLFW_KEY_DOWN)
-    {
-        positionZ += 0.15f;
-    }
-    else if (key == GLFW_KEY_Z)
-    {
-        cameraPosition.z += direction * 0.2f;
-    }
-    else if (key == GLFW_KEY_X)
-    {
-        cameraPosition.x += direction * 0.2f;
     }
     else if (action == GLFW_PRESS)
     {
@@ -249,16 +277,28 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         else if (key == GLFW_KEY_Y)
         {
             float speed = -direction * 35.0f;
-             = speed ? 0.0f : speed;
-            cameraSpinSpeed = speed ? 0.0f : speed;
-            cameraSpinSpeed = speed ? 0.0f : speed;
+             // 같은 방향으로 이미 돌고 있으면 멈추고, 아니면 요청한 방향으로 돌립니다.
+            if (cameraSpinSpeed == speed)
+            {
+                cameraSpinSpeed = 0.0f;
+            }
+            else
+            {
+                cameraSpinSpeed = speed;
+            }
         }
         else if (key == GLFW_KEY_R)
         {
             float speed = -direction * 25.0f;
-             = speed ? 0.0f : speed;
-            cameraOrbitSpeed = speed ? 0.0f : speed;
-            cameraOrbitSpeed = speed ? 0.0f : speed;
+             // 같은 방향으로 이미 돌고 있으면 멈추고, 아니면 요청한 방향으로 돌립니다.
+            if (cameraOrbitSpeed == speed)
+            {
+                cameraOrbitSpeed = 0.0f;
+            }
+            else
+            {
+                cameraOrbitSpeed = speed;
+            }
         }
         else if (key == GLFW_KEY_O)
         {
@@ -270,8 +310,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         }
     }
     // 중앙 몸체가 회전해도 탱크 전체가 바닥 안에 머물도록 여유를 둔다.
-    positionX = std::clamp(positionX, -2.5f, 2.5f);
-    positionZ = std::clamp(positionZ, -2.5f, 2.5f);
+
 }
 
 //------------------------------------------------------------------------------------------------------
@@ -384,3 +423,4 @@ int main()
 {
     return practice::RunScene("homework19 - Tank and camera", KeyCallback, UpdateScene, DrawAll);
 }
+

@@ -31,12 +31,16 @@
 //------------------------------------------------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void UpdateScene(float deltaTime);
+void UpdateKeyboard(float deltaTime);
 void DrawAll(common::Shader& shader, int width, int height);
 glm::mat4 MakeOrbitMatrix(int planet);
 
 //------------------------------------------------------------------------------------------------------
 // 전역 변수와 플래그
 //------------------------------------------------------------------------------------------------------
+// 키를 누르면 true, 떼면 false가 됩니다. 키보드의 반복 입력 속도에 기대지 않습니다.
+// 이전 과제의 isR/isL처럼 '누르고 있는 상태'를 기억하는 배열입니다.
+bool keyDown[GLFW_KEY_LAST + 1]{};
 // 물체가 원점 둘레를 얼마나 돌았는지 나타내는 각도입니다.
 float orbitAngle[3] = {0, 120, 240};
 // 행성마다 다른 초당 공전 각도입니다. 숫자가 크면 더 빨리 돕니다.
@@ -53,7 +57,9 @@ float animationAngle = 0;
 float radiusScale = 1;
 glm::vec3 position(0);
 // true면 원근 투영, false면 직각 투영을 사용합니다.
-bool isPerspective = false;
+// 처음에는 원근 투영입니다. +로 다가오면 화면에서 커지는 모습을 바로 볼 수 있습니다.
+// p는 직각 투영, Shift+p는 원근 투영으로 과제의 키 설정을 그대로 유지합니다.
+bool isPerspective = true;
 // true면 면을 채우지 않고 삼각형 테두리로 그립니다.
 bool isW = false;
 // 1 키: 궤도 반지름을 늘릴지 기억합니다. 꺼지면 줄어들어 기본 크기로 돌아갑니다.
@@ -68,8 +74,44 @@ const glm::vec3 moonColor[3] = { {0.65f, 0.35f, 0.9f}, {0.15f, 0.75f, 0.7f}, {0.
 //------------------------------------------------------------------------------------------------------
 // 시간이 흐른 만큼 저장된 위치와 각도를 고칩니다. 여기서는 화면을 그리지 않습니다.
 //------------------------------------------------------------------------------------------------------
+// 누르고 있는 동안 '초당 속도 × 지난 시간'만큼 움직입니다.
+// 예: 1초에 0.6만큼 가면 0.5초 동안에는 0.3만큼 갑니다.
+void UpdateKeyboard(float deltaTime)
+{
+    float movement = 1.2f * deltaTime;
+    if (keyDown[GLFW_KEY_A])
+    {
+        position.x -= movement;
+    }
+    if (keyDown[GLFW_KEY_D])
+    {
+        position.x += movement;
+    }
+    if (keyDown[GLFW_KEY_W])
+    {
+        position.y += movement;
+    }
+    if (keyDown[GLFW_KEY_S])
+    {
+        position.y -= movement;
+    }
+    // 물체 크기(scale)는 바꾸지 않습니다. z 위치만 바꾸어 카메라와의 거리를 바꿉니다.
+    // 원근 투영에서는 가까워지면 크게, 멀어지면 작게 보입니다.
+    // 직각 투영에서는 거리가 바뀌어도 화면의 크기가 그대로인 것이 정상입니다.
+    if (keyDown[GLFW_KEY_EQUAL] || keyDown[GLFW_KEY_KP_ADD])
+    {
+        position.z += movement;
+    }
+    if (keyDown[GLFW_KEY_MINUS] || keyDown[GLFW_KEY_KP_SUBTRACT])
+    {
+        position.z -= movement;
+    }
+}
+
 void UpdateScene(float deltaTime)
 {
+    UpdateKeyboard(deltaTime);
+
     for (int i = 0; i < 3; ++i)
     {
         orbitAngle[i] = std::fmod(orbitAngle[i] + orbitSpeed[i] * deltaTime, 360.0f);
@@ -111,12 +153,19 @@ glm::mat4 MakeOrbitMatrix(int planet)
 //------------------------------------------------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    // 키를 뗀 소식은 건너뜁니다. 처음 누름과 길게 누름만 아래에서 처리합니다.
-    if (action != GLFW_PRESS && action != GLFW_REPEAT)
+    // 키를 뗐다는 소식도 먼저 기억해야 계속 움직이는 일이 생기지 않습니다.
+    if (key >= 0 && key <= GLFW_KEY_LAST)
+    {
+        keyDown[key] = (action != GLFW_RELEASE);
+    }
+
+    // 종류 바꾸기나 시작/정지 버튼은 처음 누른 순간에만 한 번 실행합니다.
+    // 길게 눌러 생기는 GLFW_REPEAT는 이동 계산에 쓰지 않습니다.
+    if (action != GLFW_PRESS)
     {
         return;
     }
-    // Shift 키를 함께 눌렀는지 확인합니다. &는 해당 키의 표시가 있는지 검사합니다.
+
     bool shift = (mods & GLFW_MOD_SHIFT) != 0;
     if (key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE)
     {
@@ -130,44 +179,17 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         isW = shift;
     }
-    else if (key == GLFW_KEY_A)
+    else if (key == GLFW_KEY_1)
     {
-        position.x -= 0.15f;
+        is1 = !is1;
     }
-    else if (key == GLFW_KEY_D)
+    else if (key == GLFW_KEY_2)
     {
-        position.x += 0.15f;
+        is2 = !is2;
     }
-    else if (key == GLFW_KEY_W)
+    else if (key == GLFW_KEY_3)
     {
-        position.y += 0.15f;
-    }
-    else if (key == GLFW_KEY_S)
-    {
-        position.y -= 0.15f;
-    }
-    else if (key == GLFW_KEY_EQUAL || key == GLFW_KEY_KP_ADD)
-    {
-        position.z += 0.15f;
-    }
-    else if (key == GLFW_KEY_MINUS || key == GLFW_KEY_KP_SUBTRACT)
-    {
-        position.z -= 0.15f;
-    }
-    else if (action == GLFW_PRESS)
-    {
-        if (key == GLFW_KEY_1)
-        {
-            is1 = !is1;
-        }
-        else if (key == GLFW_KEY_2)
-        {
-            is2 = !is2;
-        }
-        else if (key == GLFW_KEY_3)
-        {
-            is3 = !is3;
-        }
+        is3 = !is3;
     }
 }
 
@@ -261,3 +283,4 @@ int main()
 {
     return practice::RunScene("homework18 - Planets and moons", KeyCallback, UpdateScene, DrawAll);
 }
+

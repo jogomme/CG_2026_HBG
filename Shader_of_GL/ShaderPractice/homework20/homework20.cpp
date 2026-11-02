@@ -31,6 +31,7 @@
 //------------------------------------------------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void UpdateScene(float deltaTime);
+void UpdateKeyboard(float deltaTime);
 void DrawAll(common::Shader& shader, int width, int height);
 void ResetScene();
 glm::mat4 MakeBeltModelMatrix(float distance);
@@ -39,6 +40,9 @@ void DrawNumber(int number, glm::mat4 model, GLint modelLocation, common::Shader
 //------------------------------------------------------------------------------------------------------
 // 전역 변수와 플래그
 //------------------------------------------------------------------------------------------------------
+// 키를 누르면 true, 떼면 false가 됩니다. 키보드의 반복 입력 속도에 기대지 않습니다.
+// 이전 과제의 isR/isL처럼 '누르고 있는 상태'를 기억하는 배열입니다.
+bool keyDown[GLFW_KEY_LAST + 1]{};
 // 벨트 윗면이 바닥에서 얼마나 높은지 정합니다.
 const float beltHeight = 0.85f;
 // 둥근 코너의 반지름입니다.
@@ -62,7 +66,7 @@ bool isB = true;
 // true면 원근 투영, false면 직각 투영을 사용합니다.
 bool isPerspective = true;
 const glm::vec3 boxColor[5] = {
-    {0.95f, 0.4f, 0.2f}, {0.2f, 0.6f, 0.95f}, {0.85f, 0.7f, 0.2f}, 
+    {0.95f, 0.4f, 0.2f}, {0.2f, 0.6f, 0.95f}, {0.85f, 0.7f, 0.2f},
     {0.45f, 0.75f, 0.35f}, {0.75f, 0.35f, 0.8f}
 };
 
@@ -71,6 +75,8 @@ const glm::vec3 boxColor[5] = {
 //------------------------------------------------------------------------------------------------------
 void ResetScene()
 {
+    // 초기화할 때 기억한 키도 놓아 줍니다. 다음에 다시 누르기 전까지는 멈춥니다.
+    std::fill(std::begin(keyDown), std::end(keyDown), false);
     beltDistance = 0;
     cameraDistance = 10;
     cameraAngle = 40;
@@ -81,8 +87,34 @@ void ResetScene()
 //------------------------------------------------------------------------------------------------------
 // 시간이 흐른 만큼 저장된 위치와 각도를 고칩니다. 여기서는 화면을 그리지 않습니다.
 //------------------------------------------------------------------------------------------------------
+// 누르고 있는 동안 '초당 속도 × 지난 시간'만큼 움직입니다.
+// 예: 1초에 0.6만큼 가면 0.5초 동안에는 0.3만큼 갑니다.
+void UpdateKeyboard(float deltaTime)
+{
+    float movement = 2.4f * deltaTime;
+    float rotation = 60.0f * deltaTime;
+    if (keyDown[GLFW_KEY_EQUAL] || keyDown[GLFW_KEY_KP_ADD])
+    {
+        cameraDistance = std::max(5.0f, cameraDistance - movement);
+    }
+    if (keyDown[GLFW_KEY_MINUS] || keyDown[GLFW_KEY_KP_SUBTRACT])
+    {
+        cameraDistance = std::min(22.0f, cameraDistance + movement);
+    }
+    if (keyDown[GLFW_KEY_LEFT])
+    {
+        cameraAngle -= rotation;
+    }
+    if (keyDown[GLFW_KEY_RIGHT])
+    {
+        cameraAngle += rotation;
+    }
+}
+
 void UpdateScene(float deltaTime)
 {
+    UpdateKeyboard(deltaTime);
+
     if (isB)
     {
         beltDistance = std::fmod(beltDistance + 0.85f * deltaTime, pathLength);
@@ -132,36 +164,28 @@ glm::mat4 MakeBeltModelMatrix(float distance)
 //------------------------------------------------------------------------------------------------------
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    // 키를 뗀 소식은 건너뜁니다. 처음 누름과 길게 누름만 아래에서 처리합니다.
-    if (action != GLFW_PRESS && action != GLFW_REPEAT)
+    // 키를 뗐다는 소식도 먼저 기억해야 계속 움직이는 일이 생기지 않습니다.
+    if (key >= 0 && key <= GLFW_KEY_LAST)
+    {
+        keyDown[key] = (action != GLFW_RELEASE);
+    }
+
+    // 종류 바꾸기나 시작/정지 버튼은 처음 누른 순간에만 한 번 실행합니다.
+    // 길게 눌러 생기는 GLFW_REPEAT는 이동 계산에 쓰지 않습니다.
+    if (action != GLFW_PRESS)
     {
         return;
     }
+
     if (key == GLFW_KEY_Q || key == GLFW_KEY_ESCAPE)
     {
         glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }
-    else if (key == GLFW_KEY_EQUAL || key == GLFW_KEY_KP_ADD)
-    {
-        cameraDistance = std::max(5.0f, cameraDistance - 0.3f);
-    }
-    else if (key == GLFW_KEY_MINUS || key == GLFW_KEY_KP_SUBTRACT)
-    {
-        cameraDistance = std::min(22.0f, cameraDistance + 0.3f);
-    }
-    else if (key == GLFW_KEY_LEFT)
-    {
-        cameraAngle -= 5;
-    }
-    else if (key == GLFW_KEY_RIGHT)
-    {
-        cameraAngle += 5;
     }
     else if (key == GLFW_KEY_P)
     {
         isPerspective = (mods & GLFW_MOD_SHIFT) == 0;
     }
-    else if (key == GLFW_KEY_B && action == GLFW_PRESS)
+    else if (key == GLFW_KEY_B)
     {
         isB = !isB;
     }
@@ -181,12 +205,12 @@ void DrawNumber(int number, glm::mat4 model, GLint modelLocation, common::Shader
     // 한 줄이 숫자 하나입니다. 1인 막대만 그립니다.
     // 막대 순서: 위, 오른쪽 위, 오른쪽 아래, 아래, 왼쪽 아래, 왼쪽 위, 가운데입니다.
     const int segments[5][7] = {
-        {0, 1, 1, 0, 0, 0, 0}, {1, 1, 0, 1, 1, 0, 1}, {1, 1, 1, 1, 0, 0, 1}, 
+        {0, 1, 1, 0, 0, 0, 0}, {1, 1, 0, 1, 1, 0, 1}, {1, 1, 1, 1, 0, 0, 1},
         {0, 1, 1, 0, 0, 1, 1}, {1, 0, 1, 1, 0, 1, 1}
     };
     // 숫자를 만드는 막대 7개의 중심 위치입니다. 상자 윗면보다 살짝 높게 둡니다.
     const glm::vec3 positions[7] = {
-        {0, 0.526f, -0.16f}, {0.11f, 0.526f, -0.08f}, {0.11f, 0.526f, 0.08f}, 
+        {0, 0.526f, -0.16f}, {0.11f, 0.526f, -0.08f}, {0.11f, 0.526f, 0.08f},
         {0, 0.526f, 0.16f}, {-0.11f, 0.526f, 0.08f}, {-0.11f, 0.526f, -0.08f}, {0, 0.526f, 0}
     };
     for (int i = 0; i < 7; ++i)
@@ -294,3 +318,4 @@ int main()
 {
     return practice::RunScene("homework20 - Parcel conveyor", KeyCallback, UpdateScene, DrawAll);
 }
+
