@@ -37,4 +37,7 @@
   <Project Path="homework20/homework20.vcxproj" Id="73cccc8e-7e35-40cc-8d10-b4752a323b4d">
     <Platform Project="x64" />
   </Project>
+  <Project Path="OpenGL_CodingTest/OpenGL_CodingTest.vcxproj" Id="29af0358-5943-46fd-aa89-d88b2fc15108">
+    <Platform Project="x64" />
+  </Project>
 </Solution>
