@@ -15,6 +15,10 @@ inline glm::mat4 RotationMatrix(float degrees, const glm::vec3& axis)
 }
 
 // offset은 공전각 0도에서 중심으로부터 물체까지의 상대 위치다.
+// 공전 중심
+// 중심에서 X축으로 n 떨어짐
+// Y축 중심 공전
+// 공전 각도
 inline glm::vec3 OrbitPosition(const glm::vec3& center, const glm::vec3& offset,
                               const glm::vec3& axis, float degrees)
 {
@@ -22,6 +26,10 @@ inline glm::vec3 OrbitPosition(const glm::vec3& center, const glm::vec3& offset,
 }
 
 // 모델의 localPivot이 월드의 position에 오도록 배치하고 그 점을 중심으로 자전한다.
+// 위치
+// Y축 회전
+// 각도
+// 크기
 inline glm::mat4 SpinModel(const glm::vec3& position, const glm::vec3& axis,
                            float degrees, const glm::vec3& size,
                            const glm::vec3& localPivot = glm::vec3(0.0f))

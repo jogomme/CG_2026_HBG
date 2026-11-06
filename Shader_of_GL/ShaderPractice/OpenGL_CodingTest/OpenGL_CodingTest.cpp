@@ -2,48 +2,58 @@
 
 #include <cmath>
 
-namespace
-{
-const glm::vec3 orbitCenter(0.0f);
-const glm::vec3 orbitOffset(2.0f, 0.0f, 0.0f);
-const glm::vec3 orbitAxis(0.0f, 1.0f, 0.0f);
-const glm::vec3 spinAxis(0.0f, 1.0f, 0.0f);
-const glm::vec3 objectSize(1.0f);
+bool isPerspective = true;
 
 // 초당 회전각. 0이면 해당 각도가 유지된다. 음수는 반대 방향이다.
-constexpr float orbitSpeed = 30.0f;
-constexpr float spinSpeed = 90.0f;
-float orbitAngle = 0.0f;
-float spinAngle = 0.0f;
 
 void KeyCallback(GLFWwindow* window, int key, int, int action, int)
 {
     if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+    if (action == GLFW_PRESS && key == GLFW_KEY_P) {
+        isPerspective = !isPerspective;
+    }
 }
 
 void UpdateScene(float dt)
 {
-    orbitAngle = std::fmod(orbitAngle + orbitSpeed * dt, 360.0f);
-    spinAngle = std::fmod(spinAngle + spinSpeed * dt, 360.0f);
+
 }
 
 void DrawAll(common::Shader& shader, int width, int height)
 {
-    const glm::mat4 view = tank::MakeYawView(
+    // 카메라 설정
+    glm::mat4 view = glm::lookAt(
         glm::vec3(0.0f, 2.0f, 6.0f),
         glm::vec3(0.0f),
-        0.0f
+        glm::vec3(0.0f, 1.0f, 0.0f)
     );
-    const glm::mat4 projection = practice::MakeProjection(width, height, true, 4.0f);
+
+    // 원근 투영 설정
+    glm::mat4 projection =
+        practice::MakeProjection(width, height, isPerspective, 4.0f);
+
     shader.setMatrix(shader.uniformLocation("view"), view);
     shader.setMatrix(shader.uniformLocation("projection"), projection);
 
-    const glm::vec3 position = motion::OrbitPosition(orbitCenter, orbitOffset, orbitAxis, orbitAngle);
-    const glm::mat4 frame = tank::PartFrame(glm::mat4(1.0f), position, spinAngle, spinAxis);
-    tank::DrawCube(shader, shader.uniformLocation("model"), frame,
-                   glm::vec3(0.0f), objectSize, glm::vec3(1.0f, 0.0f, 0.0f));
-}
+    GLint modelLocation = shader.uniformLocation("model");
+
+    // 여기부터 직접 도형을 추가할 예정
+
+    glm::mat4 model = practice::MakeModelMatrix(
+        glm::vec3(0.0f, 0.0f, 0.0f),  // 위치
+        glm::vec3(1.0f)               // 크기
+    );
+
+    practice::DrawObj(
+        practice::cube,               // 출력할 도형
+        model,                        // 모델 행렬
+        glm::vec3(1.0f, 0.0f, 0.0f),  // 빨간색
+        modelLocation,
+        shader
+    );
+    
 }
 
 int main()
