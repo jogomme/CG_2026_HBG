@@ -1,4 +1,4 @@
-﻿# 공통 함수 사용 설명서 — 시험장 검색용
+# 공통 함수 사용 설명서 — 시험장 검색용
 
 대상: `Shader_of_GL/ShaderPractice/Common`의 모든 C++ 공통 함수·멤버 함수 25개. 삭제된 복사 생성자·복사 대입도 포함합니다. GLSL의 main은 C++ 함수와 구분해 설명합니다. 과제별 cpp의 KeyCallback·UpdateKeyboard·MakeWireObjects·DrawNumber 등은 이 공통 API의 일부가 아닙니다.
 
@@ -1281,3 +1281,26 @@ bool overlaps = distance.x <= limit.x && distance.y <= limit.y && distance.z <= 
 - `common::shader_sources::positionColorFragment`: 보간된 ourColor를 불투명 RGBA로 출력합니다. objectColor는 없습니다. 관련: 16번, 21번 템플릿.
 - `practice::RunScene` 내부 fragment: `ourColor * objectColor`로 색을 만듭니다. `practice::DrawObj`와 함께 쓰는 17~20번용 셰이더입니다.
 - 이 문자열 안의 `void main()`은 GPU에서 실행됩니다. C++의 main과 다르며 CPU에서 함수로 호출하지 않습니다. 사용 예는 Shader 생성자의 예제를 참고하세요.
+
+## 실습 21~24 — 방과 여러 뷰포트
+
+[실행·조작 안내](Practice21-24.md)
+
+- **방 벽 / 안쪽 컬링 — `room::DrawWalls`**: 좌우·뒤·위 네 면을 안쪽을 향하게 그린다. `Common/RoomScene.h`, `room::Panel`, `glEnable(GL_CULL_FACE)`와 함께 사용한다. 관련 실습: 21·23번.
+- **정점 순서 / 바닥 / 문 — `room::Panel`**: 기존 xz 평면을 이동·회전·확대해서 방의 면 하나를 그린다. `Common/RoomScene.h`, `practice::MakeObjects`, `practice::DrawObj`와 함께 사용한다. 관련 실습: 21·23번.
+- **뷰포트 / 같은 장면 반복 출력 — `tank::DrawWorld`**: 19번과 22번의 탱크 및 바닥을 그린다. `homework19/TankScene.h`를 포함하고 `view`, `projection`, `glViewport`를 설정한 후 사용한다. `tank::UpdateScene`은 프레임마다 한 번만 호출한다.
+
+```cpp
+// practice::RunScene의 DrawAll 안에서 사용합니다.
+GLint modelLocation = shader.uniformLocation("model");
+glm::mat4 roomModel(1.0f);
+glEnable(GL_CULL_FACE);
+room::DrawWalls(roomModel, glm::vec2(3.0f, 3.0f), 4.0f, modelLocation, shader);
+room::Panel(roomModel, glm::vec3(0.0f), glm::vec2(6.0f), 0.0f,
+    glm::vec3(1, 0, 0), glm::vec3(0.4f, 0.6f, 0.4f), modelLocation, shader);
+glDisable(GL_CULL_FACE);
+```
+
+### 충돌 — 21번 공, 23번 로봇
+
+21번의 `Reflect`는 공 중심이 반지름을 고려한 방의 경계를 넘으면 초과 거리와 속도 방향을 반사한다. 23번의 `Overlaps`는 xz 평면에서 로봇과 장애물의 겹침을, `SupportHeight`는 발 아래의 지지 높이를 계산한다. 모두 해당 과제의 상태와 좌표에 맞춘 함수다. 범용 공통 충돌 함수로 등록하지 않았다.
