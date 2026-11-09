@@ -82,6 +82,8 @@ constexpr float truckLimit = 2.95f;
 float truckZ = 1.25f;
 float truckDirection = 1.0f;
 bool truckMoving = false;
+bool firstPerson = false;
+int viewedParcel = 4;
 
 struct Cargo
 {
@@ -96,7 +98,8 @@ void ResetScene()
 {
     truckZ = 1.25f;
     truckDirection = 1.0f;
-    truckMoving = false;
+    truckMoving = firstPerson = false;
+    viewedParcel = 4;
     for (Cargo& box : cargo) box = Cargo{};
 
     // 초기화할 때 기억한 키도 놓아 줍니다. 다음에 다시 누르기 전까지는 멈춥니다.
@@ -221,6 +224,15 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         LoadParcel(key - GLFW_KEY_1);
     }
+    else if (key == GLFW_KEY_V)
+    {
+        firstPerson = !firstPerson;
+    }
+    else if (key == GLFW_KEY_N && firstPerson)
+    {
+        bool shift = (mods & GLFW_MOD_SHIFT) != 0;
+        viewedParcel = (viewedParcel + (shift ? 4 : 1)) % 5;
+    }
     else if (key == GLFW_KEY_G)
     {
         truckMoving = !truckMoving;
@@ -334,10 +346,17 @@ void DrawAll(common::Shader& shader, int width, int height)
     float angle = glm::radians(cameraAngle);
     glm::vec3 target(0.55f, 0.4f, 0.2f);
     glm::vec3 camera = target + cameraDistance * glm::vec3(0.75f * sin(angle), 0.65f, 0.75f * cos(angle));
+    if (firstPerson)
+    {
+        glm::mat4 parcel = MakeParcelPose(viewedParcel);
+        // 상자 자체가 시야를 가리지 않도록 눈을 윗면 바로 위에 둔다.
+        camera = glm::vec3(parcel * glm::vec4(0,0.61f,0,1));
+        target = camera + glm::vec3(parcel * glm::vec4(0,-0.12f,2.0f,0));
+    }
     shader.setMatrix(shader.uniformLocation("view"), glm::lookAt(camera, target, glm::vec3(0,1,0)));
     shader.setMatrix(
         shader.uniformLocation("projection"),
-        practice::MakeProjection(width, height, isPerspective, cameraDistance * 0.42f)
+        practice::MakeProjection(width, height, firstPerson || isPerspective, cameraDistance * 0.42f)
     );
     practice::DrawObj(
         practice::plane,
@@ -406,5 +425,5 @@ void DrawAll(common::Shader& shader, int width, int height)
 //------------------------------------------------------------------------------------------------------
 int main()
 {
-    return practice::RunScene("homework24 - Parcel truck", KeyCallback, UpdateScene, DrawAll);
+    return practice::RunScene("homework24 - Parcel truck and camera", KeyCallback, UpdateScene, DrawAll);
 }
