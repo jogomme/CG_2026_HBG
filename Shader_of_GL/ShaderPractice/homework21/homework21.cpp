@@ -7,6 +7,9 @@ void DrawAll(common::Shader& shader, int width, int height);
 glm::mat4 rotationModel(glm::mat4 model, float angle);
 glm::mat4 Revolution(glm::mat4 model);
 
+void MakeCube(glm::mat4 model, GLint modelLocation, common::Shader& shader);
+void MakeSphere(glm::mat4 model, GLint modelLocation, common::Shader& shader);
+
 glm::vec3 cubePos{};
 
 float angleX = 0;
@@ -15,7 +18,15 @@ float angleZ = 0;
 
 float CubeAngle = 90;
 
-void MakeCube(glm::mat4 model, GLint modelLocation, common::Shader& shader);
+struct Ball
+{
+    glm::vec3 position;  // 현재 위치
+    glm::vec3 velocity;  // 이동 속도와 방향
+    glm::vec3 color;     // 색상
+    float radius;        // 반지름
+};
+
+Ball spheres[5];
 
 // 프로그램 시작
 int main()
@@ -96,12 +107,17 @@ void MakeCube(glm::mat4 model, GLint modelLocation, common::Shader& shader)
 {
     glm::mat4 wallmodel(1);
 
-    wallmodel = glm::rotate(wallmodel, glm::radians(CubeAngle), glm::vec3(0, 1, 0));
+    wallmodel = glm::translate(
+        wallmodel,
+        glm::vec3(0.0f, 0.0f, -0.5f)
+    );
+
+    wallmodel = glm::rotate(wallmodel, glm::radians(CubeAngle), glm::vec3(1, 0, 0));
 
     practice::DrawObj(
         practice::plane,
         wallmodel,
-        glm::vec3(0.7f),
+        glm::vec3(0.3f),
         modelLocation,
         shader
     );
@@ -110,7 +126,7 @@ void MakeCube(glm::mat4 model, GLint modelLocation, common::Shader& shader)
     {
         glm::vec3 cubeColor = (i % 2 == 0)
             ? glm::vec3(0.7f)    // 1, 3번 면: 회색
-            : glm::vec3(0.3f);   // 2, 4번 면: 진한 회색
+            : glm::vec3(0.5f);   // 2, 4번 면: 진한 회색
 
         glm::mat4 model(1.0f);
 
