@@ -3,7 +3,7 @@
 
 constexpr float halfWidth = 3.0f;
 constexpr float halfDepth = 3.2f;
-constexpr float roomHeight = 4.2f;
+constexpr float roomHeight = 6.0f;
 constexpr float radius = 0.19f;
 const float cubeSize[] = {0.52f, 0.70f, 0.91f};
 const float cubeZ[] = {-1.9f, 0.0f, 1.9f};
@@ -141,9 +141,14 @@ glm::vec2 RollCenter(float degrees, float size)
 
 void DrawAll(common::Shader& shader, int width, int height)
 {
+    // PDF 예시처럼 검은 여백과 정면에서 보이는 정사각형 입구를 만든다.
+    const float background[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    glClearBufferfv(GL_COLOR, 0, background);
     GLint modelLocation = shader.uniformLocation("model");
+    // 카메라와 방 중앙의 높이를 맞추면 위·아래 벽이 대칭으로 보인다.
+    const float centerY = roomHeight / 2.0f;
     shader.setMatrix(shader.uniformLocation("view"),
-        glm::lookAt(glm::vec3(0,3.5f,11.5f), glm::vec3(0,1.9f,0), glm::vec3(0,1,0)));
+        glm::lookAt(glm::vec3(0,centerY,12.6f), glm::vec3(0,centerY,0), glm::vec3(0,1,0)));
     shader.setMatrix(shader.uniformLocation("projection"), practice::MakeProjection(width,height,true,1));
     glm::mat4 model = glm::translate(glm::mat4(1), glm::vec3(0,0,roomZ));
     model = glm::translate(model, glm::vec3(0,roomHeight/2,0));
@@ -151,14 +156,22 @@ void DrawAll(common::Shader& shader, int width, int height)
     model = glm::translate(model, glm::vec3(0,-roomHeight/2,0));
 
     glEnable(GL_CULL_FACE);
-    room::DrawWalls(model, {halfWidth,halfDepth}, roomHeight, modelLocation, shader);
+    // 앞면은 비워 두고, 안쪽 면은 서로 다른 명도의 회색으로 구분한다.
+    room::Panel(model, {-halfWidth,centerY,0}, {roomHeight,2*halfDepth},
+                -90, {0,0,1}, glm::vec3(0.32f), modelLocation, shader);
+    room::Panel(model, {halfWidth,centerY,0}, {roomHeight,2*halfDepth},
+                90, {0,0,1}, glm::vec3(0.23f), modelLocation, shader);
+    room::Panel(model, {0,centerY,-halfDepth}, {2*halfWidth,roomHeight},
+                90, {1,0,0}, glm::vec3(0.66f), modelLocation, shader);
+    room::Panel(model, {0,roomHeight,0}, {2*halfWidth,2*halfDepth},
+                180, {1,0,0}, glm::vec3(0.41f), modelLocation, shader);
     for (float side : {-1.0f,1.0f})
     {
         // 양쪽 바깥 모서리에 경첩을 둬 바닥 두 장이 아래로 열린다.
         glm::mat4 hinge = glm::translate(model, glm::vec3(side*halfWidth,0,0));
         hinge = glm::rotate(hinge, glm::radians(side*floorAngle), glm::vec3(0,0,1));
         room::Panel(hinge, {-side*halfWidth/2,0,0}, {halfWidth,2*halfDepth},
-                    0, {1,0,0}, {0.76f,0.68f,0.46f}, modelLocation, shader);
+                    0, {1,0,0}, glm::vec3(0.50f), modelLocation, shader);
     }
     glDisable(GL_CULL_FACE);
 
@@ -168,12 +181,12 @@ void DrawAll(common::Shader& shader, int width, int height)
         glm::mat4 cubeModel = glm::translate(model, glm::vec3(center.x,center.y+drop,cubeZ[i]));
         cubeModel = glm::rotate(cubeModel, glm::radians(-roll), glm::vec3(0,0,1));
         cubeModel = glm::scale(cubeModel, glm::vec3(cubeSize[i]));
-        practice::DrawObj(practice::cube, cubeModel, {0.89f,0.25f+0.12f*i,0.15f}, modelLocation, shader);
+        practice::DrawObj(practice::cube, cubeModel, {1.0f,0.10f,0.09f}, modelLocation, shader);
     }
     for (int i = 0; i < ballCount; ++i)
         practice::DrawObj(practice::sphere,
             practice::MakeModelMatrix(balls[i].position, glm::vec3(radius), model),
-            {0.18f+0.12f*i,0.40f,0.95f-0.10f*i}, modelLocation, shader);
+            {0.19f,0.20f,1.0f}, modelLocation, shader);
 }
 
 int main()
