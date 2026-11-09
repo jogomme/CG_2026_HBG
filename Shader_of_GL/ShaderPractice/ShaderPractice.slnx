@@ -46,4 +46,7 @@
   <Project Path="homework23/homework23.vcxproj">
     <Platform Project="x64" />
   </Project>
+  <Project Path="homework24/homework24.vcxproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>
